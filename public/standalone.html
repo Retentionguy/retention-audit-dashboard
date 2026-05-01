@@ -1,0 +1,1419 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Retention Audit Dashboard</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #f8fafc;
+      --sidebar: #1e1b4b;
+      --sidebar-hover: #312e81;
+      --sidebar-active: #4f46e5;
+      --card: #ffffff;
+      --border: #e2e8f0;
+      --text: #0f172a;
+      --text-muted: #64748b;
+      --danger: #ef4444;
+      --danger-bg: #fef2f2;
+      --warning: #f59e0b;
+      --warning-bg: #fffbeb;
+      --success: #10b981;
+      --success-bg: #f0fdf4;
+      --primary: #6366f1;
+      --primary-light: #eef2ff;
+      --radius: 12px;
+      --shadow: 0 1px 3px rgba(0,0,0,.08), 0 1px 2px rgba(0,0,0,.04);
+      --shadow-lg: 0 10px 25px rgba(0,0,0,.12);
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      font-size: 14px;
+      line-height: 1.5;
+      min-height: 100vh;
+    }
+
+    .layout { display: flex; min-height: 100vh; }
+
+    .sidebar {
+      width: 220px;
+      background: var(--sidebar);
+      display: flex;
+      flex-direction: column;
+      padding: 24px 0;
+      position: fixed;
+      top: 0; left: 0; bottom: 0;
+      z-index: 10;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 0 20px 24px;
+      color: #fff;
+      font-weight: 700;
+      font-size: 16px;
+    }
+
+    nav {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      padding: 0 12px;
+    }
+
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 12px;
+      border-radius: 8px;
+      color: #a5b4fc;
+      text-decoration: none;
+      font-weight: 500;
+      transition: background .15s, color .15s;
+      cursor: pointer;
+    }
+
+    .nav-item svg { width: 18px; height: 18px; flex-shrink: 0; }
+    .nav-item:hover { background: var(--sidebar-hover); color: #fff; }
+    .nav-item.active { background: var(--sidebar-active); color: #fff; }
+
+    .sidebar-footer {
+      padding: 20px 16px 0;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .period-label {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: .06em;
+      color: #818cf8;
+      font-weight: 600;
+    }
+
+    .sidebar-footer select {
+      background: rgba(255,255,255,.1);
+      border: 1px solid rgba(255,255,255,.15);
+      color: #e0e7ff;
+      border-radius: 8px;
+      padding: 7px 10px;
+      font-size: 13px;
+      cursor: pointer;
+      outline: none;
+      width: 100%;
+    }
+
+    .email-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      background: #4f46e5;
+      border: none;
+      color: #fff;
+      padding: 10px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      margin-top: 4px;
+      transition: background .15s;
+    }
+    .email-btn svg { width: 16px; height: 16px; }
+    .email-btn:hover { background: #4338ca; }
+
+    .main {
+      margin-left: 220px;
+      flex: 1;
+      padding: 32px;
+      max-width: 1280px;
+    }
+
+    .view { display: none; }
+    .view.active { display: block; }
+
+    .view-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      margin-bottom: 28px;
+    }
+
+    .view-header h1 { font-size: 24px; font-weight: 700; color: var(--text); }
+    .subtitle { color: var(--text-muted); font-size: 13px; margin-top: 4px; }
+
+    .header-actions { display: flex; align-items: center; gap: 10px; }
+
+    .header-actions select {
+      border: 1px solid var(--border);
+      background: var(--card);
+      padding: 8px 12px;
+      border-radius: 8px;
+      font-size: 13px;
+      color: var(--text);
+      cursor: pointer;
+      outline: none;
+    }
+
+    .status-pill { padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: 600; }
+    .active-pill { background: var(--success-bg); color: var(--success); }
+
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    .kpi-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px;
+      box-shadow: var(--shadow);
+    }
+
+    .kpi-label {
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: .05em;
+      color: var(--text-muted);
+      margin-bottom: 8px;
+    }
+
+    .kpi-value {
+      font-size: 32px;
+      font-weight: 800;
+      color: var(--text);
+      line-height: 1;
+      margin-bottom: 6px;
+    }
+
+    .kpi-sub { font-size: 12px; color: var(--text-muted); margin-bottom: 12px; }
+
+    .kpi-bar { height: 4px; background: var(--border); border-radius: 2px; overflow: hidden; }
+
+    .kpi-fill {
+      height: 100%;
+      border-radius: 2px;
+      transition: width .8s cubic-bezier(.4,0,.2,1);
+    }
+    .kpi-fill.danger  { background: var(--danger); }
+    .kpi-fill.warning { background: var(--warning); }
+    .kpi-fill.success { background: var(--success); }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .card-header h2 { font-size: 15px; font-weight: 600; color: var(--text); }
+
+    .card-badge {
+      font-size: 11px;
+      font-weight: 600;
+      padding: 3px 8px;
+      border-radius: 20px;
+      background: var(--primary-light);
+      color: var(--primary);
+    }
+
+    .card-badge.warning-badge { background: var(--warning-bg); color: var(--warning); }
+
+    .section-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    .chart-card { margin-bottom: 0; }
+    .chart-card.wide { grid-column: 1 / -1; }
+
+    .chart-area {
+      padding: 20px;
+      height: 220px;
+      display: flex;
+      align-items: flex-end;
+      gap: 6px;
+      overflow: hidden;
+    }
+
+    .chart-area.tall { height: 300px; }
+
+    .bar-col {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-end;
+      flex: 1;
+      gap: 4px;
+    }
+
+    .bar {
+      width: 100%;
+      border-radius: 4px 4px 0 0;
+      transition: height .6s cubic-bezier(.4,0,.2,1);
+      position: relative;
+      cursor: pointer;
+      min-height: 2px;
+    }
+
+    .bar:hover::after {
+      content: attr(data-tip);
+      position: absolute;
+      bottom: calc(100% + 6px);
+      left: 50%;
+      transform: translateX(-50%);
+      background: #1e293b;
+      color: #fff;
+      font-size: 11px;
+      white-space: nowrap;
+      padding: 4px 8px;
+      border-radius: 6px;
+      z-index: 10;
+      pointer-events: none;
+    }
+
+    .bar.danger  { background: var(--danger); }
+    .bar.warning { background: var(--warning); }
+    .bar.success { background: var(--success); }
+    .bar.primary { background: var(--primary); }
+
+    .bar-label {
+      font-size: 10px;
+      color: var(--text-muted);
+      text-align: center;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 100%;
+    }
+
+    .data-table { width: 100%; border-collapse: collapse; }
+
+    .data-table th {
+      text-align: left;
+      padding: 10px 16px;
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: .05em;
+      color: var(--text-muted);
+      background: #f8fafc;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .data-table td {
+      padding: 12px 16px;
+      border-bottom: 1px solid #f1f5f9;
+      font-size: 13px;
+      color: var(--text);
+    }
+
+    .data-table tbody tr:last-child td { border-bottom: none; }
+    .data-table tbody tr:hover td { background: #f8fafc; }
+
+    .badge {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 12px;
+      font-size: 11px;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+
+    .badge-active   { background: var(--success-bg); color: var(--success); }
+    .badge-at_risk  { background: var(--warning-bg); color: var(--warning); }
+    .badge-churned  { background: var(--danger-bg);  color: var(--danger); }
+    .badge-paused   { background: #f1f5f9; color: var(--text-muted); }
+    .badge-starter    { background: #f1f5f9; color: #475569; }
+    .badge-growth     { background: #eff6ff; color: #3b82f6; }
+    .badge-pro        { background: var(--primary-light); color: var(--primary); }
+    .badge-enterprise { background: #fdf4ff; color: #9333ea; }
+
+    .health-wrap { display: flex; align-items: center; gap: 8px; }
+
+    .health-track {
+      flex: 1;
+      height: 6px;
+      background: var(--border);
+      border-radius: 3px;
+      overflow: hidden;
+      min-width: 60px;
+    }
+
+    .health-fill { height: 100%; border-radius: 3px; }
+    .health-score { font-size: 12px; font-weight: 700; min-width: 30px; text-align: right; }
+
+    .reasons-list { padding: 16px 20px; display: flex; flex-direction: column; gap: 12px; }
+
+    .reason-row { display: flex; flex-direction: column; gap: 4px; }
+    .reason-meta { display: flex; justify-content: space-between; font-size: 12px; }
+    .reason-name { font-weight: 600; color: var(--text); }
+    .reason-count { color: var(--text-muted); }
+    .reason-track { height: 6px; background: var(--border); border-radius: 3px; overflow: hidden; }
+    .reason-fill { height: 100%; background: var(--danger); border-radius: 3px; }
+
+    .seg-power   { color: var(--success); font-weight: 700; }
+    .seg-engaged { color: var(--primary); font-weight: 700; }
+    .seg-casual  { color: var(--warning); font-weight: 700; }
+    .seg-dormant { color: var(--danger);  font-weight: 700; }
+
+    .danger-text  { color: var(--danger) !important; }
+    .warning-text { color: var(--warning) !important; }
+    .success-text { color: var(--success) !important; }
+    .positive     { color: var(--success); }
+    .negative     { color: var(--danger); }
+
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,.5);
+      z-index: 100;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modal-overlay.open { display: flex; }
+
+    .modal {
+      background: #fff;
+      border-radius: 16px;
+      width: 720px;
+      max-width: 95vw;
+      box-shadow: var(--shadow-lg);
+      overflow: hidden;
+    }
+
+    .modal-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 20px 24px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .modal-header h2 { font-size: 17px; font-weight: 700; }
+
+    .close-btn {
+      background: none;
+      border: none;
+      font-size: 18px;
+      cursor: pointer;
+      color: var(--text-muted);
+      padding: 4px 8px;
+      border-radius: 6px;
+    }
+    .close-btn:hover { background: var(--bg); }
+
+    .modal-actions {
+      display: flex;
+      gap: 10px;
+      padding: 12px 24px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .btn-primary {
+      background: var(--primary);
+      color: #fff;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-block;
+    }
+    .btn-primary:hover { background: #4338ca; }
+
+    .btn-secondary {
+      background: var(--bg);
+      color: var(--text);
+      border: 1px solid var(--border);
+      padding: 8px 16px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .btn-secondary:hover { background: var(--border); }
+
+    .modal-body { padding: 20px 24px 0; }
+    .modal-hint { font-size: 12px; color: var(--text-muted); padding: 12px 24px 20px; line-height: 1.6; }
+
+    .legend { display: flex; gap: 16px; padding: 0 20px 12px; }
+    .legend-item { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--text-muted); }
+    .legend-dot { width: 10px; height: 10px; border-radius: 2px; flex-shrink: 0; }
+
+    @media (max-width: 1024px) {
+      .kpi-grid { grid-template-columns: repeat(2, 1fr); }
+      .section-row { grid-template-columns: 1fr; }
+    }
+
+    @media (max-width: 768px) {
+      .sidebar { width: 60px; }
+      .logo span, .nav-item span, .sidebar-footer .period-label,
+      .sidebar-footer select, .email-btn span { display: none; }
+      .main { margin-left: 60px; padding: 16px; }
+    }
+  </style>
+</head>
+<body>
+<div class="layout">
+  <aside class="sidebar">
+    <div class="logo">
+      <svg width="28" height="28" viewBox="0 0 28 28" fill="none"><circle cx="14" cy="14" r="14" fill="#6366f1"/><path d="M7 19c0-3.866 3.134-7 7-7s7 3.134 7 7" stroke="#fff" stroke-width="2" stroke-linecap="round"/><circle cx="14" cy="10" r="3" fill="#fff"/></svg>
+      <span>RetainIQ</span>
+    </div>
+    <nav>
+      <a class="nav-item active" data-view="overview" href="#">
+        <svg viewBox="0 0 20 20" fill="currentColor"><path d="M2 10a8 8 0 1116 0A8 8 0 012 10zm8-4a1 1 0 00-1 1v3H6a1 1 0 000 2h3v3a1 1 0 002 0v-3h3a1 1 0 000-2h-3V7a1 1 0 00-1-1z"/></svg>
+        <span>Overview</span>
+      </a>
+      <a class="nav-item" data-view="customers" href="#">
+        <svg viewBox="0 0 20 20" fill="currentColor"><path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 015 5v1H1v-1a5 5 0 015-5z"/></svg>
+        <span>Customers</span>
+      </a>
+      <a class="nav-item" data-view="stickiness" href="#">
+        <svg viewBox="0 0 20 20" fill="currentColor"><path d="M2 11a1 1 0 011-1h2a1 1 0 011 1v5a1 1 0 01-1 1H3a1 1 0 01-1-1v-5zM8 7a1 1 0 011-1h2a1 1 0 011 1v9a1 1 0 01-1 1H9a1 1 0 01-1-1V7zM14 4a1 1 0 011-1h2a1 1 0 011 1v12a1 1 0 01-1 1h-2a1 1 0 01-1-1V4z"/></svg>
+        <span>Stickiness</span>
+      </a>
+      <a class="nav-item" data-view="churn" href="#">
+        <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>
+        <span>Churn Analysis</span>
+      </a>
+      <a class="nav-item" data-view="revenue" href="#">
+        <svg viewBox="0 0 20 20" fill="currentColor"><path d="M8.433 7.418c.155-.103.346-.196.567-.267v1.698a2.305 2.305 0 01-.567-.267C8.07 8.34 8 8.114 8 8c0-.114.07-.34.433-.582zM11 12.849v-1.698c.22.071.412.164.567.267.364.243.433.468.433.582 0 .114-.07.34-.433.582a2.305 2.305 0 01-.567.267z"/><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-13a1 1 0 10-2 0v.092a4.535 4.535 0 00-1.676.662C6.602 6.234 6 7.009 6 8c0 .99.602 1.765 1.324 2.246.48.32 1.054.545 1.676.662v1.941c-.391-.127-.68-.317-.843-.504a1 1 0 10-1.51 1.31c.562.649 1.413 1.028 2.353 1.118V15a1 1 0 102 0v-.092a4.535 4.535 0 001.676-.662C13.398 13.766 14 12.991 14 12c0-.99-.602-1.765-1.324-2.246A4.535 4.535 0 0011 9.092V7.151c.391.127.68.317.843.504a1 1 0 101.511-1.31c-.563-.649-1.413-1.028-2.354-1.118V5z" clip-rule="evenodd"/></svg>
+        <span>Revenue Loss</span>
+      </a>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="period-label">Reporting period</div>
+      <select id="periodSelect">
+        <option value="7">Last 7 days</option>
+        <option value="30" selected>Last 30 days</option>
+        <option value="60">Last 60 days</option>
+        <option value="90">Last 90 days</option>
+      </select>
+      <button class="email-btn" id="emailBtn">
+        <svg viewBox="0 0 20 20" fill="currentColor"><path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z"/><path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z"/></svg>
+        <span>Email Report</span>
+      </button>
+    </div>
+  </aside>
+
+  <main class="main">
+
+    <!-- OVERVIEW -->
+    <section id="view-overview" class="view active">
+      <header class="view-header">
+        <div>
+          <h1>Retention Overview</h1>
+          <p class="subtitle">As of May 1, 2026 · <span id="overviewPeriodLabel">Last 30 days</span></p>
+        </div>
+        <div class="header-actions">
+          <div class="status-pill active-pill">Live</div>
+        </div>
+      </header>
+      <div class="kpi-grid">
+        <div class="kpi-card">
+          <div class="kpi-label">Churn Rate</div>
+          <div class="kpi-value" id="churnRate">—</div>
+          <div class="kpi-sub" id="churnSub">customers lost</div>
+          <div class="kpi-bar"><div class="kpi-fill danger" id="churnFill" style="width:0%"></div></div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">Revenue Churn</div>
+          <div class="kpi-value" id="revChurnRate">—</div>
+          <div class="kpi-sub" id="revChurnSub">MRR lost</div>
+          <div class="kpi-bar"><div class="kpi-fill warning" id="revChurnFill" style="width:0%"></div></div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">Stickiness (DAU/MAU)</div>
+          <div class="kpi-value" id="stickinessVal">—</div>
+          <div class="kpi-sub">engagement ratio</div>
+          <div class="kpi-bar"><div class="kpi-fill success" id="stickFill" style="width:0%"></div></div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">Active MRR</div>
+          <div class="kpi-value" id="totalMrr">—</div>
+          <div class="kpi-sub" id="mrrChange">net change this period</div>
+        </div>
+      </div>
+      <div class="section-row">
+        <div class="card chart-card">
+          <div class="card-header"><h2>Churn Rate Trend</h2><span class="card-badge">12 weeks</span></div>
+          <div class="chart-area" id="churnChart"></div>
+        </div>
+        <div class="card chart-card">
+          <div class="card-header"><h2>MRR Timeline</h2><span class="card-badge">6 months</span></div>
+          <div class="chart-area" id="mrrChart"></div>
+        </div>
+      </div>
+      <div class="section-row">
+        <div class="card">
+          <div class="card-header">
+            <h2>At-Risk Customers</h2>
+            <span class="card-badge warning-badge" id="atRiskBadge">—</span>
+          </div>
+          <table class="data-table" id="atRiskTable">
+            <thead><tr><th>Customer</th><th>Plan</th><th>MRR</th><th>Health</th></tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+        <div class="card">
+          <div class="card-header"><h2>Churn Reasons</h2></div>
+          <div id="churnReasonsList" class="reasons-list"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- CUSTOMERS -->
+    <section id="view-customers" class="view">
+      <header class="view-header">
+        <div>
+          <h1>Customer Health</h1>
+          <p class="subtitle">All customers with engagement scores</p>
+        </div>
+        <div class="header-actions">
+          <select id="statusFilter">
+            <option value="all">All statuses</option>
+            <option value="active">Active</option>
+            <option value="at_risk">At Risk</option>
+            <option value="churned">Churned</option>
+          </select>
+        </div>
+      </header>
+      <div class="card">
+        <table class="data-table" id="customerTable">
+          <thead>
+            <tr>
+              <th>Customer</th><th>Plan</th><th>MRR</th><th>Status</th>
+              <th>Active Days (30d)</th><th>Stickiness</th><th>Health Score</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- STICKINESS -->
+    <section id="view-stickiness" class="view">
+      <header class="view-header">
+        <div>
+          <h1>Customer Stickiness</h1>
+          <p class="subtitle">DAU/MAU engagement by customer</p>
+        </div>
+      </header>
+      <div class="section-row">
+        <div class="card chart-card wide">
+          <div class="card-header"><h2>Stickiness by Customer (30d)</h2></div>
+          <div class="chart-area tall" id="stickinessChart"></div>
+        </div>
+      </div>
+      <div class="card">
+        <table class="data-table" id="stickinessTable">
+          <thead>
+            <tr>
+              <th>Customer</th><th>Plan</th><th>MRR</th>
+              <th>7-day</th><th>30-day</th><th>90-day</th>
+              <th>Avg Features Used</th><th>Segment</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- CHURN ANALYSIS -->
+    <section id="view-churn" class="view">
+      <header class="view-header">
+        <div>
+          <h1>Churn Analysis</h1>
+          <p class="subtitle">Detailed churn breakdown and trends</p>
+        </div>
+      </header>
+      <div class="section-row">
+        <div class="card chart-card">
+          <div class="card-header"><h2>Weekly Churn Rate</h2></div>
+          <div class="chart-area" id="churnChartFull"></div>
+        </div>
+        <div class="card chart-card">
+          <div class="card-header"><h2>Weekly MRR Lost</h2></div>
+          <div class="chart-area" id="mrrLostChart"></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header"><h2>Churned Customers</h2></div>
+        <table class="data-table" id="churnedTable">
+          <thead>
+            <tr>
+              <th>Customer</th><th>Plan</th><th>MRR Lost</th>
+              <th>Churned On</th><th>Reason</th><th>Tenure</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- REVENUE LOSS -->
+    <section id="view-revenue" class="view">
+      <header class="view-header">
+        <div>
+          <h1>Revenue Loss</h1>
+          <p class="subtitle">MRR impact of churn and at-risk accounts</p>
+        </div>
+      </header>
+      <div class="kpi-grid">
+        <div class="kpi-card">
+          <div class="kpi-label">Total MRR</div>
+          <div class="kpi-value" id="revTotalMrr">—</div>
+          <div class="kpi-sub">from active customers</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">MRR Lost (period)</div>
+          <div class="kpi-value danger-text" id="revLostMrr">—</div>
+          <div class="kpi-sub">from churned accounts</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">At-Risk MRR</div>
+          <div class="kpi-value warning-text" id="revAtRiskMrr">—</div>
+          <div class="kpi-sub">exposure if all churn</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">Net MRR Change</div>
+          <div class="kpi-value" id="revNetChange">—</div>
+          <div class="kpi-sub">new vs lost</div>
+        </div>
+      </div>
+      <div class="card chart-card wide">
+        <div class="card-header">
+          <h2>MRR vs Churn Revenue (6 months)</h2>
+        </div>
+        <div class="legend">
+          <div class="legend-item"><div class="legend-dot" style="background:#6366f1"></div>Active MRR</div>
+          <div class="legend-item"><div class="legend-dot" style="background:#ef4444"></div>Churned MRR</div>
+        </div>
+        <div class="chart-area tall" id="revStackChart"></div>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<!-- EMAIL MODAL -->
+<div class="modal-overlay" id="emailModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h2>Email Report Preview</h2>
+      <button class="close-btn" id="closeModal">✕</button>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-secondary" id="copyHtmlBtn">Copy HTML</button>
+    </div>
+    <div class="modal-body">
+      <iframe id="emailIframe" title="Email Preview" style="width:100%;height:540px;border:1px solid #e2e8f0;border-radius:8px;"></iframe>
+    </div>
+    <p class="modal-hint">Paste the copied HTML directly into your email client or ESP template editor. Works in Gmail, Outlook, and all major clients.</p>
+  </div>
+</div>
+
+<script>
+// ─── Mock Data ───────────────────────────────────────────────────────────────
+
+const CUSTOMERS = [
+  { id:1,  name:'Acme Corp',         email:'admin@acme.com',         company:'Acme Corp',         plan:'enterprise', mrr:999,  status:'active',  created_at:'2025-11-01', churned_at:null, churn_reason:null,                    stickiness:'high'   },
+  { id:2,  name:'Bright Labs',       email:'ops@brightlabs.io',      company:'Bright Labs',       plan:'pro',        mrr:349,  status:'active',  created_at:'2025-12-01', churned_at:null, churn_reason:null,                    stickiness:'high'   },
+  { id:3,  name:'CloudSync',         email:'hello@cloudsync.app',    company:'CloudSync',         plan:'growth',     mrr:149,  status:'active',  created_at:'2026-01-01', churned_at:null, churn_reason:null,                    stickiness:'high'   },
+  { id:4,  name:'Driftwood Digital', email:'team@driftwood.co',      company:'Driftwood Digital', plan:'pro',        mrr:349,  status:'active',  created_at:'2025-10-12', churned_at:null, churn_reason:null,                    stickiness:'high'   },
+  { id:5,  name:'EchoBase',          email:'info@echobase.io',       company:'EchoBase',          plan:'growth',     mrr:149,  status:'active',  created_at:'2026-01-31', churned_at:null, churn_reason:null,                    stickiness:'medium' },
+  { id:6,  name:'Flint & Co',        email:'billing@flintco.com',    company:'Flint & Co',        plan:'enterprise', mrr:1499, status:'active',  created_at:'2025-05-01', churned_at:null, churn_reason:null,                    stickiness:'high'   },
+  { id:7,  name:'GridMaster',        email:'cto@gridmaster.dev',     company:'GridMaster',        plan:'pro',        mrr:349,  status:'active',  created_at:'2026-03-01', churned_at:null, churn_reason:null,                    stickiness:'medium' },
+  { id:8,  name:'HorizonAI',         email:'team@horizonai.com',     company:'HorizonAI',         plan:'growth',     mrr:149,  status:'active',  created_at:'2026-02-15', churned_at:null, churn_reason:null,                    stickiness:'high'   },
+  { id:9,  name:'IndigoWave',        email:'hello@indigowave.io',    company:'IndigoWave',        plan:'starter',    mrr:49,   status:'active',  created_at:'2026-03-16', churned_at:null, churn_reason:null,                    stickiness:'medium' },
+  { id:10, name:'JetStream HQ',      email:'admin@jetstream.co',     company:'JetStream HQ',      plan:'enterprise', mrr:999,  status:'active',  created_at:'2025-07-05', churned_at:null, churn_reason:null,                    stickiness:'high'   },
+  { id:11, name:'KelvinTech',        email:'ops@kelvintech.com',     company:'KelvinTech',        plan:'growth',     mrr:149,  status:'at_risk', created_at:'2026-01-10', churned_at:null, churn_reason:null,                    stickiness:'low'    },
+  { id:12, name:'LumaPath',          email:'hi@lumapath.io',         company:'LumaPath',          plan:'starter',    mrr:49,   status:'at_risk', created_at:'2026-01-25', churned_at:null, churn_reason:null,                    stickiness:'low'    },
+  { id:13, name:'MomentumCo',        email:'team@momentumco.app',    company:'MomentumCo',        plan:'pro',        mrr:349,  status:'at_risk', created_at:'2025-12-21', churned_at:null, churn_reason:null,                    stickiness:'low'    },
+  { id:14, name:'NovaSpark',         email:'hello@novaspark.dev',    company:'NovaSpark',         plan:'growth',     mrr:149,  status:'at_risk', created_at:'2026-02-05', churned_at:null, churn_reason:null,                    stickiness:'low'    },
+  { id:15, name:'OpalSystems',       email:'ops@opalsystems.com',    company:'OpalSystems',       plan:'pro',        mrr:349,  status:'churned', created_at:'2025-10-13', churned_at:'2026-04-19', churn_reason:'Switched to competitor', stickiness:'none' },
+  { id:16, name:'PrismaHQ',          email:'admin@prismahq.io',      company:'PrismaHQ',          plan:'growth',     mrr:149,  status:'churned', created_at:'2025-11-21', churned_at:'2026-04-23', churn_reason:'Too expensive',          stickiness:'none' },
+  { id:17, name:'QuartzFlow',        email:'team@quartzflow.co',     company:'QuartzFlow',        plan:'starter',    mrr:49,   status:'churned', created_at:'2026-01-31', churned_at:'2026-04-26', churn_reason:'Not using product',      stickiness:'none' },
+  { id:18, name:'RapidNode',         email:'hello@rapidnode.dev',    company:'RapidNode',         plan:'enterprise', mrr:999,  status:'churned', created_at:'2025-04-01', churned_at:'2026-04-13', churn_reason:'Missing features',       stickiness:'none' },
+  { id:19, name:'SkyVault',          email:'ops@skyvault.io',        company:'SkyVault',          plan:'pro',        mrr:349,  status:'churned', created_at:'2025-11-01', churned_at:'2026-04-06', churn_reason:'Business closed',        stickiness:'none' },
+  { id:20, name:'TerraSync',         email:'admin@terrasync.com',    company:'TerraSync',         plan:'growth',     mrr:149,  status:'churned', created_at:'2025-08-24', churned_at:'2026-03-27', churn_reason:'Poor support experience', stickiness:'none' },
+  { id:21, name:'UltraForge',        email:'team@ultraforge.io',     company:'UltraForge',        plan:'pro',        mrr:349,  status:'churned', created_at:'2025-09-29', churned_at:'2026-03-20', churn_reason:'Too expensive',          stickiness:'none' },
+  { id:22, name:'VortexApp',         email:'hello@vortexapp.dev',    company:'VortexApp',         plan:'starter',    mrr:49,   status:'churned', created_at:'2025-12-11', churned_at:'2026-03-12', churn_reason:'Switched to competitor', stickiness:'none' },
+  { id:23, name:'WaveStack',         email:'ops@wavestack.co',       company:'WaveStack',         plan:'growth',     mrr:149,  status:'churned', created_at:'2025-11-11', churned_at:'2026-03-24', churn_reason:'Missing features',       stickiness:'none' },
+  { id:24, name:'XcelData',          email:'admin@xceldata.io',      company:'XcelData',          plan:'growth',     mrr:149,  status:'active',  created_at:'2026-04-16', churned_at:null, churn_reason:null,                    stickiness:'medium' },
+  { id:25, name:'YieldMetrics',      email:'team@yieldmetrics.com',  company:'YieldMetrics',      plan:'pro',        mrr:349,  status:'active',  created_at:'2026-04-21', churned_at:null, churn_reason:null,                    stickiness:'medium' },
+  { id:26, name:'ZenithCloud',       email:'hello@zenithcloud.dev',  company:'ZenithCloud',       plan:'starter',    mrr:49,   status:'active',  created_at:'2026-04-24', churned_at:null, churn_reason:null,                    stickiness:'low'    },
+];
+
+// Stickiness table (active + at_risk only)
+const STICKINESS_DATA = [
+  { id:1,  name:'Acme Corp',         plan:'enterprise', mrr:999,  status:'active',  stickiness7d:85.7, stickiness30d:80.0, stickiness90d:76.7, avg_features:6.8 },
+  { id:6,  name:'Flint & Co',        plan:'enterprise', mrr:1499, status:'active',  stickiness7d:100,  stickiness30d:86.7, stickiness90d:82.2, avg_features:7.2 },
+  { id:10, name:'JetStream HQ',      plan:'enterprise', mrr:999,  status:'active',  stickiness7d:71.4, stickiness30d:76.7, stickiness90d:74.4, avg_features:6.5 },
+  { id:2,  name:'Bright Labs',       plan:'pro',        mrr:349,  status:'active',  stickiness7d:71.4, stickiness30d:73.3, stickiness90d:70.0, avg_features:5.9 },
+  { id:4,  name:'Driftwood Digital', plan:'pro',        mrr:349,  status:'active',  stickiness7d:85.7, stickiness30d:70.0, stickiness90d:68.9, avg_features:6.1 },
+  { id:8,  name:'HorizonAI',         plan:'growth',     mrr:149,  status:'active',  stickiness7d:57.1, stickiness30d:63.3, stickiness90d:60.0, avg_features:5.2 },
+  { id:3,  name:'CloudSync',         plan:'growth',     mrr:149,  status:'active',  stickiness7d:42.9, stickiness30d:56.7, stickiness90d:54.4, avg_features:4.8 },
+  { id:7,  name:'GridMaster',        plan:'pro',        mrr:349,  status:'active',  stickiness7d:42.9, stickiness30d:43.3, stickiness90d:40.0, avg_features:4.1 },
+  { id:5,  name:'EchoBase',          plan:'growth',     mrr:149,  status:'active',  stickiness7d:28.6, stickiness30d:40.0, stickiness90d:37.8, avg_features:3.7 },
+  { id:9,  name:'IndigoWave',        plan:'starter',    mrr:49,   status:'active',  stickiness7d:28.6, stickiness30d:36.7, stickiness90d:33.3, avg_features:3.2 },
+  { id:24, name:'XcelData',          plan:'growth',     mrr:149,  status:'active',  stickiness7d:28.6, stickiness30d:30.0, stickiness90d:12.2, avg_features:2.8 },
+  { id:25, name:'YieldMetrics',      plan:'pro',        mrr:349,  status:'active',  stickiness7d:14.3, stickiness30d:23.3, stickiness90d:8.9,  avg_features:2.3 },
+  { id:26, name:'ZenithCloud',       plan:'starter',    mrr:49,   status:'active',  stickiness7d:14.3, stickiness30d:16.7, stickiness90d:6.7,  avg_features:1.9 },
+  { id:13, name:'MomentumCo',        plan:'pro',        mrr:349,  status:'at_risk', stickiness7d:14.3, stickiness30d:13.3, stickiness90d:16.7, avg_features:1.5 },
+  { id:11, name:'KelvinTech',        plan:'growth',     mrr:149,  status:'at_risk', stickiness7d:0,    stickiness30d:10.0, stickiness90d:12.2, avg_features:1.2 },
+  { id:14, name:'NovaSpark',         plan:'growth',     mrr:149,  status:'at_risk', stickiness7d:0,    stickiness30d:6.7,  stickiness90d:8.9,  avg_features:0.9 },
+  { id:12, name:'LumaPath',          plan:'starter',    mrr:49,   status:'at_risk', stickiness7d:0,    stickiness30d:3.3,  stickiness90d:5.6,  avg_features:0.6 },
+];
+
+// Churn trend (12 weekly buckets)
+const CHURN_TREND = [
+  { week:'W1',  label:'2026-02-06', churnRate:0,    churnedCount:0, mrrLost:0    },
+  { week:'W2',  label:'2026-02-13', churnRate:0,    churnedCount:0, mrrLost:0    },
+  { week:'W3',  label:'2026-02-20', churnRate:0,    churnedCount:0, mrrLost:0    },
+  { week:'W4',  label:'2026-02-27', churnRate:0,    churnedCount:0, mrrLost:0    },
+  { week:'W5',  label:'2026-03-06', churnRate:4.55, churnedCount:1, mrrLost:49   },
+  { week:'W6',  label:'2026-03-13', churnRate:4.76, churnedCount:1, mrrLost:149  },
+  { week:'W7',  label:'2026-03-20', churnRate:5.00, churnedCount:1, mrrLost:349  },
+  { week:'W8',  label:'2026-03-27', churnRate:5.26, churnedCount:1, mrrLost:149  },
+  { week:'W9',  label:'2026-04-03', churnRate:0,    churnedCount:0, mrrLost:0    },
+  { week:'W10', label:'2026-04-10', churnRate:5.56, churnedCount:1, mrrLost:349  },
+  { week:'W11', label:'2026-04-17', churnRate:5.88, churnedCount:1, mrrLost:999  },
+  { week:'W12', label:'2026-04-24', churnRate:6.25, churnedCount:3, mrrLost:547  },
+];
+
+// Revenue timeline (6 months)
+const REVENUE_TIMELINE = [
+  { month:'2025-12', label:"Dec '25", mrr:6840, churnedMrr:0   },
+  { month:'2026-01', label:"Jan '26", mrr:7138, churnedMrr:0   },
+  { month:'2026-02', label:"Feb '26", mrr:7436, churnedMrr:0   },
+  { month:'2026-03', label:"Mar '26", mrr:6988, churnedMrr:696 },
+  { month:'2026-04', label:"Apr '26", mrr:6135, churnedMrr:1895},
+  { month:'2026-05', label:"May '26", mrr:5587, churnedMrr:547 },
+];
+
+// Churn reasons
+const CHURN_REASONS = [
+  { churn_reason:'Missing features',       count:2, mrr_lost:1148 },
+  { churn_reason:'Too expensive',          count:2, mrr_lost:498  },
+  { churn_reason:'Switched to competitor', count:2, mrr_lost:398  },
+  { churn_reason:'Poor support experience',count:1, mrr_lost:149  },
+  { churn_reason:'Business closed',        count:1, mrr_lost:349  },
+  { churn_reason:'Not using product',      count:1, mrr_lost:49   },
+];
+
+// ─── Computed summaries by period ────────────────────────────────────────────
+
+function computeSummary(period) {
+  const now = new Date('2026-05-01');
+  const from = new Date(now); from.setDate(from.getDate() - period);
+  const fromStr = from.toISOString().slice(0, 10);
+
+  const startActive = CUSTOMERS.filter(c =>
+    c.created_at <= fromStr && (c.churned_at === null || c.churned_at > fromStr)
+  );
+  const startCount = startActive.length;
+  const startMrr   = startActive.reduce((s, c) => s + c.mrr, 0);
+
+  const toStr = '2026-05-01';
+  const churnedInPeriod = CUSTOMERS.filter(c =>
+    c.churned_at && c.churned_at >= fromStr && c.churned_at <= toStr
+  );
+  const churnedCount = churnedInPeriod.length;
+  const lostMrr = churnedInPeriod.reduce((s, c) => s + c.mrr, 0);
+
+  const newCustomers = CUSTOMERS.filter(c =>
+    c.created_at >= fromStr && c.created_at <= toStr
+  );
+  const newMrr = newCustomers.reduce((s, c) => s + c.mrr, 0);
+
+  const active  = CUSTOMERS.filter(c => c.status === 'active');
+  const atRisk  = CUSTOMERS.filter(c => c.status === 'at_risk');
+  const totalMrr = active.reduce((s, c) => s + c.mrr, 0);
+  const atRiskMrr = atRisk.reduce((s, c) => s + c.mrr, 0);
+
+  // Stickiness: weighted average of DAU/MAU ratios from STICKINESS_DATA
+  // Use 30d column as proxy regardless of period (demo data)
+  const activeSt = STICKINESS_DATA.filter(c => c.status === 'active' || c.status === 'at_risk');
+  const avgStick = activeSt.length
+    ? activeSt.reduce((s, c) => s + c.stickiness30d, 0) / activeSt.length
+    : 0;
+
+  const churnRate = startCount > 0
+    ? parseFloat(((churnedCount / startCount) * 100).toFixed(1)) : 0;
+  const revenueChurnRate = startMrr > 0
+    ? parseFloat(((lostMrr / startMrr) * 100).toFixed(1)) : 0;
+
+  return {
+    period,
+    churnRate,
+    revenueChurnRate,
+    stickiness: parseFloat(avgStick.toFixed(1)),
+    activeCustomers: active.length,
+    atRiskCustomers: atRisk.length,
+    atRiskMrr,
+    churnedThisPeriod: churnedCount,
+    newCustomers: newCustomers.length,
+    totalMrr,
+    lostMrr,
+    newMrr,
+    netMrrChange: newMrr - lostMrr,
+  };
+}
+
+function getCustomers(statusFilter) {
+  const dayMs = 86400000;
+  const now = new Date('2026-05-01');
+
+  return CUSTOMERS
+    .filter(c => statusFilter === 'all' || c.status === statusFilter)
+    .sort((a, b) => b.mrr - a.mrr)
+    .map(c => {
+      // Simulate days_active_30 from stickiness level
+      const st = STICKINESS_DATA.find(s => s.id === c.id);
+      const s30 = st ? st.stickiness30d : 0;
+      const days_active_30 = Math.round(s30 / 100 * 30);
+
+      const healthScore = c.status === 'churned' ? 0
+        : c.status === 'at_risk' ? Math.min(25 + days_active_30, 45)
+        : Math.min(Math.round(45 + s30 * 0.5 + days_active_30 * 0.3), 99);
+
+      // Tenure calculation
+      const created = new Date(c.created_at);
+      const endDate = c.churned_at ? new Date(c.churned_at) : now;
+      const days = Math.round((endDate - created) / dayMs);
+      const tenure = days > 365
+        ? `${Math.floor(days / 365)}y ${Math.floor((days % 365) / 30)}m`
+        : `${Math.floor(days / 30)}m`;
+
+      return { ...c, days_active_30, stickiness30d: s30, healthScore, tenure };
+    });
+}
+
+// ─── Utilities ───────────────────────────────────────────────────────────────
+
+const $ = id => document.getElementById(id);
+const fmt = n => '$' + Number(n).toLocaleString('en-US', { maximumFractionDigits: 0 });
+const fmtPct = n => n + '%';
+
+function healthColor(score) {
+  if (score >= 75) return '#10b981';
+  if (score >= 50) return '#6366f1';
+  if (score >= 25) return '#f59e0b';
+  return '#ef4444';
+}
+
+function stickinessSegment(pct) {
+  if (pct >= 60) return { label: 'Power',   cls: 'seg-power'   };
+  if (pct >= 35) return { label: 'Engaged', cls: 'seg-engaged' };
+  if (pct >= 15) return { label: 'Casual',  cls: 'seg-casual'  };
+  return              { label: 'Dormant', cls: 'seg-dormant' };
+}
+
+function barChart(containerId, data, { valueKey, labelKey, colorClass, tipFn, maxHeight = 170 }) {
+  const el = $(containerId);
+  if (!el) return;
+  const max = Math.max(...data.map(d => d[valueKey]), 0.01);
+  el.innerHTML = data.map(d => {
+    const h = Math.max((d[valueKey] / max) * maxHeight, 2);
+    const tip = tipFn ? tipFn(d) : `${d[labelKey]}: ${d[valueKey]}`;
+    return `<div class="bar-col">
+      <div class="bar ${colorClass}" style="height:${h}px" data-tip="${tip}"></div>
+      <div class="bar-label">${d[labelKey]}</div>
+    </div>`;
+  }).join('');
+}
+
+function dualBarChart(containerId, data, { keyA, keyB, labelKey, colorA, colorB, tipA, tipB, maxHeight = 220 }) {
+  const el = $(containerId);
+  if (!el) return;
+  const max = Math.max(...data.map(d => Math.max(d[keyA] || 0, d[keyB] || 0)), 0.01);
+  el.innerHTML = data.map(d => {
+    const hA = Math.max(((d[keyA] || 0) / max) * maxHeight, 2);
+    const hB = Math.max(((d[keyB] || 0) / max) * maxHeight, 2);
+    return `<div class="bar-col" style="flex-direction:row;align-items:flex-end;gap:3px;flex:1">
+        <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:4px">
+          <div class="bar ${colorA}" style="height:${hA}px;width:100%" data-tip="${tipA(d)}"></div>
+        </div>
+        <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:4px">
+          <div class="bar ${colorB}" style="height:${hB}px;width:100%" data-tip="${tipB(d)}"></div>
+        </div>
+      </div>
+      <div class="bar-label" style="flex:none;width:calc(200% / ${data.length * 2 + data.length - 1})">${d[labelKey]}</div>`;
+  }).join('');
+}
+
+// ─── View: Overview ──────────────────────────────────────────────────────────
+
+function loadOverview() {
+  const summary = computeSummary(currentPeriod);
+
+  $('churnRate').textContent     = fmtPct(summary.churnRate);
+  $('churnSub').textContent      = `${summary.churnedThisPeriod} customers lost`;
+  $('churnFill').style.width     = Math.min(summary.churnRate * 5, 100) + '%';
+
+  $('revChurnRate').textContent  = fmtPct(summary.revenueChurnRate);
+  $('revChurnSub').textContent   = fmt(summary.lostMrr) + ' MRR lost';
+  $('revChurnFill').style.width  = Math.min(summary.revenueChurnRate * 5, 100) + '%';
+
+  $('stickinessVal').textContent = fmtPct(summary.stickiness);
+  $('stickFill').style.width     = Math.min(summary.stickiness, 100) + '%';
+
+  $('totalMrr').textContent      = fmt(summary.totalMrr);
+  const netEl = $('mrrChange');
+  const netSign = summary.netMrrChange >= 0 ? '+' : '';
+  netEl.textContent = `${netSign}${fmt(summary.netMrrChange)} net this period`;
+  netEl.className   = 'kpi-sub ' + (summary.netMrrChange >= 0 ? 'positive' : 'negative');
+
+  $('overviewPeriodLabel').textContent = `Last ${currentPeriod} days`;
+
+  barChart('churnChart', CHURN_TREND, {
+    valueKey: 'churnRate', labelKey: 'week', colorClass: 'danger',
+    tipFn: d => `${d.label}: ${d.churnRate}% churn`,
+  });
+
+  barChart('mrrChart', REVENUE_TIMELINE, {
+    valueKey: 'mrr', labelKey: 'label', colorClass: 'primary',
+    tipFn: d => `${d.label}: ${fmt(d.mrr)} MRR`,
+  });
+
+  // At-risk table
+  const atRisk = getCustomers('at_risk');
+  $('atRiskBadge').textContent = `${atRisk.length} accounts · ${fmt(atRisk.reduce((s,c)=>s+c.mrr,0))} at risk`;
+  $('atRiskTable').querySelector('tbody').innerHTML = atRisk.map(c => `
+    <tr>
+      <td><strong>${c.name}</strong><br><span style="color:#94a3b8;font-size:11px">${c.email}</span></td>
+      <td><span class="badge badge-${c.plan}">${c.plan}</span></td>
+      <td><strong>${fmt(c.mrr)}</strong></td>
+      <td>
+        <div class="health-wrap">
+          <div class="health-track"><div class="health-fill" style="width:${c.healthScore}%;background:${healthColor(c.healthScore)}"></div></div>
+          <span class="health-score" style="color:${healthColor(c.healthScore)}">${c.healthScore}</span>
+        </div>
+      </td>
+    </tr>`).join('');
+
+  // Churn reasons
+  const maxR = Math.max(...CHURN_REASONS.map(r => r.count), 1);
+  $('churnReasonsList').innerHTML = CHURN_REASONS.map(r => `
+    <div class="reason-row">
+      <div class="reason-meta">
+        <span class="reason-name">${r.churn_reason}</span>
+        <span class="reason-count">${r.count} · ${fmt(r.mrr_lost)}</span>
+      </div>
+      <div class="reason-track">
+        <div class="reason-fill" style="width:${(r.count / maxR) * 100}%"></div>
+      </div>
+    </div>`).join('');
+}
+
+// ─── View: Customers ─────────────────────────────────────────────────────────
+
+function loadCustomers(statusFilter) {
+  const customers = getCustomers(statusFilter || 'all');
+  $('customerTable').querySelector('tbody').innerHTML = customers.map(c => `
+    <tr>
+      <td><strong>${c.name}</strong><br><span style="color:#94a3b8;font-size:11px">${c.email}</span></td>
+      <td><span class="badge badge-${c.plan}">${c.plan}</span></td>
+      <td>${fmt(c.mrr)}</td>
+      <td><span class="badge badge-${c.status}">${c.status.replace('_',' ')}</span></td>
+      <td>${c.days_active_30} / 30 days</td>
+      <td>${fmtPct(c.stickiness30d)}</td>
+      <td>
+        <div class="health-wrap">
+          <div class="health-track"><div class="health-fill" style="width:${c.healthScore}%;background:${healthColor(c.healthScore)}"></div></div>
+          <span class="health-score" style="color:${healthColor(c.healthScore)}">${c.healthScore}</span>
+        </div>
+      </td>
+    </tr>`).join('');
+}
+
+// ─── View: Stickiness ────────────────────────────────────────────────────────
+
+function loadStickiness() {
+  const top14 = [...STICKINESS_DATA].sort((a,b) => b.stickiness30d - a.stickiness30d).slice(0,14);
+  barChart('stickinessChart', top14, {
+    valueKey: 'stickiness30d', labelKey: 'name', colorClass: 'success', maxHeight: 240,
+    tipFn: d => `${d.name}: ${d.stickiness30d}% sticky (30d)`,
+  });
+
+  $('stickinessTable').querySelector('tbody').innerHTML = STICKINESS_DATA.map(c => {
+    const seg = stickinessSegment(c.stickiness30d);
+    return `<tr>
+      <td><strong>${c.name}</strong></td>
+      <td><span class="badge badge-${c.plan}">${c.plan}</span></td>
+      <td>${fmt(c.mrr)}</td>
+      <td>${fmtPct(c.stickiness7d)}</td>
+      <td>${fmtPct(c.stickiness30d)}</td>
+      <td>${fmtPct(c.stickiness90d)}</td>
+      <td>${c.avg_features} features</td>
+      <td><span class="${seg.cls}">${seg.label}</span></td>
+    </tr>`;
+  }).join('');
+}
+
+// ─── View: Churn Analysis ────────────────────────────────────────────────────
+
+function loadChurn() {
+  barChart('churnChartFull', CHURN_TREND, {
+    valueKey: 'churnRate', labelKey: 'week', colorClass: 'danger',
+    tipFn: d => `${d.label}: ${d.churnRate}% churn`,
+  });
+  barChart('mrrLostChart', CHURN_TREND, {
+    valueKey: 'mrrLost', labelKey: 'week', colorClass: 'warning',
+    tipFn: d => `${d.label}: ${fmt(d.mrrLost)} lost`,
+  });
+
+  const churned = getCustomers('churned');
+  $('churnedTable').querySelector('tbody').innerHTML = churned.map(c => `
+    <tr>
+      <td><strong>${c.name}</strong><br><span style="color:#94a3b8;font-size:11px">${c.email}</span></td>
+      <td><span class="badge badge-${c.plan}">${c.plan}</span></td>
+      <td class="danger-text"><strong>${fmt(c.mrr)}</strong></td>
+      <td>${c.churned_at || '—'}</td>
+      <td>${c.churn_reason || '—'}</td>
+      <td>${c.tenure}</td>
+    </tr>`).join('');
+}
+
+// ─── View: Revenue Loss ──────────────────────────────────────────────────────
+
+function loadRevenue() {
+  const summary = computeSummary(currentPeriod);
+
+  $('revTotalMrr').textContent = fmt(summary.totalMrr);
+  $('revLostMrr').textContent  = fmt(summary.lostMrr);
+  $('revAtRiskMrr').textContent = fmt(summary.atRiskMrr);
+  const netEl = $('revNetChange');
+  netEl.textContent = (summary.netMrrChange >= 0 ? '+' : '') + fmt(summary.netMrrChange);
+  netEl.className   = 'kpi-value ' + (summary.netMrrChange >= 0 ? 'success-text' : 'danger-text');
+
+  dualBarChart('revStackChart', REVENUE_TIMELINE, {
+    keyA: 'mrr', keyB: 'churnedMrr', labelKey: 'label',
+    colorA: 'primary', colorB: 'danger', maxHeight: 220,
+    tipA: d => `${d.label} Active MRR: ${fmt(d.mrr)}`,
+    tipB: d => `${d.label} Churned MRR: ${fmt(d.churnedMrr)}`,
+  });
+}
+
+// ─── Email report (inline HTML generation) ───────────────────────────────────
+
+function generateEmailHtml() {
+  const s = computeSummary(currentPeriod);
+  const atRisk = getCustomers('at_risk');
+  const recentChurns = getCustomers('churned')
+    .filter(c => c.churned_at >= new Date('2026-05-01').toISOString().slice(0,10).replace(/\d{2}$/, '01').slice(0,8) + '01')
+    .slice(0, 5);
+  const netSign = s.netMrrChange >= 0 ? '+' : '';
+  const netColor = s.netMrrChange >= 0 ? '#10b981' : '#ef4444';
+  const churnFill = Math.min(s.churnRate * 5, 100);
+  const revFill   = Math.min(s.revenueChurnRate * 5, 100);
+  const stFill    = Math.min(s.stickiness, 100);
+
+  function bar(pct, color) {
+    const f = Math.min(Math.round(pct), 100), e = 100 - f;
+    return `<table border="0" cellpadding="0" cellspacing="0" width="100%" style="border-collapse:collapse"><tr>
+      <td width="${f}%" height="8" bgcolor="${color}" style="font-size:0;line-height:0;border-radius:4px 0 0 4px">&nbsp;</td>
+      <td width="${e}%" height="8" bgcolor="#e2e8f0" style="font-size:0;line-height:0;border-radius:0 4px 4px 0">&nbsp;</td>
+    </tr></table>`;
+  }
+
+  function planBadge(plan) {
+    const m = {starter:['#f1f5f9','#475569'],growth:['#eff6ff','#3b82f6'],pro:['#eef2ff','#6366f1'],enterprise:['#fdf4ff','#9333ea']};
+    const [bg,fg] = m[plan]||['#f1f5f9','#475569'];
+    return `<span style="display:inline-block;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:600;background:${bg};color:${fg}">${plan}</span>`;
+  }
+
+  const atRiskRows = atRisk.map(c => `
+    <tr>
+      <td style="padding:10px 12px;border-bottom:1px solid #f1f5f9;font-size:13px"><strong>${c.name}</strong><br><span style="font-size:11px;color:#94a3b8">${c.company}</span></td>
+      <td style="padding:10px 12px;border-bottom:1px solid #f1f5f9;font-size:13px">${planBadge(c.plan)}</td>
+      <td style="padding:10px 12px;border-bottom:1px solid #f1f5f9;font-size:13px;font-weight:700;color:#f59e0b">${fmt(c.mrr)}</td>
+    </tr>`).join('');
+
+  const churnRows = getCustomers('churned').slice(0, 5).map(c => `
+    <tr>
+      <td style="padding:10px 12px;border-bottom:1px solid #f1f5f9;font-size:13px"><strong>${c.name}</strong></td>
+      <td style="padding:10px 12px;border-bottom:1px solid #f1f5f9;font-size:13px">${planBadge(c.plan)}</td>
+      <td style="padding:10px 12px;border-bottom:1px solid #f1f5f9;font-size:13px;font-weight:700;color:#ef4444">${fmt(c.mrr)}</td>
+      <td style="padding:10px 12px;border-bottom:1px solid #f1f5f9;font-size:12px;color:#64748b">${c.churn_reason||'—'}</td>
+    </tr>`).join('');
+
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+<title>Retention Audit Report — May 1, 2026</title>
+</head>
+<body style="margin:0;padding:0;background-color:#f8fafc;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif">
+<table border="0" cellpadding="0" cellspacing="0" width="100%" style="border-collapse:collapse;background-color:#f8fafc">
+<tr><td align="center" style="padding:32px 16px">
+<table border="0" cellpadding="0" cellspacing="0" width="640" style="border-collapse:collapse;max-width:640px;width:100%">
+
+<!-- HEADER -->
+<tr><td style="background:linear-gradient(135deg,#1e1b4b 0%,#4f46e5 100%);border-radius:12px 12px 0 0;padding:28px 32px">
+  <table border="0" cellpadding="0" cellspacing="0" width="100%"><tr>
+    <td>
+      <div style="display:inline-block;background:rgba(255,255,255,.15);border-radius:8px;padding:6px 12px;margin-bottom:12px">
+        <span style="color:#c7d2fe;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em">Retention Audit Report</span>
+      </div>
+      <h1 style="margin:0 0 4px;color:#ffffff;font-size:22px;font-weight:800;line-height:1.2">Customer Retention Summary</h1>
+      <p style="margin:0;color:#a5b4fc;font-size:13px">Last ${s.period} days &nbsp;·&nbsp; Generated May 1, 2026</p>
+    </td>
+    <td align="right" valign="middle">
+      <div style="background:rgba(255,255,255,.12);border-radius:50%;width:52px;height:52px;text-align:center;line-height:52px;font-size:24px">&#128202;</div>
+    </td>
+  </tr></table>
+</td></tr>
+
+${s.churnRate > 5 ? `<tr><td style="background:#fef2f2;border-left:4px solid #ef4444;padding:14px 32px">
+  <p style="margin:0;color:#991b1b;font-size:13px;font-weight:600">&#9888; Churn rate is above 5% threshold — immediate attention recommended.</p>
+</td></tr>` : ''}
+
+<!-- KPI GRID -->
+<tr><td style="background:#ffffff;padding:24px 24px 8px">
+  <table border="0" cellpadding="0" cellspacing="0" width="100%"><tr>
+    <td width="25%" style="padding:8px;vertical-align:top">
+      <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background:#fff;border:1px solid #e2e8f0;border-radius:10px">
+        <tr><td style="padding:16px 16px 12px">
+          <p style="margin:0 0 6px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#64748b">Churn Rate</p>
+          <p style="margin:0 0 4px;font-size:26px;font-weight:800;color:#ef4444;line-height:1">${s.churnRate}%</p>
+          <p style="margin:0 0 10px;font-size:11px;color:#64748b">${s.churnedThisPeriod} customers lost</p>
+          ${bar(churnFill, '#ef4444')}
+        </td></tr>
+      </table>
+    </td>
+    <td width="25%" style="padding:8px;vertical-align:top">
+      <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background:#fff;border:1px solid #e2e8f0;border-radius:10px">
+        <tr><td style="padding:16px 16px 12px">
+          <p style="margin:0 0 6px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#64748b">Revenue Churn</p>
+          <p style="margin:0 0 4px;font-size:26px;font-weight:800;color:#f59e0b;line-height:1">${s.revenueChurnRate}%</p>
+          <p style="margin:0 0 10px;font-size:11px;color:#64748b">${fmt(s.lostMrr)} MRR lost</p>
+          ${bar(revFill, '#f59e0b')}
+        </td></tr>
+      </table>
+    </td>
+    <td width="25%" style="padding:8px;vertical-align:top">
+      <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background:#fff;border:1px solid #e2e8f0;border-radius:10px">
+        <tr><td style="padding:16px 16px 12px">
+          <p style="margin:0 0 6px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#64748b">Stickiness</p>
+          <p style="margin:0 0 4px;font-size:26px;font-weight:800;color:#10b981;line-height:1">${s.stickiness}%</p>
+          <p style="margin:0 0 10px;font-size:11px;color:#64748b">DAU/MAU ratio</p>
+          ${bar(stFill, '#10b981')}
+        </td></tr>
+      </table>
+    </td>
+    <td width="25%" style="padding:8px;vertical-align:top">
+      <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background:#fff;border:1px solid #e2e8f0;border-radius:10px">
+        <tr><td style="padding:16px 16px 12px">
+          <p style="margin:0 0 6px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#64748b">Active MRR</p>
+          <p style="margin:0 0 4px;font-size:26px;font-weight:800;color:#0f172a;line-height:1">${fmt(s.totalMrr)}</p>
+          <p style="margin:0 0 10px;font-size:11px;color:${netColor};font-weight:600">${netSign}${fmt(s.netMrrChange)} net</p>
+          ${bar(70, '#6366f1')}
+        </td></tr>
+      </table>
+    </td>
+  </tr></table>
+</td></tr>
+
+<!-- SNAPSHOT -->
+<tr><td style="background:#ffffff;padding:0 32px 16px">
+  <table border="0" cellpadding="0" cellspacing="0" width="100%"><tr>
+    <td align="center" style="padding:8px">
+      <div style="background:#f0fdf4;border-radius:8px;padding:14px">
+        <span style="font-size:24px;font-weight:800;color:#10b981">${s.activeCustomers}</span>
+        <span style="display:block;font-size:11px;color:#166534;font-weight:600;margin-top:2px">Active</span>
+      </div>
+    </td>
+    <td align="center" style="padding:8px">
+      <div style="background:#fffbeb;border-radius:8px;padding:14px">
+        <span style="font-size:24px;font-weight:800;color:#f59e0b">${s.atRiskCustomers}</span>
+        <span style="display:block;font-size:11px;color:#92400e;font-weight:600;margin-top:2px">At Risk</span>
+      </div>
+    </td>
+    <td align="center" style="padding:8px">
+      <div style="background:#fef2f2;border-radius:8px;padding:14px">
+        <span style="font-size:24px;font-weight:800;color:#ef4444">${s.churnedThisPeriod}</span>
+        <span style="display:block;font-size:11px;color:#991b1b;font-weight:600;margin-top:2px">Churned</span>
+      </div>
+    </td>
+    <td align="center" style="padding:8px">
+      <div style="background:#eef2ff;border-radius:8px;padding:14px">
+        <span style="font-size:24px;font-weight:800;color:#6366f1">${s.newCustomers}</span>
+        <span style="display:block;font-size:11px;color:#3730a3;font-weight:600;margin-top:2px">New</span>
+      </div>
+    </td>
+  </tr></table>
+</td></tr>
+
+<!-- AT-RISK -->
+${atRiskRows ? `<tr><td style="background:#ffffff;padding:0 32px 24px">
+  <table border="0" cellpadding="0" cellspacing="0" width="100%" style="border:1px solid #fde68a;border-radius:10px;overflow:hidden">
+    <tr><td colspan="3" style="padding:12px 16px;background:#fffbeb;border-bottom:1px solid #fde68a">
+      <span style="font-size:13px;font-weight:700;color:#92400e">&#9888;&nbsp; At-Risk Accounts — ${fmt(s.atRiskMrr)} in exposure</span>
+    </td></tr>
+    <tr>
+      <th style="padding:8px 12px;font-size:11px;font-weight:700;text-transform:uppercase;color:#64748b;background:#f8fafc;text-align:left">Customer</th>
+      <th style="padding:8px 12px;font-size:11px;font-weight:700;text-transform:uppercase;color:#64748b;background:#f8fafc;text-align:left">Plan</th>
+      <th style="padding:8px 12px;font-size:11px;font-weight:700;text-transform:uppercase;color:#64748b;background:#f8fafc;text-align:left">MRR</th>
+    </tr>
+    ${atRiskRows}
+  </table>
+</td></tr>` : ''}
+
+<!-- RECENT CHURNS -->
+${churnRows ? `<tr><td style="background:#ffffff;padding:0 32px 24px">
+  <table border="0" cellpadding="0" cellspacing="0" width="100%" style="border:1px solid #fecaca;border-radius:10px;overflow:hidden">
+    <tr><td colspan="4" style="padding:12px 16px;background:#fef2f2;border-bottom:1px solid #fecaca">
+      <span style="font-size:13px;font-weight:700;color:#991b1b">&#10060;&nbsp; Recent Churns — ${fmt(s.lostMrr)} MRR lost</span>
+    </td></tr>
+    <tr>
+      <th style="padding:8px 12px;font-size:11px;font-weight:700;text-transform:uppercase;color:#64748b;background:#f8fafc;text-align:left">Customer</th>
+      <th style="padding:8px 12px;font-size:11px;font-weight:700;text-transform:uppercase;color:#64748b;background:#f8fafc;text-align:left">Plan</th>
+      <th style="padding:8px 12px;font-size:11px;font-weight:700;text-transform:uppercase;color:#64748b;background:#f8fafc;text-align:left">MRR</th>
+      <th style="padding:8px 12px;font-size:11px;font-weight:700;text-transform:uppercase;color:#64748b;background:#f8fafc;text-align:left">Reason</th>
+    </tr>
+    ${churnRows}
+  </table>
+</td></tr>` : ''}
+
+<!-- STICKINESS SCALE -->
+<tr><td style="background:#ffffff;padding:0 32px 24px">
+  <table border="0" cellpadding="0" cellspacing="0" width="100%" style="border:1px solid #e0e7ff;border-radius:10px;overflow:hidden">
+    <tr><td style="padding:12px 16px;background:#eef2ff;border-bottom:1px solid #e0e7ff">
+      <span style="font-size:13px;font-weight:700;color:#3730a3">&#128200;&nbsp; Stickiness Health — ${s.stickiness}% DAU/MAU</span>
+    </td></tr>
+    <tr><td style="padding:16px">
+      <p style="margin:0 0 8px;font-size:12px;color:#64748b;font-weight:600">Overall engagement score</p>
+      ${bar(stFill, '#6366f1')}
+      <table border="0" cellpadding="0" cellspacing="0" width="100%" style="margin-top:16px"><tr>
+        <td style="text-align:center;padding:4px"><div style="background:#f0fdf4;border-radius:6px;padding:8px"><div style="font-size:11px;font-weight:700;color:#10b981">POWER</div><div style="font-size:10px;color:#64748b">≥ 60%</div></div></td>
+        <td style="text-align:center;padding:4px"><div style="background:#eef2ff;border-radius:6px;padding:8px"><div style="font-size:11px;font-weight:700;color:#6366f1">ENGAGED</div><div style="font-size:10px;color:#64748b">35–60%</div></div></td>
+        <td style="text-align:center;padding:4px"><div style="background:#fffbeb;border-radius:6px;padding:8px"><div style="font-size:11px;font-weight:700;color:#f59e0b">CASUAL</div><div style="font-size:10px;color:#64748b">15–35%</div></div></td>
+        <td style="text-align:center;padding:4px"><div style="background:#fef2f2;border-radius:6px;padding:8px"><div style="font-size:11px;font-weight:700;color:#ef4444">DORMANT</div><div style="font-size:10px;color:#64748b">&lt; 15%</div></div></td>
+      </tr></table>
+    </td></tr>
+  </table>
+</td></tr>
+
+<!-- FOOTER -->
+<tr><td style="background:#1e1b4b;border-radius:0 0 12px 12px;padding:20px 32px">
+  <table border="0" cellpadding="0" cellspacing="0" width="100%"><tr>
+    <td>
+      <p style="margin:0 0 4px;color:#a5b4fc;font-size:12px;font-weight:700">RetainIQ Audit Dashboard</p>
+      <p style="margin:0;color:#6366f1;font-size:11px">Auto-generated for the last ${s.period} days ending May 1, 2026</p>
+    </td>
+    <td align="right" valign="middle">
+      <span style="display:inline-block;background:#4f46e5;color:#e0e7ff;font-size:11px;font-weight:600;padding:6px 14px;border-radius:6px">Operational Report</span>
+    </td>
+  </tr></table>
+</td></tr>
+
+</table>
+</td></tr>
+</table>
+</body>
+</html>`;
+}
+
+// ─── Navigation ──────────────────────────────────────────────────────────────
+
+let currentPeriod = 30;
+let currentView   = 'overview';
+
+const viewLoaders = {
+  overview:   () => loadOverview(),
+  customers:  () => loadCustomers($('statusFilter')?.value || 'all'),
+  stickiness: () => loadStickiness(),
+  churn:      () => loadChurn(),
+  revenue:    () => loadRevenue(),
+};
+
+function switchView(view) {
+  document.querySelectorAll('.view').forEach(el => el.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+  const el = document.getElementById(`view-${view}`);
+  const nav = document.querySelector(`[data-view="${view}"]`);
+  if (el)  el.classList.add('active');
+  if (nav) nav.classList.add('active');
+  currentView = view;
+  viewLoaders[view]?.();
+}
+
+document.querySelectorAll('.nav-item').forEach(el => {
+  el.addEventListener('click', e => { e.preventDefault(); switchView(el.dataset.view); });
+});
+
+$('periodSelect').addEventListener('change', e => {
+  currentPeriod = parseInt(e.target.value);
+  viewLoaders[currentView]?.();
+});
+
+$('statusFilter').addEventListener('change', e => loadCustomers(e.target.value));
+
+// ─── Email modal ─────────────────────────────────────────────────────────────
+
+$('emailBtn').addEventListener('click', () => {
+  const html = generateEmailHtml();
+  const blob = new Blob([html], { type: 'text/html' });
+  const url  = URL.createObjectURL(blob);
+  $('emailIframe').src = url;
+  $('emailModal').classList.add('open');
+});
+
+$('closeModal').addEventListener('click', () => $('emailModal').classList.remove('open'));
+$('emailModal').addEventListener('click', e => {
+  if (e.target === $('emailModal')) $('emailModal').classList.remove('open');
+});
+
+$('copyHtmlBtn').addEventListener('click', async () => {
+  try {
+    await navigator.clipboard.writeText(generateEmailHtml());
+    const btn = $('copyHtmlBtn');
+    btn.textContent = 'Copied!';
+    btn.style.cssText = 'background:#dcfce7;color:#16a34a;border-color:#86efac';
+    setTimeout(() => { btn.textContent = 'Copy HTML'; btn.style.cssText = ''; }, 2000);
+  } catch {
+    alert('Clipboard access denied. Try opening in a browser tab.');
+  }
+});
+
+// ─── Init ─────────────────────────────────────────────────────────────────────
+
+switchView('overview');
+</script>
+</body>
+</html>
