@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Retention Audit Dashboard</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="layout">
+    <aside class="sidebar">
+      <div class="logo">
+        <svg width="28" height="28" viewBox="0 0 28 28" fill="none"><circle cx="14" cy="14" r="14" fill="#6366f1"/><path d="M7 19c0-3.866 3.134-7 7-7s7 3.134 7 7" stroke="#fff" stroke-width="2" stroke-linecap="round"/><circle cx="14" cy="10" r="3" fill="#fff"/></svg>
+        <span>RetainIQ</span>
+      </div>
+      <nav>
+        <a class="nav-item active" data-view="overview" href="#">
+          <svg viewBox="0 0 20 20" fill="currentColor"><path d="M2 10a8 8 0 1116 0A8 8 0 012 10zm8-4a1 1 0 00-1 1v3H6a1 1 0 000 2h3v3a1 1 0 002 0v-3h3a1 1 0 000-2h-3V7a1 1 0 00-1-1z"/></svg>
+          Overview
+        </a>
+        <a class="nav-item" data-view="customers" href="#">
+          <svg viewBox="0 0 20 20" fill="currentColor"><path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 015 5v1H1v-1a5 5 0 015-5z"/></svg>
+          Customers
+        </a>
+        <a class="nav-item" data-view="stickiness" href="#">
+          <svg viewBox="0 0 20 20" fill="currentColor"><path d="M2 11a1 1 0 011-1h2a1 1 0 011 1v5a1 1 0 01-1 1H3a1 1 0 01-1-1v-5zM8 7a1 1 0 011-1h2a1 1 0 011 1v9a1 1 0 01-1 1H9a1 1 0 01-1-1V7zM14 4a1 1 0 011-1h2a1 1 0 011 1v12a1 1 0 01-1 1h-2a1 1 0 01-1-1V4z"/></svg>
+          Stickiness
+        </a>
+        <a class="nav-item" data-view="churn" href="#">
+          <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>
+          Churn Analysis
+        </a>
+        <a class="nav-item" data-view="revenue" href="#">
+          <svg viewBox="0 0 20 20" fill="currentColor"><path d="M8.433 7.418c.155-.103.346-.196.567-.267v1.698a2.305 2.305 0 01-.567-.267C8.07 8.34 8 8.114 8 8c0-.114.07-.34.433-.582zM11 12.849v-1.698c.22.071.412.164.567.267.364.243.433.468.433.582 0 .114-.07.34-.433.582a2.305 2.305 0 01-.567.267z"/><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-13a1 1 0 10-2 0v.092a4.535 4.535 0 00-1.676.662C6.602 6.234 6 7.009 6 8c0 .99.602 1.765 1.324 2.246.48.32 1.054.545 1.676.662v1.941c-.391-.127-.68-.317-.843-.504a1 1 0 10-1.51 1.31c.562.649 1.413 1.028 2.353 1.118V15a1 1 0 102 0v-.092a4.535 4.535 0 001.676-.662C13.398 13.766 14 12.991 14 12c0-.99-.602-1.765-1.324-2.246A4.535 4.535 0 0011 9.092V7.151c.391.127.68.317.843.504a1 1 0 101.511-1.31c-.563-.649-1.413-1.028-2.354-1.118V5z" clip-rule="evenodd"/></svg>
+          Revenue Loss
+        </a>
+      </nav>
+      <div class="sidebar-footer">
+        <div class="period-label">Reporting period</div>
+        <select id="periodSelect">
+          <option value="7">Last 7 days</option>
+          <option value="30" selected>Last 30 days</option>
+          <option value="60">Last 60 days</option>
+          <option value="90">Last 90 days</option>
+        </select>
+        <button class="email-btn" id="emailBtn">
+          <svg viewBox="0 0 20 20" fill="currentColor"><path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z"/><path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z"/></svg>
+          Email Report
+        </button>
+      </div>
+    </aside>
+
+    <main class="main">
+      <!-- OVERVIEW -->
+      <section id="view-overview" class="view active">
+        <header class="view-header">
+          <div>
+            <h1>Retention Overview</h1>
+            <p class="subtitle">As of May 1, 2026 · <span id="overviewPeriodLabel">Last 30 days</span></p>
+          </div>
+          <div class="header-actions">
+            <div class="status-pill active-pill">Live</div>
+          </div>
+        </header>
+
+        <div class="kpi-grid" id="kpiGrid">
+          <div class="kpi-card" id="kpiChurn">
+            <div class="kpi-label">Churn Rate</div>
+            <div class="kpi-value" id="churnRate">—</div>
+            <div class="kpi-sub" id="churnSub">customers lost</div>
+            <div class="kpi-bar"><div class="kpi-fill danger" id="churnFill" style="width:0%"></div></div>
+          </div>
+          <div class="kpi-card" id="kpiRevChurn">
+            <div class="kpi-label">Revenue Churn</div>
+            <div class="kpi-value" id="revChurnRate">—</div>
+            <div class="kpi-sub" id="revChurnSub">MRR lost</div>
+            <div class="kpi-bar"><div class="kpi-fill warning" id="revChurnFill" style="width:0%"></div></div>
+          </div>
+          <div class="kpi-card" id="kpiStickiness">
+            <div class="kpi-label">Stickiness (DAU/MAU)</div>
+            <div class="kpi-value" id="stickinessVal">—</div>
+            <div class="kpi-sub">engagement ratio</div>
+            <div class="kpi-bar"><div class="kpi-fill success" id="stickFill" style="width:0%"></div></div>
+          </div>
+          <div class="kpi-card" id="kpiMrr">
+            <div class="kpi-label">Active MRR</div>
+            <div class="kpi-value" id="totalMrr">—</div>
+            <div class="kpi-sub" id="mrrChange">net change this period</div>
+          </div>
+        </div>
+
+        <div class="section-row">
+          <div class="card chart-card">
+            <div class="card-header">
+              <h2>Churn Rate Trend</h2>
+              <span class="card-badge">12 weeks</span>
+            </div>
+            <div class="chart-area" id="churnChart"></div>
+          </div>
+          <div class="card chart-card">
+            <div class="card-header">
+              <h2>MRR Timeline</h2>
+              <span class="card-badge">6 months</span>
+            </div>
+            <div class="chart-area" id="mrrChart"></div>
+          </div>
+        </div>
+
+        <div class="section-row">
+          <div class="card">
+            <div class="card-header">
+              <h2>At-Risk Customers</h2>
+              <span class="card-badge warning-badge" id="atRiskBadge">—</span>
+            </div>
+            <table class="data-table" id="atRiskTable">
+              <thead><tr><th>Customer</th><th>Plan</th><th>MRR</th><th>Health</th></tr></thead>
+              <tbody></tbody>
+            </table>
+          </div>
+          <div class="card">
+            <div class="card-header">
+              <h2>Churn Reasons</h2>
+            </div>
+            <div id="churnReasonsList" class="reasons-list"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- CUSTOMERS -->
+      <section id="view-customers" class="view">
+        <header class="view-header">
+          <div>
+            <h1>Customer Health</h1>
+            <p class="subtitle">All customers with engagement scores</p>
+          </div>
+          <div class="header-actions">
+            <select id="statusFilter">
+              <option value="all">All statuses</option>
+              <option value="active">Active</option>
+              <option value="at_risk">At Risk</option>
+              <option value="churned">Churned</option>
+            </select>
+          </div>
+        </header>
+        <div class="card">
+          <table class="data-table full-table" id="customerTable">
+            <thead>
+              <tr>
+                <th>Customer</th>
+                <th>Plan</th>
+                <th>MRR</th>
+                <th>Status</th>
+                <th>Active Days (30d)</th>
+                <th>Stickiness</th>
+                <th>Health Score</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- STICKINESS -->
+      <section id="view-stickiness" class="view">
+        <header class="view-header">
+          <div>
+            <h1>Customer Stickiness</h1>
+            <p class="subtitle">DAU/MAU engagement by customer</p>
+          </div>
+        </header>
+        <div class="section-row">
+          <div class="card chart-card wide">
+            <div class="card-header"><h2>Stickiness by Customer (30d)</h2></div>
+            <div class="chart-area tall" id="stickinessChart"></div>
+          </div>
+        </div>
+        <div class="card">
+          <table class="data-table full-table" id="stickinessTable">
+            <thead>
+              <tr>
+                <th>Customer</th>
+                <th>Plan</th>
+                <th>MRR</th>
+                <th>7-day</th>
+                <th>30-day</th>
+                <th>90-day</th>
+                <th>Avg Features Used</th>
+                <th>Segment</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- CHURN ANALYSIS -->
+      <section id="view-churn" class="view">
+        <header class="view-header">
+          <div>
+            <h1>Churn Analysis</h1>
+            <p class="subtitle">Detailed churn breakdown and trends</p>
+          </div>
+        </header>
+        <div class="section-row">
+          <div class="card chart-card">
+            <div class="card-header"><h2>Weekly Churn Rate</h2></div>
+            <div class="chart-area" id="churnChartFull"></div>
+          </div>
+          <div class="card chart-card">
+            <div class="card-header"><h2>Weekly MRR Lost</h2></div>
+            <div class="chart-area" id="mrrLostChart"></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header"><h2>Churned Customers</h2></div>
+          <table class="data-table full-table" id="churnedTable">
+            <thead>
+              <tr>
+                <th>Customer</th>
+                <th>Plan</th>
+                <th>MRR Lost</th>
+                <th>Churned On</th>
+                <th>Reason</th>
+                <th>Tenure</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- REVENUE LOSS -->
+      <section id="view-revenue" class="view">
+        <header class="view-header">
+          <div>
+            <h1>Revenue Loss</h1>
+            <p class="subtitle">MRR impact of churn and at-risk accounts</p>
+          </div>
+        </header>
+        <div class="kpi-grid">
+          <div class="kpi-card">
+            <div class="kpi-label">Total MRR</div>
+            <div class="kpi-value" id="revTotalMrr">—</div>
+            <div class="kpi-sub">from active customers</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-label">MRR Lost (period)</div>
+            <div class="kpi-value danger-text" id="revLostMrr">—</div>
+            <div class="kpi-sub">from churned accounts</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-label">At-Risk MRR</div>
+            <div class="kpi-value warning-text" id="revAtRiskMrr">—</div>
+            <div class="kpi-sub">exposure if all churn</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-label">Net MRR Change</div>
+            <div class="kpi-value" id="revNetChange">—</div>
+            <div class="kpi-sub">new vs lost</div>
+          </div>
+        </div>
+        <div class="card chart-card wide">
+          <div class="card-header"><h2>MRR vs Churn Revenue (6 months)</h2></div>
+          <div class="chart-area tall" id="revStackChart"></div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- EMAIL MODAL -->
+  <div class="modal-overlay" id="emailModal">
+    <div class="modal">
+      <div class="modal-header">
+        <h2>Email Report Preview</h2>
+        <button class="close-btn" id="closeModal">✕</button>
+      </div>
+      <div class="modal-actions">
+        <button class="btn-secondary" id="copyHtmlBtn">Copy HTML</button>
+        <a class="btn-primary" id="openEmailPreview" href="#" target="_blank">Open in New Tab</a>
+      </div>
+      <div class="modal-body">
+        <iframe id="emailIframe" title="Email Preview" style="width:100%;height:520px;border:1px solid #e2e8f0;border-radius:8px;"></iframe>
+      </div>
+      <p class="modal-hint">Paste the copied HTML directly into your email client or ESP template editor. Works in Gmail, Outlook, and all major clients.</p>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

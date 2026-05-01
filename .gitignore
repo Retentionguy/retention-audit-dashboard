@@ -1,0 +1,4 @@
+node_modules/
+database/retention.db
+*.db-shm
+*.db-wal
