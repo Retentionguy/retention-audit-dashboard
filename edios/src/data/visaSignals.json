@@ -1,0 +1,199 @@
+[
+  {
+    "id": "vs-au",
+    "country": "Australia",
+    "flag": "🇦🇺",
+    "visaSubclass": "Subclass 500",
+    "currentApprovalRate": 82,
+    "previousApprovalRate": 86,
+    "trend": "declining",
+    "avgProcessingDays": 34,
+    "processingTrend": "stable",
+    "riskLevel": "medium",
+    "lastUpdated": "2026-05-01",
+    "recentChanges": [
+      {
+        "date": "2026-04-18",
+        "type": "policy",
+        "title": "GTE assessment criteria tightened",
+        "impact": "high",
+        "description": "DIBP issued updated guidance on Genuine Temporary Entrant assessment. Increased scrutiny on applicants with immediate family members already in Australia on any visa subclass."
+      },
+      {
+        "date": "2026-03-30",
+        "type": "processing",
+        "title": "Processing times extended to 34 days average",
+        "impact": "medium",
+        "description": "Department confirms increased caseload for Q1 2026 resulting in extended processing. Offshore applications for India source market averaging 41 days."
+      },
+      {
+        "date": "2026-02-15",
+        "type": "policy",
+        "title": "Financial evidence threshold updated",
+        "impact": "medium",
+        "description": "Minimum financial evidence requirement updated to AUD 21,041 for 12-month course. Previously AUD 20,290. Agents must update client checklists."
+      }
+    ],
+    "monthlyTrend": [
+      { "month": "Nov 25", "rate": 89, "volume": 8420 },
+      { "month": "Dec 25", "rate": 88, "volume": 6100 },
+      { "month": "Jan 26", "rate": 87, "volume": 9200 },
+      { "month": "Feb 26", "rate": 86, "volume": 11400 },
+      { "month": "Mar 26", "rate": 84, "volume": 12800 },
+      { "month": "Apr 26", "rate": 82, "volume": 13100 }
+    ],
+    "topSourceCountries": [
+      { "country": "India", "share": 34 },
+      { "country": "China", "share": 22 },
+      { "country": "Vietnam", "share": 12 },
+      { "country": "Nepal", "share": 9 },
+      { "country": "Indonesia", "share": 8 }
+    ]
+  },
+  {
+    "id": "vs-ca",
+    "country": "Canada",
+    "flag": "🇨🇦",
+    "visaSubclass": "Study Permit (SDS + Regular)",
+    "currentApprovalRate": 48,
+    "previousApprovalRate": 54,
+    "trend": "declining",
+    "avgProcessingDays": 56,
+    "processingTrend": "worsening",
+    "riskLevel": "high",
+    "lastUpdated": "2026-05-02",
+    "recentChanges": [
+      {
+        "date": "2026-05-01",
+        "type": "statistics",
+        "title": "SDS stream refusal rate reaches 56% for Indian applicants",
+        "impact": "high",
+        "description": "IRCC data confirms SDS refusal rate for India origin applicants at 56% in April 2026, up from 48% in March. Financial documentation insufficiency cited as primary refusal reason in 61% of cases."
+      },
+      {
+        "date": "2026-04-10",
+        "type": "policy",
+        "title": "IRCC introduces enhanced study plan review",
+        "impact": "high",
+        "description": "New mandatory structured study plan template introduced. Officers instructed to assess return intent more rigorously. Applications without clear post-graduation return plan facing higher refusal rates."
+      },
+      {
+        "date": "2026-03-15",
+        "type": "policy",
+        "title": "International student cap extended to 2027",
+        "impact": "medium",
+        "description": "IRCC confirms the international student intake cap for designated learning institutions will continue through 2027. Province-level allocations published — Ontario and BC most restricted."
+      }
+    ],
+    "monthlyTrend": [
+      { "month": "Nov 25", "rate": 58, "volume": 14200 },
+      { "month": "Dec 25", "rate": 56, "volume": 9800 },
+      { "month": "Jan 26", "rate": 55, "volume": 16400 },
+      { "month": "Feb 26", "rate": 54, "volume": 18200 },
+      { "month": "Mar 26", "rate": 51, "volume": 19600 },
+      { "month": "Apr 26", "rate": 48, "volume": 20100 }
+    ],
+    "topSourceCountries": [
+      { "country": "India", "share": 42 },
+      { "country": "China", "share": 18 },
+      { "country": "Philippines", "share": 9 },
+      { "country": "Nigeria", "share": 7 },
+      { "country": "Vietnam", "share": 6 }
+    ]
+  },
+  {
+    "id": "vs-nz",
+    "country": "New Zealand",
+    "flag": "🇳🇿",
+    "visaSubclass": "Fee Paying Student Visa",
+    "currentApprovalRate": 88,
+    "previousApprovalRate": 87,
+    "trend": "stable",
+    "avgProcessingDays": 28,
+    "processingTrend": "improving",
+    "riskLevel": "low",
+    "lastUpdated": "2026-04-28",
+    "recentChanges": [
+      {
+        "date": "2026-04-20",
+        "type": "processing",
+        "title": "INZ reduces average processing to 28 days",
+        "impact": "positive",
+        "description": "Immigration New Zealand reports processing time improvement following system upgrade. Average now 28 days, down from 35 days in Q4 2025. Online applications prioritised."
+      },
+      {
+        "date": "2026-03-01",
+        "type": "policy",
+        "title": "Post-study work right extended to 3 years",
+        "impact": "positive",
+        "description": "NZ government announces extension of post-study work rights from 2 to 3 years for graduates of NZ universities. Effective from 1 July 2026. Expected to increase NZ attractiveness vs Australia."
+      }
+    ],
+    "monthlyTrend": [
+      { "month": "Nov 25", "rate": 86, "volume": 2800 },
+      { "month": "Dec 25", "rate": 85, "volume": 1900 },
+      { "month": "Jan 26", "rate": 86, "volume": 3200 },
+      { "month": "Feb 26", "rate": 87, "volume": 3600 },
+      { "month": "Mar 26", "rate": 88, "volume": 3900 },
+      { "month": "Apr 26", "rate": 88, "volume": 4100 }
+    ],
+    "topSourceCountries": [
+      { "country": "India", "share": 28 },
+      { "country": "China", "share": 24 },
+      { "country": "Philippines", "share": 14 },
+      { "country": "South Korea", "share": 10 },
+      { "country": "Vietnam", "share": 8 }
+    ]
+  },
+  {
+    "id": "vs-uk",
+    "country": "UK",
+    "flag": "🇬🇧",
+    "visaSubclass": "Student Visa (Tier 4)",
+    "currentApprovalRate": 74,
+    "previousApprovalRate": 76,
+    "trend": "declining",
+    "avgProcessingDays": 21,
+    "processingTrend": "stable",
+    "riskLevel": "medium",
+    "lastUpdated": "2026-05-01",
+    "recentChanges": [
+      {
+        "date": "2026-04-25",
+        "type": "policy",
+        "title": "UKVI tightens financial maintenance requirements",
+        "impact": "high",
+        "description": "Financial maintenance requirement increased to £1,334/month for London-based study (up from £1,265). Outside London increased to £1,023/month. 28-day bank statement rule strictly enforced."
+      },
+      {
+        "date": "2026-04-05",
+        "type": "statistics",
+        "title": "Sri Lanka and Nepal refusal rates elevated",
+        "impact": "medium",
+        "description": "UKVI data shows elevated refusal rates for Sri Lanka (31%) and Nepal (28%) origin applicants in Q1 2026. Financial evidence cited as primary reason. Agents advised to ensure maintenance requirements comfortably exceeded."
+      },
+      {
+        "date": "2026-02-20",
+        "type": "policy",
+        "title": "Graduate visa review outcome — no changes",
+        "impact": "low",
+        "description": "Home Office confirms Graduate visa (2 year post-study work) will remain unchanged despite calls for reduction. Positive signal for UK as study destination."
+      }
+    ],
+    "monthlyTrend": [
+      { "month": "Nov 25", "rate": 78, "volume": 18600 },
+      { "month": "Dec 25", "rate": 77, "volume": 12200 },
+      { "month": "Jan 26", "rate": 77, "volume": 21400 },
+      { "month": "Feb 26", "rate": 76, "volume": 23800 },
+      { "month": "Mar 26", "rate": 75, "volume": 24200 },
+      { "month": "Apr 26", "rate": 74, "volume": 22900 }
+    ],
+    "topSourceCountries": [
+      { "country": "India", "share": 38 },
+      { "country": "Nigeria", "share": 14 },
+      { "country": "China", "share": 12 },
+      { "country": "Pakistan", "share": 8 },
+      { "country": "Sri Lanka", "share": 5 }
+    ]
+  }
+]

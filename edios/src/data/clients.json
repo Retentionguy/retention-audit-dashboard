@@ -1,0 +1,430 @@
+[
+  {
+    "id": "c001",
+    "name": "Priya Sharma",
+    "sourceCountry": "India",
+    "sourceFlag": "🇮🇳",
+    "destinationCountry": "Australia",
+    "destinationFlag": "🇦🇺",
+    "visaType": "Student Subclass 500",
+    "university": "University of Melbourne",
+    "course": "Master of Data Science",
+    "qualityScore": 84,
+    "approvalProbability": 78,
+    "status": "In Progress",
+    "submissionDate": "2026-03-15",
+    "factors": {
+      "financialStrength": 90,
+      "genuineTemporaryEntrant": 72,
+      "academicFit": 88,
+      "englishProficiency": 85,
+      "immigrationHistory": 95,
+      "tiesHomeCountry": 65
+    },
+    "documents": [
+      { "name": "Confirmation of Enrolment", "status": "complete" },
+      { "name": "IELTS Results", "status": "complete" },
+      { "name": "Financial Evidence", "status": "pending" },
+      { "name": "GTE Statement", "status": "in_review" },
+      { "name": "Passport Copy", "status": "complete" },
+      { "name": "Health Insurance (OSHC)", "status": "pending" }
+    ],
+    "notes": "Strong academic profile. GTE statement needs strengthening around ties to India. Financial evidence — needs 3 months bank statements from parents.",
+    "timeline": [
+      { "date": "2026-03-15", "event": "Client onboarded", "type": "info" },
+      { "date": "2026-03-22", "event": "CoE received from university", "type": "success" },
+      { "date": "2026-04-01", "event": "GTE statement submitted for review", "type": "info" },
+      { "date": "2026-04-18", "event": "Financial documents requested", "type": "warning" }
+    ]
+  },
+  {
+    "id": "c002",
+    "name": "Rajan Thapa",
+    "sourceCountry": "Nepal",
+    "sourceFlag": "🇳🇵",
+    "destinationCountry": "Canada",
+    "destinationFlag": "🇨🇦",
+    "visaType": "Study Permit (SDS)",
+    "university": "University of Toronto",
+    "course": "Bachelor of Computer Science",
+    "qualityScore": 61,
+    "approvalProbability": 48,
+    "status": "At Risk",
+    "submissionDate": "2026-02-28",
+    "factors": {
+      "financialStrength": 55,
+      "genuineTemporaryEntrant": 60,
+      "academicFit": 75,
+      "englishProficiency": 70,
+      "immigrationHistory": 80,
+      "tiesHomeCountry": 40
+    },
+    "documents": [
+      { "name": "Acceptance Letter", "status": "complete" },
+      { "name": "IELTS Results", "status": "complete" },
+      { "name": "GIC Payment Proof", "status": "pending" },
+      { "name": "Study Plan", "status": "in_review" },
+      { "name": "Passport", "status": "complete" }
+    ],
+    "notes": "Weak financial evidence is primary risk factor. GIC not yet set up. Ties to home country score very low — no property, no family dependents. Study plan needs to better explain return intent.",
+    "timeline": [
+      { "date": "2026-02-28", "event": "Client onboarded", "type": "info" },
+      { "date": "2026-03-10", "event": "Acceptance letter received", "type": "success" },
+      { "date": "2026-04-05", "event": "Risk flag raised — financial strength", "type": "warning" }
+    ]
+  },
+  {
+    "id": "c003",
+    "name": "Mei Lin Nguyen",
+    "sourceCountry": "Vietnam",
+    "sourceFlag": "🇻🇳",
+    "destinationCountry": "Australia",
+    "destinationFlag": "🇦🇺",
+    "visaType": "Student Subclass 500",
+    "university": "UNSW Sydney",
+    "course": "Master of Engineering (Biomedical)",
+    "qualityScore": 91,
+    "approvalProbability": 89,
+    "status": "Ready to Submit",
+    "submissionDate": "2026-04-30",
+    "factors": {
+      "financialStrength": 95,
+      "genuineTemporaryEntrant": 88,
+      "academicFit": 94,
+      "englishProficiency": 90,
+      "immigrationHistory": 98,
+      "tiesHomeCountry": 82
+    },
+    "documents": [
+      { "name": "Confirmation of Enrolment", "status": "complete" },
+      { "name": "IELTS Results (8.0)", "status": "complete" },
+      { "name": "Financial Evidence", "status": "complete" },
+      { "name": "GTE Statement", "status": "complete" },
+      { "name": "Passport", "status": "complete" },
+      { "name": "OSHC Policy", "status": "complete" }
+    ],
+    "notes": "Exceptional application. Parents are business owners in Hanoi — strong financial and ties evidence. Previous visa to Japan approved — clean history. Ready for lodgement.",
+    "timeline": [
+      { "date": "2026-04-01", "event": "Client onboarded", "type": "info" },
+      { "date": "2026-04-10", "event": "All documents received", "type": "success" },
+      { "date": "2026-04-25", "event": "GTE statement approved internally", "type": "success" },
+      { "date": "2026-04-30", "event": "Application ready for lodgement", "type": "success" }
+    ]
+  },
+  {
+    "id": "c004",
+    "name": "Arjun Perera",
+    "sourceCountry": "Sri Lanka",
+    "sourceFlag": "🇱🇰",
+    "destinationCountry": "UK",
+    "destinationFlag": "🇬🇧",
+    "visaType": "Student Visa (Tier 4)",
+    "university": "University of Manchester",
+    "course": "MBA",
+    "qualityScore": 73,
+    "approvalProbability": 67,
+    "status": "In Progress",
+    "submissionDate": "2026-05-10",
+    "factors": {
+      "financialStrength": 78,
+      "genuineTemporaryEntrant": 65,
+      "academicFit": 80,
+      "englishProficiency": 82,
+      "immigrationHistory": 70,
+      "tiesHomeCountry": 60
+    },
+    "documents": [
+      { "name": "CAS Number", "status": "complete" },
+      { "name": "IELTS Results", "status": "complete" },
+      { "name": "Bank Statements", "status": "in_review" },
+      { "name": "Personal Statement", "status": "pending" }
+    ],
+    "notes": "Bank statements show adequate funds but recent large deposit flagged as potential issue. Personal statement needs work on demonstrating genuine study intent.",
+    "timeline": [
+      { "date": "2026-04-20", "event": "Client onboarded", "type": "info" },
+      { "date": "2026-04-28", "event": "CAS received", "type": "success" },
+      { "date": "2026-05-02", "event": "Bank statement concern flagged", "type": "warning" }
+    ]
+  },
+  {
+    "id": "c005",
+    "name": "Siti Rahayu",
+    "sourceCountry": "Indonesia",
+    "sourceFlag": "🇮🇩",
+    "destinationCountry": "Australia",
+    "destinationFlag": "🇦🇺",
+    "visaType": "Student Subclass 500",
+    "university": "Monash University",
+    "course": "Bachelor of Business",
+    "qualityScore": 79,
+    "approvalProbability": 74,
+    "status": "In Progress",
+    "submissionDate": "2026-04-15",
+    "factors": {
+      "financialStrength": 82,
+      "genuineTemporaryEntrant": 75,
+      "academicFit": 78,
+      "englishProficiency": 80,
+      "immigrationHistory": 90,
+      "tiesHomeCountry": 72
+    },
+    "documents": [
+      { "name": "Confirmation of Enrolment", "status": "complete" },
+      { "name": "IELTS Results", "status": "complete" },
+      { "name": "Financial Evidence", "status": "complete" },
+      { "name": "GTE Statement", "status": "in_review" },
+      { "name": "OSHC", "status": "pending" }
+    ],
+    "notes": "Solid application overall. Father is a government official — good ties evidence. GTE statement under review.",
+    "timeline": [
+      { "date": "2026-04-15", "event": "Client onboarded", "type": "info" },
+      { "date": "2026-04-22", "event": "CoE received", "type": "success" },
+      { "date": "2026-05-01", "event": "GTE statement in review", "type": "info" }
+    ]
+  },
+  {
+    "id": "c006",
+    "name": "Kavya Nair",
+    "sourceCountry": "India",
+    "sourceFlag": "🇮🇳",
+    "destinationCountry": "New Zealand",
+    "destinationFlag": "🇳🇿",
+    "visaType": "Fee Paying Student Visa",
+    "university": "University of Auckland",
+    "course": "Master of Public Health",
+    "qualityScore": 86,
+    "approvalProbability": 83,
+    "status": "Submitted",
+    "submissionDate": "2026-04-02",
+    "factors": {
+      "financialStrength": 88,
+      "genuineTemporaryEntrant": 84,
+      "academicFit": 90,
+      "englishProficiency": 87,
+      "immigrationHistory": 92,
+      "tiesHomeCountry": 74
+    },
+    "documents": [
+      { "name": "Offer Letter", "status": "complete" },
+      { "name": "IELTS Results", "status": "complete" },
+      { "name": "Financial Evidence", "status": "complete" },
+      { "name": "Medical Certificate", "status": "complete" },
+      { "name": "Police Clearance", "status": "complete" }
+    ],
+    "notes": "Application submitted 2 April. Currently at 33 days processing. Average is 28 days — slight delay but within normal range.",
+    "timeline": [
+      { "date": "2026-03-20", "event": "Client onboarded", "type": "info" },
+      { "date": "2026-03-28", "event": "All documents verified", "type": "success" },
+      { "date": "2026-04-02", "event": "Application lodged", "type": "success" }
+    ]
+  },
+  {
+    "id": "c007",
+    "name": "Bikash Tamang",
+    "sourceCountry": "Nepal",
+    "sourceFlag": "🇳🇵",
+    "destinationCountry": "Australia",
+    "destinationFlag": "🇦🇺",
+    "visaType": "Student Subclass 500",
+    "university": "RMIT University",
+    "course": "Diploma of IT",
+    "qualityScore": 44,
+    "approvalProbability": 31,
+    "status": "High Risk",
+    "submissionDate": "2026-05-20",
+    "factors": {
+      "financialStrength": 38,
+      "genuineTemporaryEntrant": 42,
+      "academicFit": 55,
+      "englishProficiency": 60,
+      "immigrationHistory": 65,
+      "tiesHomeCountry": 30
+    },
+    "documents": [
+      { "name": "Confirmation of Enrolment", "status": "complete" },
+      { "name": "PTE Results", "status": "complete" },
+      { "name": "Financial Evidence", "status": "pending" },
+      { "name": "GTE Statement", "status": "pending" }
+    ],
+    "notes": "CRITICAL: Financial evidence is severely insufficient. Has only AUD 4,200 in account — requirement is AUD 21,041. GTE is weak — no clear reason for choosing Australia over Nepal options. Recommend pausing application until financial situation resolved.",
+    "timeline": [
+      { "date": "2026-05-01", "event": "Client onboarded", "type": "info" },
+      { "date": "2026-05-03", "event": "High risk flag raised", "type": "warning" }
+    ]
+  },
+  {
+    "id": "c008",
+    "name": "Thanh Duc Pham",
+    "sourceCountry": "Vietnam",
+    "sourceFlag": "🇻🇳",
+    "destinationCountry": "Canada",
+    "destinationFlag": "🇨🇦",
+    "visaType": "Study Permit (Regular)",
+    "university": "University of British Columbia",
+    "course": "Bachelor of Commerce",
+    "qualityScore": 68,
+    "approvalProbability": 55,
+    "status": "In Progress",
+    "submissionDate": "2026-05-25",
+    "factors": {
+      "financialStrength": 70,
+      "genuineTemporaryEntrant": 65,
+      "academicFit": 72,
+      "englishProficiency": 75,
+      "immigrationHistory": 85,
+      "tiesHomeCountry": 55
+    },
+    "documents": [
+      { "name": "Acceptance Letter", "status": "complete" },
+      { "name": "IELTS Results", "status": "complete" },
+      { "name": "Bank Statements", "status": "in_review" },
+      { "name": "Study Plan", "status": "pending" }
+    ],
+    "notes": "Canada refusal rates for Vietnam applicants elevated this quarter. Study plan needs to clearly articulate post-study plan in Vietnam. Financial evidence borderline — recommend supplementing with sponsor letter from parents.",
+    "timeline": [
+      { "date": "2026-04-28", "event": "Client onboarded", "type": "info" },
+      { "date": "2026-05-05", "event": "Acceptance letter received", "type": "success" }
+    ]
+  },
+  {
+    "id": "c009",
+    "name": "Anita Gurung",
+    "sourceCountry": "Nepal",
+    "sourceFlag": "🇳🇵",
+    "destinationCountry": "UK",
+    "destinationFlag": "🇬🇧",
+    "visaType": "Student Visa (Tier 4)",
+    "university": "University of Edinburgh",
+    "course": "MSc International Relations",
+    "qualityScore": 77,
+    "approvalProbability": 71,
+    "status": "In Progress",
+    "submissionDate": "2026-05-18",
+    "factors": {
+      "financialStrength": 80,
+      "genuineTemporaryEntrant": 72,
+      "academicFit": 85,
+      "englishProficiency": 78,
+      "immigrationHistory": 88,
+      "tiesHomeCountry": 58
+    },
+    "documents": [
+      { "name": "CAS Number", "status": "complete" },
+      { "name": "IELTS (7.0)", "status": "complete" },
+      { "name": "Bank Statements (28 days)", "status": "complete" },
+      { "name": "TB Test Certificate", "status": "pending" }
+    ],
+    "notes": "TB test required from Nepal — appointment booked for May 12. Otherwise well-prepared application.",
+    "timeline": [
+      { "date": "2026-04-25", "event": "Client onboarded", "type": "info" },
+      { "date": "2026-05-01", "event": "CAS confirmed", "type": "success" },
+      { "date": "2026-05-05", "event": "TB test appointment booked", "type": "info" }
+    ]
+  },
+  {
+    "id": "c010",
+    "name": "Rohan De Silva",
+    "sourceCountry": "Sri Lanka",
+    "sourceFlag": "🇱🇰",
+    "destinationCountry": "Australia",
+    "destinationFlag": "🇦🇺",
+    "visaType": "Student Subclass 500",
+    "university": "University of Queensland",
+    "course": "Bachelor of Engineering (Civil)",
+    "qualityScore": 82,
+    "approvalProbability": 76,
+    "status": "Ready to Submit",
+    "submissionDate": "2026-05-30",
+    "factors": {
+      "financialStrength": 85,
+      "genuineTemporaryEntrant": 78,
+      "academicFit": 88,
+      "englishProficiency": 82,
+      "immigrationHistory": 90,
+      "tiesHomeCountry": 70
+    },
+    "documents": [
+      { "name": "Confirmation of Enrolment", "status": "complete" },
+      { "name": "IELTS (7.5)", "status": "complete" },
+      { "name": "Financial Evidence", "status": "complete" },
+      { "name": "GTE Statement", "status": "complete" },
+      { "name": "OSHC", "status": "complete" }
+    ],
+    "notes": "Well-prepared application. Father is a civil engineer — course alignment is strong for GTE. Ready to lodge.",
+    "timeline": [
+      { "date": "2026-04-28", "event": "Client onboarded", "type": "info" },
+      { "date": "2026-05-04", "event": "All documents verified", "type": "success" }
+    ]
+  },
+  {
+    "id": "c011",
+    "name": "Linh Tran",
+    "sourceCountry": "Vietnam",
+    "sourceFlag": "🇻🇳",
+    "destinationCountry": "New Zealand",
+    "destinationFlag": "🇳🇿",
+    "visaType": "Fee Paying Student Visa",
+    "university": "Victoria University of Wellington",
+    "course": "Master of Architecture",
+    "qualityScore": 88,
+    "approvalProbability": 85,
+    "status": "Submitted",
+    "submissionDate": "2026-03-28",
+    "factors": {
+      "financialStrength": 92,
+      "genuineTemporaryEntrant": 86,
+      "academicFit": 92,
+      "englishProficiency": 88,
+      "immigrationHistory": 94,
+      "tiesHomeCountry": 75
+    },
+    "documents": [
+      { "name": "Offer Letter", "status": "complete" },
+      { "name": "IELTS (7.5)", "status": "complete" },
+      { "name": "Portfolio", "status": "complete" },
+      { "name": "Financial Evidence", "status": "complete" },
+      { "name": "Police Clearance", "status": "complete" }
+    ],
+    "notes": "Excellent application. Architecture portfolio is outstanding. Submitted 28 March — awaiting outcome.",
+    "timeline": [
+      { "date": "2026-03-15", "event": "Client onboarded", "type": "info" },
+      { "date": "2026-03-25", "event": "All documents verified", "type": "success" },
+      { "date": "2026-03-28", "event": "Application lodged", "type": "success" }
+    ]
+  },
+  {
+    "id": "c012",
+    "name": "Suraj Pradhan",
+    "sourceCountry": "India",
+    "sourceFlag": "🇮🇳",
+    "destinationCountry": "Canada",
+    "destinationFlag": "🇨🇦",
+    "visaType": "Study Permit (SDS)",
+    "university": "University of Waterloo",
+    "course": "Master of Applied Science",
+    "qualityScore": 72,
+    "approvalProbability": 58,
+    "status": "At Risk",
+    "submissionDate": "2026-05-08",
+    "factors": {
+      "financialStrength": 65,
+      "genuineTemporaryEntrant": 68,
+      "academicFit": 82,
+      "englishProficiency": 78,
+      "immigrationHistory": 72,
+      "tiesHomeCountry": 52
+    },
+    "documents": [
+      { "name": "Acceptance Letter", "status": "complete" },
+      { "name": "IELTS Results", "status": "complete" },
+      { "name": "GIC Confirmation", "status": "complete" },
+      { "name": "Study Plan", "status": "in_review" }
+    ],
+    "notes": "Canada SDS refusal rates for India very high right now (52%). Study plan needs substantial strengthening. GIC set up but financial evidence beyond GIC is weak. Flag for senior review before submission.",
+    "timeline": [
+      { "date": "2026-04-22", "event": "Client onboarded", "type": "info" },
+      { "date": "2026-04-30", "event": "GIC confirmed", "type": "success" },
+      { "date": "2026-05-02", "event": "At-risk flag raised — Canada refusal trend", "type": "warning" }
+    ]
+  }
+]

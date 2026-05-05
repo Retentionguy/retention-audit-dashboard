@@ -1,0 +1,170 @@
+[
+  {
+    "id": "sm-in",
+    "country": "India",
+    "flag": "🇮🇳",
+    "region": "South Asia",
+    "studentVolume": 142000,
+    "yoyGrowth": 8.4,
+    "topDestination": "Canada",
+    "topDestinationShare": 38,
+    "sentimentTrend": "stable",
+    "avgAgentFee": 1800,
+    "destinations": [
+      { "country": "Canada", "share": 38 },
+      { "country": "Australia", "share": 29 },
+      { "country": "UK", "share": 22 },
+      { "country": "New Zealand", "share": 11 }
+    ],
+    "primaryMotivations": [
+      "Post-study work rights",
+      "PR pathway",
+      "ROI on qualification",
+      "Family network already abroad"
+    ],
+    "topCourses": ["IT / Computer Science", "MBA / Management", "Engineering", "Health Sciences"],
+    "avgIELTS": 6.8,
+    "challengeFactors": ["High Canada refusal rates", "GTE scrutiny in Australia", "Financial documentation quality"],
+    "insight": "Canada refusal rates hitting 52% are redirecting significant volumes back to Australia and UK. Agents reporting 30% increase in AU subclass 500 inquiries from India in Q1 2026."
+  },
+  {
+    "id": "sm-np",
+    "country": "Nepal",
+    "flag": "🇳🇵",
+    "region": "South Asia",
+    "studentVolume": 38000,
+    "yoyGrowth": 12.1,
+    "topDestination": "Australia",
+    "topDestinationShare": 44,
+    "sentimentTrend": "growing",
+    "avgAgentFee": 1400,
+    "destinations": [
+      { "country": "Australia", "share": 44 },
+      { "country": "Canada", "share": 28 },
+      { "country": "UK", "share": 18 },
+      { "country": "New Zealand", "share": 10 }
+    ],
+    "primaryMotivations": [
+      "Economic opportunity abroad",
+      "PR pathway",
+      "Quality of education",
+      "Escape limited local job market"
+    ],
+    "topCourses": ["Nursing / Healthcare", "IT", "Hospitality", "Business"],
+    "avgIELTS": 6.2,
+    "challengeFactors": ["Weak home country ties evidence", "Financial insufficiency", "Low IELTS scores"],
+    "insight": "Fastest-growing source market in the AU/NZ corridor. Nursing and healthcare courses in high demand due to AU skills shortage pathway. Average application quality lower than India — agents need to invest more time in GTE preparation."
+  },
+  {
+    "id": "sm-lk",
+    "country": "Sri Lanka",
+    "flag": "🇱🇰",
+    "region": "South Asia",
+    "studentVolume": 18000,
+    "yoyGrowth": 15.3,
+    "topDestination": "Australia",
+    "topDestinationShare": 41,
+    "sentimentTrend": "growing",
+    "avgAgentFee": 1600,
+    "destinations": [
+      { "country": "Australia", "share": 41 },
+      { "country": "UK", "share": 32 },
+      { "country": "Canada", "share": 16 },
+      { "country": "New Zealand", "share": 11 }
+    ],
+    "primaryMotivations": [
+      "Economic instability post-2022 crisis",
+      "PR pathway",
+      "Quality of life",
+      "Post-study work rights"
+    ],
+    "topCourses": ["Engineering", "IT", "Accounting / Finance", "MBA"],
+    "avgIELTS": 6.9,
+    "challengeFactors": ["Post-economic crisis financial evidence quality", "UK UKVI elevated scrutiny", "Recent surge causing increased DHA attention"],
+    "insight": "Post-2022 economic crisis driving surge in study abroad intent. Strong academic calibre but financial evidence often complicated by Sri Lanka banking instability. UK seeing elevated refusals — agents should ensure financial maintenance well exceeds minimum."
+  },
+  {
+    "id": "sm-vn",
+    "country": "Vietnam",
+    "flag": "🇻🇳",
+    "region": "Southeast Asia",
+    "studentVolume": 56000,
+    "yoyGrowth": 6.2,
+    "topDestination": "Australia",
+    "topDestinationShare": 46,
+    "sentimentTrend": "stable",
+    "avgAgentFee": 2100,
+    "destinations": [
+      { "country": "Australia", "share": 46 },
+      { "country": "New Zealand", "share": 22 },
+      { "country": "Canada", "share": 18 },
+      { "country": "UK", "share": 14 }
+    ],
+    "primaryMotivations": [
+      "Quality of education",
+      "English language proficiency",
+      "Business network building",
+      "Lifestyle aspiration"
+    ],
+    "topCourses": ["Business / Commerce", "Engineering", "Architecture / Design", "IT"],
+    "avgIELTS": 7.1,
+    "challengeFactors": ["Canada refusal rates rising for VN applicants", "Elevated NZ processing for some profiles"],
+    "insight": "Highest average application quality in the SE Asia corridor. Vietnamese students tend to have stronger financial evidence and clearer study intent. NZ extended post-study work rights making it increasingly attractive vs Australia."
+  },
+  {
+    "id": "sm-id",
+    "country": "Indonesia",
+    "flag": "🇮🇩",
+    "region": "Southeast Asia",
+    "studentVolume": 44000,
+    "yoyGrowth": 9.8,
+    "topDestination": "Australia",
+    "topDestinationShare": 52,
+    "sentimentTrend": "growing",
+    "avgAgentFee": 1900,
+    "destinations": [
+      { "country": "Australia", "share": 52 },
+      { "country": "UK", "share": 24 },
+      { "country": "New Zealand", "share": 14 },
+      { "country": "Canada", "share": 10 }
+    ],
+    "primaryMotivations": [
+      "Geographic proximity to Australia",
+      "Strong bilateral ties",
+      "Quality of education",
+      "Business family networks in Australia"
+    ],
+    "topCourses": ["Business / MBA", "Law", "Medicine / Health", "Engineering"],
+    "avgIELTS": 6.6,
+    "challengeFactors": ["GTE assessment — proximity creates scrutiny", "AU processing times extended for ID applicants"],
+    "insight": "Geographic and cultural proximity to Australia makes AU the dominant destination. Indonesian applicants often come from business-owning families — strong financial profiles but proximity can create GTE questions. Generally good quality market."
+  },
+  {
+    "id": "sm-fj",
+    "country": "Fiji",
+    "flag": "🇫🇯",
+    "region": "Pacific",
+    "studentVolume": 4200,
+    "yoyGrowth": 18.5,
+    "topDestination": "Australia",
+    "topDestinationShare": 58,
+    "sentimentTrend": "growing",
+    "avgAgentFee": 1200,
+    "destinations": [
+      { "country": "Australia", "share": 58 },
+      { "country": "New Zealand", "share": 34 },
+      { "country": "UK", "share": 5 },
+      { "country": "Canada", "share": 3 }
+    ],
+    "primaryMotivations": [
+      "Limited local higher education options",
+      "Pacific labour mobility pathways",
+      "Family connections in AU/NZ",
+      "Climate and lifestyle"
+    ],
+    "topCourses": ["Nursing", "Agriculture", "Teaching / Education", "Business"],
+    "avgIELTS": 6.1,
+    "challengeFactors": ["Small market — fewer agent resources", "Income documentation inconsistent", "Limited range of eligible courses"],
+    "insight": "Small but fastest-growing market in the Pacific corridor. Pacific-specific visa pathways (Pacific Australia Labour Mobility) create unique overlap with study pathways. NZ Pacific access schemes may make NZ the stronger destination play."
+  }
+]
