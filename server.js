@@ -1,10 +1,16 @@
 const express = require('express');
 const path = require('path');
-const { getDb, initSchema } = require('./database/schema');
-const emailTemplate = require('./email/template');
+const crypto = require('crypto');
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
+const { getDb, initSchema } = require('./database/pte-schema');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+const JWT_SECRET = process.env.JWT_SECRET || 'pte-prep-secret-2026-change-in-production';
+const SETTLESMART_KEY = process.env.SETTLESMART_KEY || '';
+const SETTLESMART_SECRET = process.env.SETTLESMART_SECRET || '';
+const SETTLESMART_BASE = process.env.SETTLESMART_BASE || 'https://api.settlesmart.com.au/v1';
 
 const db = getDb();
 initSchema(db);
@@ -12,319 +18,606 @@ initSchema(db);
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
-// ─── Helpers ────────────────────────────────────────────────────────────────
+// ─── Auth middleware ─────────────────────────────────────────────────────────
 
-function dateRange(daysBack) {
-  const to = new Date('2026-05-01');
-  const from = new Date(to);
-  from.setDate(from.getDate() - daysBack);
-  return {
-    from: from.toISOString().slice(0, 10),
-    to: to.toISOString().slice(0, 10),
-  };
+function requireAuth(req, res, next) {
+  const header = req.headers.authorization || '';
+  const token = header.replace('Bearer ', '');
+  if (!token) return res.status(401).json({ error: 'Unauthorized' });
+  try {
+    req.user = jwt.verify(token, JWT_SECRET);
+    next();
+  } catch {
+    res.status(401).json({ error: 'Invalid token' });
+  }
 }
 
-// ─── API: Summary metrics ────────────────────────────────────────────────────
-
-app.get('/api/summary', (req, res) => {
-  const period = parseInt(req.query.period || '30');
-  const { from, to } = dateRange(period);
-  const prevFrom = (() => {
-    const d = new Date(from);
-    d.setDate(d.getDate() - period);
-    return d.toISOString().slice(0, 10);
-  })();
-
-  // Active customers at end of previous period = customers created before `from` and not churned before `from`
-  const startActive = db.prepare(`
-    SELECT COUNT(*) as count, COALESCE(SUM(mrr), 0) as mrr
-    FROM customers
-    WHERE created_at <= ? AND (churned_at IS NULL OR churned_at > ?)
-  `).get(from, from);
-
-  // Churned this period
-  const churned = db.prepare(`
-    SELECT COUNT(*) as count, COALESCE(SUM(mrr), 0) as mrr
-    FROM customers
-    WHERE churned_at >= ? AND churned_at <= ?
-  `).get(from, to);
-
-  // New customers this period
-  const newCustomers = db.prepare(`
-    SELECT COUNT(*) as count, COALESCE(SUM(mrr), 0) as mrr
-    FROM customers
-    WHERE created_at >= ? AND created_at <= ?
-  `).get(from, to);
-
-  // Current active
-  const currentActive = db.prepare(`
-    SELECT COUNT(*) as count, COALESCE(SUM(mrr), 0) as mrr
-    FROM customers WHERE status = 'active'
-  `).get();
-
-  // At-risk
-  const atRisk = db.prepare(`
-    SELECT COUNT(*) as count, COALESCE(SUM(mrr), 0) as mrr
-    FROM customers WHERE status = 'at_risk'
-  `).get();
-
-  // Churn rate = churned / start_active
-  const churnRate = startActive.count > 0
-    ? ((churned.count / startActive.count) * 100).toFixed(1)
-    : 0;
-
-  // Revenue churn rate
-  const revenueChurnRate = startActive.mrr > 0
-    ? ((churned.mrr / startActive.mrr) * 100).toFixed(1)
-    : 0;
-
-  // MRR metrics
-  const totalMrr = db.prepare(`SELECT COALESCE(SUM(mrr),0) as mrr FROM customers WHERE status='active'`).get().mrr;
-  const lostMrr = churned.mrr;
-  const newMrr = newCustomers.mrr;
-  const netMrr = totalMrr;
-
-  // Stickiness: avg DAU/MAU ratio for active customers over the period
-  const dau_mau = db.prepare(`
-    WITH daily AS (
-      SELECT customer_id, COUNT(DISTINCT session_date) as days_active
-      FROM sessions
-      WHERE session_date >= ? AND session_date <= ?
-        AND customer_id IN (SELECT id FROM customers WHERE status IN ('active','at_risk'))
-      GROUP BY customer_id
-    )
-    SELECT AVG(CAST(days_active AS REAL) / ?) as ratio
-    FROM daily
-  `).get(from, to, period);
-
-  const stickiness = ((dau_mau.ratio || 0) * 100).toFixed(1);
-
-  res.json({
-    period,
-    churnRate: parseFloat(churnRate),
-    revenueChurnRate: parseFloat(revenueChurnRate),
-    stickiness: parseFloat(stickiness),
-    activeCustomers: currentActive.count,
-    atRiskCustomers: atRisk.count,
-    atRiskMrr: atRisk.mrr,
-    churnedThisPeriod: churned.count,
-    newCustomers: newCustomers.count,
-    totalMrr,
-    lostMrr,
-    newMrr,
-    netMrrChange: newMrr - lostMrr,
+function requireAdmin(req, res, next) {
+  requireAuth(req, res, () => {
+    if (req.user.role !== 'admin') return res.status(403).json({ error: 'Forbidden' });
+    next();
   });
-});
+}
 
-// ─── API: Churn trend (weekly buckets) ──────────────────────────────────────
+// ─── Scoring engine ──────────────────────────────────────────────────────────
 
-app.get('/api/churn-trend', (req, res) => {
-  const weeks = parseInt(req.query.weeks || '12');
-  const buckets = [];
+function scoreAnswer(question, userAnswer) {
+  const type = question.type;
+  const answer = JSON.parse(question.answer || '{}');
+  const guide = JSON.parse(question.scoring_guide || '{}');
+  let score = 0;
+  let maxScore = question.points;
+  let feedback = '';
 
-  for (let i = weeks - 1; i >= 0; i--) {
-    const to = new Date('2026-05-01');
-    to.setDate(to.getDate() - i * 7);
-    const from = new Date(to);
-    from.setDate(from.getDate() - 6);
+  switch (type) {
+    case 'reading_rw_fill_blanks':
+    case 'reading_fill_blanks':
+    case 'listening_fill_blanks': {
+      const correctAnswers = answer.answers || [];
+      const userAnswers = userAnswer.answers || [];
+      const perBlank = guide.per_blank || 1;
+      maxScore = correctAnswers.length * perBlank;
+      correctAnswers.forEach(ca => {
+        const ua = userAnswers.find(a => a.id === ca.id);
+        if (ua && ua.word && ua.word.toLowerCase().trim() === ca.word.toLowerCase().trim()) {
+          score += perBlank;
+        }
+      });
+      feedback = `${score}/${maxScore} blanks correct`;
+      break;
+    }
 
-    const fromStr = from.toISOString().slice(0, 10);
-    const toStr = to.toISOString().slice(0, 10);
+    case 'reading_mcsa':
+    case 'listening_mcsa':
+    case 'listening_highlight_summary':
+    case 'listening_missing_word': {
+      maxScore = guide.total || 1;
+      if (userAnswer.selected === answer.correct) {
+        score = maxScore;
+        feedback = 'Correct!';
+      } else {
+        feedback = `Incorrect. The correct answer was: ${answer.correct}`;
+      }
+      break;
+    }
 
-    const startCount = db.prepare(`
-      SELECT COUNT(*) as count FROM customers
-      WHERE created_at <= ? AND (churned_at IS NULL OR churned_at > ?)
-    `).get(fromStr, fromStr).count;
+    case 'reading_mcma':
+    case 'listening_mcma': {
+      const correct = new Set(answer.correct || []);
+      const selected = new Set(userAnswer.selected || []);
+      const perCorrect = guide.per_correct || 1;
+      const perWrong = guide.per_wrong || -1;
+      maxScore = correct.size * perCorrect;
+      selected.forEach(s => {
+        if (correct.has(s)) score += perCorrect;
+        else score += perWrong;
+      });
+      score = Math.max(0, Math.min(score, maxScore));
+      feedback = `You selected ${selected.size} option(s). Correct: ${[...correct].join(', ')}`;
+      break;
+    }
 
-    const churned = db.prepare(`
-      SELECT COUNT(*) as count, COALESCE(SUM(mrr),0) as mrr
-      FROM customers WHERE churned_at >= ? AND churned_at <= ?
-    `).get(fromStr, toStr);
+    case 'reading_reorder': {
+      const correctOrder = answer.order || [];
+      const userOrder = userAnswer.order || [];
+      maxScore = Math.max(0, correctOrder.length - 1);
+      // Score adjacent pairs
+      for (let i = 0; i < correctOrder.length - 1; i++) {
+        const ci = userOrder.indexOf(correctOrder[i]);
+        const cj = userOrder.indexOf(correctOrder[i + 1]);
+        if (ci !== -1 && cj !== -1 && cj === ci + 1) score++;
+      }
+      feedback = `${score}/${maxScore} adjacent pairs correct`;
+      break;
+    }
 
-    buckets.push({
-      week: `W${weeks - i}`,
-      label: fromStr,
-      churnRate: startCount > 0 ? parseFloat(((churned.count / startCount) * 100).toFixed(2)) : 0,
-      churnedCount: churned.count,
-      mrrLost: churned.mrr,
-    });
+    case 'listening_highlight_incorrect': {
+      const incorrect = new Set(answer.incorrect_words || []);
+      const selected = new Set(userAnswer.selected || []);
+      const perCorrect = guide.per_correct || 1;
+      const perWrong = guide.per_wrong || -1;
+      maxScore = incorrect.size * perCorrect;
+      selected.forEach(w => {
+        if (incorrect.has(w)) score += perCorrect;
+        else score += perWrong;
+      });
+      score = Math.max(0, Math.min(score, maxScore));
+      feedback = `Identified ${[...selected].filter(w => incorrect.has(w)).length}/${incorrect.size} incorrect words`;
+      break;
+    }
+
+    case 'listening_write_dictation': {
+      const correctText = (answer.text || '').toLowerCase().trim();
+      const userText = (userAnswer.text || '').toLowerCase().trim();
+      const correctWords = correctText.split(/\s+/).filter(Boolean);
+      const userWords = userText.split(/\s+/).filter(Boolean);
+      maxScore = correctWords.length;
+      const userWordSet = new Set(userWords);
+      correctWords.forEach(w => { if (userWordSet.has(w)) score++; });
+      const pct = maxScore > 0 ? Math.round((score / maxScore) * 100) : 0;
+      feedback = `${pct}% accurate (${score}/${maxScore} words correct)`;
+      break;
+    }
+
+    // Subjective types — heuristic scoring
+    case 'writing_summarize_text':
+    case 'listening_summarize': {
+      const text = (userAnswer.text || '').trim();
+      const words = text.split(/\s+/).filter(Boolean).length;
+      maxScore = guide.content + guide.form + guide.grammar + guide.vocabulary + guide.spelling;
+
+      // Form check: single sentence, 5-75 words
+      const formScore = (words >= 5 && words <= 75 && text.endsWith('.')) ? guide.form : 0;
+
+      // Content: check key points coverage
+      const keyPoints = answer.key_points || [];
+      const textLower = text.toLowerCase();
+      const covered = keyPoints.filter(kp =>
+        kp.toLowerCase().split(' ').some(w => w.length > 4 && textLower.includes(w))
+      ).length;
+      const contentScore = Math.round((covered / Math.max(keyPoints.length, 1)) * guide.content);
+
+      // Grammar + vocabulary heuristic based on word variety
+      const uniqueWords = new Set(text.toLowerCase().split(/\s+/)).size;
+      const grammarScore = words > 10 ? Math.min(guide.grammar, 2) : 1;
+      const vocabScore = uniqueWords / words > 0.7 ? guide.vocabulary : Math.floor(guide.vocabulary / 2);
+      const spellingScore = guide.spelling; // assume correct (no spell checker)
+
+      score = formScore + contentScore + grammarScore + vocabScore + spellingScore;
+      score = Math.min(score, maxScore);
+      feedback = `Word count: ${words}. Key points covered: ${covered}/${keyPoints.length}`;
+      break;
+    }
+
+    case 'writing_essay': {
+      const text = (userAnswer.text || '').trim();
+      const words = text.split(/\s+/).filter(Boolean).length;
+      maxScore = (guide.content || 3) + (guide.form || 2) + (guide.grammar || 2) +
+                 (guide.vocabulary || 2) + (guide.spelling || 2) + (guide.cohesion || 2);
+
+      // Form: 200-300 words
+      const formScore = words >= 200 && words <= 300 ? guide.form : words > 100 ? 1 : 0;
+      // Content: keyword coverage
+      const args = answer.key_arguments || [];
+      const textLower = text.toLowerCase();
+      const coveredArgs = args.filter(a =>
+        a.toLowerCase().split(' ').some(w => w.length > 4 && textLower.includes(w))
+      ).length;
+      const contentScore = Math.round((coveredArgs / Math.max(args.length, 1)) * (guide.content || 3));
+      const grammarScore = words > 100 ? guide.grammar : 1;
+      const vocabScore = guide.vocabulary;
+      const cohesionScore = words > 150 ? guide.cohesion : 0;
+      const spellingScore = guide.spelling;
+
+      score = formScore + contentScore + grammarScore + vocabScore + cohesionScore + spellingScore;
+      score = Math.min(score, maxScore);
+      feedback = `Word count: ${words}/200-300 required. Arguments covered: ${coveredArgs}/${args.length}`;
+      break;
+    }
+
+    // Speaking types — cannot auto-score audio; give partial credit
+    case 'speaking_read_aloud':
+    case 'speaking_repeat_sentence':
+    case 'speaking_describe_image':
+    case 'speaking_retell_lecture':
+    case 'speaking_answer_short': {
+      maxScore = question.points;
+      // Check if user submitted a recording
+      if (userAnswer.recorded) {
+        score = Math.round(maxScore * 0.6); // baseline score; real scoring needs AI
+        feedback = 'Recording submitted. Score estimated — detailed AI analysis pending.';
+      } else {
+        score = 0;
+        feedback = 'No recording submitted.';
+      }
+      break;
+    }
+
+    default:
+      score = 0;
+      feedback = 'Unknown question type';
   }
 
-  res.json(buckets);
+  return { score: Math.max(0, score), maxScore, feedback };
+}
+
+// ─── Auth routes ─────────────────────────────────────────────────────────────
+
+app.post('/api/auth/register', async (req, res) => {
+  const { name, email, password } = req.body;
+  if (!name || !email || !password) return res.status(400).json({ error: 'All fields required' });
+  if (password.length < 8) return res.status(400).json({ error: 'Password must be at least 8 characters' });
+
+  try {
+    const hash = await bcrypt.hash(password, 12);
+    const stmt = db.prepare('INSERT INTO users (name, email, password_hash) VALUES (?, ?, ?)');
+    const result = stmt.run(name.trim(), email.toLowerCase().trim(), hash);
+    const user = db.prepare('SELECT id, name, email, plan, credits FROM users WHERE id = ?').get(result.lastInsertRowid);
+    const token = jwt.sign({ id: user.id, email: user.email, role: 'user' }, JWT_SECRET, { expiresIn: '7d' });
+    res.json({ token, user });
+  } catch (e) {
+    if (e.message.includes('UNIQUE')) return res.status(409).json({ error: 'Email already registered' });
+    res.status(500).json({ error: 'Registration failed' });
+  }
 });
 
-// ─── API: Customer list with health scores ───────────────────────────────────
+app.post('/api/auth/login', async (req, res) => {
+  const { email, password } = req.body;
+  if (!email || !password) return res.status(400).json({ error: 'Email and password required' });
 
-app.get('/api/customers', (req, res) => {
-  const { status, sort = 'mrr', order = 'desc' } = req.query;
-  const validCols = { mrr: 'c.mrr', name: 'c.name', created_at: 'c.created_at', status: 'c.status' };
-  const orderCol = validCols[sort] || 'c.mrr';
-  const orderDir = order === 'asc' ? 'ASC' : 'DESC';
+  const user = db.prepare('SELECT * FROM users WHERE email = ?').get(email.toLowerCase().trim());
+  if (!user) return res.status(401).json({ error: 'Invalid credentials' });
 
-  let where = '';
+  const valid = await bcrypt.compare(password, user.password_hash);
+  if (!valid) return res.status(401).json({ error: 'Invalid credentials' });
+
+  db.prepare('UPDATE users SET last_login = datetime(\'now\') WHERE id = ?').run(user.id);
+  const token = jwt.sign({ id: user.id, email: user.email, role: 'user' }, JWT_SECRET, { expiresIn: '7d' });
+  const { password_hash, ...safeUser } = user;
+  res.json({ token, user: safeUser });
+});
+
+app.get('/api/auth/me', requireAuth, (req, res) => {
+  const user = db.prepare('SELECT id, name, email, plan, credits, plan_expires_at, created_at, last_login FROM users WHERE id = ?').get(req.user.id);
+  if (!user) return res.status(404).json({ error: 'User not found' });
+
+  const attemptCount = db.prepare('SELECT COUNT(*) as c FROM attempts WHERE user_id = ?').get(req.user.id).c;
+  const completedCount = db.prepare('SELECT COUNT(*) as c FROM attempts WHERE user_id = ? AND status = ?').get(req.user.id, 'completed').c;
+
+  res.json({ ...user, attemptCount, completedCount });
+});
+
+// ─── Tests routes ─────────────────────────────────────────────────────────────
+
+app.get('/api/tests', requireAuth, (req, res) => {
+  const { type, difficulty } = req.query;
+  let where = '1=1';
   const params = [];
-  if (status && status !== 'all') {
-    where = 'WHERE c.status = ?';
-    params.push(status);
-  }
 
-  const customers = db.prepare(`
-    SELECT c.*,
-      (SELECT COUNT(DISTINCT session_date) FROM sessions s WHERE s.customer_id = c.id AND s.session_date >= date('2026-05-01', '-30 days')) as days_active_30,
-      (SELECT COUNT(DISTINCT session_date) FROM sessions s WHERE s.customer_id = c.id AND s.session_date >= date('2026-05-01', '-90 days')) as days_active_90,
-      (SELECT COUNT(*) FROM events e WHERE e.customer_id = c.id AND e.event_date >= date('2026-05-01', '-30 days')) as events_30d
-    FROM customers c
-    ${where}
-    ORDER BY ${orderCol} ${orderDir}
-  `).all(...params);
+  if (type) { where += ' AND type = ?'; params.push(type); }
+  if (difficulty) { where += ' AND difficulty = ?'; params.push(difficulty); }
 
-  const enriched = customers.map(c => {
-    const stickiness30 = c.days_active_30 / 30;
-    const healthScore = c.status === 'churned' ? 0
-      : c.status === 'at_risk' ? Math.min(30 + c.events_30d * 2, 50)
-      : Math.min(Math.round(40 + stickiness30 * 50 + c.events_30d * 0.5), 99);
+  const tests = db.prepare(`SELECT * FROM tests WHERE ${where} ORDER BY id`).all(...params);
 
-    return {
-      ...c,
-      healthScore,
-      stickiness30d: parseFloat((stickiness30 * 100).toFixed(1)),
-    };
-  });
+  // Attach user's attempt history for each test
+  const testIds = tests.map(t => t.id);
+  const attempts = testIds.length
+    ? db.prepare(`
+        SELECT test_id, COUNT(*) as attempts, MAX(total_score) as best_score, MAX(completed_at) as last_attempt
+        FROM attempts WHERE user_id = ? AND test_id IN (${testIds.map(() => '?').join(',')}) AND status = 'completed'
+        GROUP BY test_id
+      `).all(req.user.id, ...testIds)
+    : [];
 
-  res.json(enriched);
-});
+  const attemptsMap = {};
+  attempts.forEach(a => { attemptsMap[a.test_id] = a; });
 
-// ─── API: Stickiness breakdown ───────────────────────────────────────────────
-
-app.get('/api/stickiness', (req, res) => {
-  const rows = db.prepare(`
-    SELECT
-      c.id, c.name, c.plan, c.mrr, c.status,
-      COUNT(DISTINCT CASE WHEN s.session_date >= date('2026-05-01', '-7 days')  THEN s.session_date END) as dau7,
-      COUNT(DISTINCT CASE WHEN s.session_date >= date('2026-05-01', '-30 days') THEN s.session_date END) as dau30,
-      COUNT(DISTINCT CASE WHEN s.session_date >= date('2026-05-01', '-90 days') THEN s.session_date END) as dau90,
-      AVG(s.features_used) as avg_features
-    FROM customers c
-    LEFT JOIN sessions s ON s.customer_id = c.id
-    WHERE c.status IN ('active', 'at_risk')
-    GROUP BY c.id
-    ORDER BY dau30 DESC
-  `).all();
-
-  res.json(rows.map(r => ({
-    ...r,
-    stickiness7d:  parseFloat(((r.dau7  / 7)  * 100).toFixed(1)),
-    stickiness30d: parseFloat(((r.dau30 / 30) * 100).toFixed(1)),
-    stickiness90d: parseFloat(((r.dau90 / 90) * 100).toFixed(1)),
-    avg_features:  parseFloat((r.avg_features || 0).toFixed(1)),
+  res.json(tests.map(t => ({
+    ...t,
+    userAttempts: attemptsMap[t.id]?.attempts || 0,
+    bestScore: attemptsMap[t.id]?.best_score || null,
+    lastAttempt: attemptsMap[t.id]?.last_attempt || null,
   })));
 });
 
-// ─── API: Churn reasons breakdown ────────────────────────────────────────────
+app.get('/api/tests/:id', requireAuth, (req, res) => {
+  const test = db.prepare('SELECT * FROM tests WHERE id = ?').get(req.params.id);
+  if (!test) return res.status(404).json({ error: 'Test not found' });
 
-app.get('/api/churn-reasons', (req, res) => {
+  const questions = db.prepare(`
+    SELECT id, section, type, order_no, title, content, scoring_guide, points, time_limit,
+           CASE WHEN section IN ('listening') THEN audio_text ELSE NULL END as audio_text
+    FROM questions WHERE test_id = ? ORDER BY order_no
+  `).all(test.id);
+
+  res.json({
+    ...test,
+    questions: questions.map(q => ({
+      ...q,
+      content: JSON.parse(q.content || '{}'),
+      scoring_guide: JSON.parse(q.scoring_guide || '{}'),
+    }))
+  });
+});
+
+// ─── Attempt routes ──────────────────────────────────────────────────────────
+
+app.post('/api/attempts', requireAuth, (req, res) => {
+  const { test_id } = req.body;
+  if (!test_id) return res.status(400).json({ error: 'test_id required' });
+
+  const test = db.prepare('SELECT * FROM tests WHERE id = ?').get(test_id);
+  if (!test) return res.status(404).json({ error: 'Test not found' });
+
+  const user = db.prepare('SELECT * FROM users WHERE id = ?').get(req.user.id);
+
+  // Access check
+  const now = new Date();
+  const isSubscribed = user.plan === 'monthly' || user.plan === 'annual';
+  const planValid = user.plan_expires_at && new Date(user.plan_expires_at) > now;
+
+  if (!(isSubscribed && planValid) && user.plan !== 'free') {
+    // Credits plan
+    if (user.credits < test.credit_cost) {
+      return res.status(402).json({ error: 'Insufficient credits', required: test.credit_cost, available: user.credits });
+    }
+    db.prepare('UPDATE users SET credits = credits - ? WHERE id = ?').run(test.credit_cost, user.id);
+  } else if (user.plan === 'free') {
+    // Free users get 2 free attempts total
+    const totalAttempts = db.prepare('SELECT COUNT(*) as c FROM attempts WHERE user_id = ?').get(user.id).c;
+    if (totalAttempts >= 2) {
+      return res.status(402).json({ error: 'Free limit reached. Please subscribe to continue.', freeLimit: true });
+    }
+  }
+
+  const maxScore = db.prepare('SELECT COALESCE(SUM(points), 0) as total FROM questions WHERE test_id = ?').get(test_id).total;
+
+  const result = db.prepare(`
+    INSERT INTO attempts (user_id, test_id, max_score) VALUES (?, ?, ?)
+  `).run(req.user.id, test_id, maxScore);
+
+  res.json({ attempt_id: result.lastInsertRowid, test_id, max_score: maxScore });
+});
+
+app.post('/api/attempts/:id/answer', requireAuth, (req, res) => {
+  const attempt = db.prepare('SELECT * FROM attempts WHERE id = ? AND user_id = ?').get(req.params.id, req.user.id);
+  if (!attempt) return res.status(404).json({ error: 'Attempt not found' });
+  if (attempt.status !== 'in_progress') return res.status(400).json({ error: 'Attempt already completed' });
+
+  const { question_id, user_answer } = req.body;
+  const question = db.prepare('SELECT * FROM questions WHERE id = ?').get(question_id);
+  if (!question) return res.status(404).json({ error: 'Question not found' });
+
+  const { score, maxScore, feedback } = scoreAnswer(question, user_answer || {});
+
+  // Upsert answer
+  const existing = db.prepare('SELECT id FROM user_answers WHERE attempt_id = ? AND question_id = ?').get(attempt.id, question_id);
+  if (existing) {
+    db.prepare('UPDATE user_answers SET user_answer = ?, score = ?, max_score = ?, feedback = ?, answered_at = datetime(\'now\') WHERE id = ?')
+      .run(JSON.stringify(user_answer), score, maxScore, feedback, existing.id);
+  } else {
+    db.prepare('INSERT INTO user_answers (attempt_id, question_id, user_answer, score, max_score, feedback) VALUES (?, ?, ?, ?, ?, ?)')
+      .run(attempt.id, question_id, JSON.stringify(user_answer), score, maxScore, feedback);
+  }
+
+  // Update attempt progress
+  db.prepare('UPDATE attempts SET current_question = ? WHERE id = ?').run(req.body.question_index || 0, attempt.id);
+
+  res.json({ score, maxScore, feedback });
+});
+
+app.post('/api/attempts/:id/complete', requireAuth, (req, res) => {
+  const attempt = db.prepare('SELECT * FROM attempts WHERE id = ? AND user_id = ?').get(req.params.id, req.user.id);
+  if (!attempt) return res.status(404).json({ error: 'Attempt not found' });
+
+  // Tally scores
+  const answers = db.prepare('SELECT * FROM user_answers WHERE attempt_id = ?').all(attempt.id);
+  const questions = db.prepare('SELECT * FROM questions WHERE test_id = ?').all(attempt.test_id);
+
+  const sectionScores = { speaking: { score: 0, max: 0 }, writing: { score: 0, max: 0 }, reading: { score: 0, max: 0 }, listening: { score: 0, max: 0 } };
+
+  questions.forEach(q => {
+    const ua = answers.find(a => a.question_id === q.id);
+    const s = sectionScores[q.section];
+    s.max += ua ? ua.max_score : q.points;
+    s.score += ua ? ua.score : 0;
+  });
+
+  const totalScore = Object.values(sectionScores).reduce((sum, s) => sum + s.score, 0);
+  const maxScore = Object.values(sectionScores).reduce((sum, s) => sum + s.max, 0);
+
+  db.prepare(`
+    UPDATE attempts SET status = 'completed', completed_at = datetime('now'),
+    total_score = ?, max_score = ?, section_scores = ?, time_spent = ?
+    WHERE id = ?
+  `).run(totalScore, maxScore, JSON.stringify(sectionScores), req.body.time_spent || 0, attempt.id);
+
+  res.json({ total_score: totalScore, max_score: maxScore, section_scores: sectionScores });
+});
+
+app.get('/api/attempts/:id/results', requireAuth, (req, res) => {
+  const attempt = db.prepare('SELECT * FROM attempts WHERE id = ? AND user_id = ?').get(req.params.id, req.user.id);
+  if (!attempt) return res.status(404).json({ error: 'Attempt not found' });
+
+  const test = db.prepare('SELECT * FROM tests WHERE id = ?').get(attempt.test_id);
+  const answers = db.prepare(`
+    SELECT ua.*, q.section, q.type, q.title, q.content, q.answer, q.order_no
+    FROM user_answers ua
+    JOIN questions q ON q.id = ua.question_id
+    WHERE ua.attempt_id = ?
+    ORDER BY q.order_no
+  `).all(attempt.id);
+
+  const sectionScores = attempt.section_scores ? JSON.parse(attempt.section_scores) : {};
+  const pct = attempt.max_score > 0 ? Math.round((attempt.total_score / attempt.max_score) * 100) : 0;
+
+  // PTE score bands (approximate)
+  const pteBand = pct >= 90 ? 90 : pct >= 79 ? 79 : pct >= 65 ? 65 : pct >= 50 ? 50 : pct >= 36 ? 36 : 10;
+
+  res.json({
+    attempt: { ...attempt, section_scores: sectionScores },
+    test,
+    answers: answers.map(a => ({
+      ...a,
+      content: JSON.parse(a.content || '{}'),
+      answer: JSON.parse(a.answer || '{}'),
+      user_answer: JSON.parse(a.user_answer || '{}'),
+    })),
+    summary: { pct, pteBand },
+  });
+});
+
+// ─── User stats ──────────────────────────────────────────────────────────────
+
+app.get('/api/user/stats', requireAuth, (req, res) => {
+  const attempts = db.prepare(`
+    SELECT a.*, t.title, t.type
+    FROM attempts a JOIN tests t ON t.id = a.test_id
+    WHERE a.user_id = ? AND a.status = 'completed'
+    ORDER BY a.completed_at DESC
+  `).all(req.user.id);
+
+  const sectionAvgs = { speaking: [], writing: [], reading: [], listening: [] };
+  attempts.forEach(a => {
+    if (!a.section_scores) return;
+    const ss = JSON.parse(a.section_scores);
+    Object.entries(ss).forEach(([sec, { score, max }]) => {
+      if (max > 0) sectionAvgs[sec].push(score / max * 100);
+    });
+  });
+
+  const avg = arr => arr.length ? Math.round(arr.reduce((s, v) => s + v, 0) / arr.length) : 0;
+
+  res.json({
+    totalAttempts: attempts.length,
+    recentAttempts: attempts.slice(0, 10),
+    sectionAverages: {
+      speaking: avg(sectionAvgs.speaking),
+      writing: avg(sectionAvgs.writing),
+      reading: avg(sectionAvgs.reading),
+      listening: avg(sectionAvgs.listening),
+    },
+  });
+});
+
+app.get('/api/user/history', requireAuth, (req, res) => {
   const rows = db.prepare(`
-    SELECT churn_reason, COUNT(*) as count, SUM(mrr) as mrr_lost
-    FROM customers
-    WHERE status = 'churned' AND churn_reason IS NOT NULL
-    GROUP BY churn_reason
-    ORDER BY count DESC
-  `).all();
+    SELECT a.id, a.started_at, a.completed_at, a.status, a.total_score, a.max_score, a.time_spent,
+           t.title, t.type, t.difficulty
+    FROM attempts a JOIN tests t ON t.id = a.test_id
+    WHERE a.user_id = ?
+    ORDER BY a.started_at DESC
+    LIMIT 50
+  `).all(req.user.id);
+
   res.json(rows);
 });
 
-// ─── API: Revenue timeline ────────────────────────────────────────────────────
+// ─── Subscription / Payment routes ───────────────────────────────────────────
 
-app.get('/api/revenue-timeline', (req, res) => {
-  const months = 6;
-  const result = [];
+const PLANS = {
+  monthly: { amount: 29.99, billing_cycle: 'monthly', credits: null, label: 'Monthly Unlimited' },
+  annual:  { amount: 199.99, billing_cycle: 'annual', credits: null, label: 'Annual Unlimited' },
+  credits_5:  { amount: 9.99,  credits: 5,  label: '5 Mock Credits' },
+  credits_15: { amount: 24.99, credits: 15, label: '15 Mock Credits' },
+  credits_30: { amount: 39.99, credits: 30, label: '30 Mock Credits' },
+};
 
-  for (let m = months - 1; m >= 0; m--) {
-    const d = new Date('2026-05-01');
-    d.setMonth(d.getMonth() - m);
-    const monthStr = d.toISOString().slice(0, 7); // YYYY-MM
+app.get('/api/plans', (req, res) => res.json(PLANS));
 
-    const activeRevenue = db.prepare(`
-      SELECT COALESCE(SUM(mrr), 0) as mrr FROM customers
-      WHERE created_at <= ? AND (churned_at IS NULL OR churned_at > ?)
-    `).get(`${monthStr}-28`, `${monthStr}-01`).mrr;
+app.post('/api/subscribe', requireAuth, async (req, res) => {
+  const { plan, redirect_url } = req.body;
+  if (!PLANS[plan]) return res.status(400).json({ error: 'Invalid plan' });
 
-    const churnedRevenue = db.prepare(`
-      SELECT COALESCE(SUM(mrr), 0) as mrr FROM customers
-      WHERE churned_at >= ? AND churned_at < ?
-    `).get(`${monthStr}-01`, `${monthStr}-31`).mrr;
+  const planInfo = PLANS[plan];
+  const txId = crypto.randomUUID();
 
-    result.push({
-      month: monthStr,
-      label: d.toLocaleString('default', { month: 'short', year: '2-digit' }),
-      mrr: parseFloat(activeRevenue.toFixed(0)),
-      churnedMrr: parseFloat(churnedRevenue.toFixed(0)),
-    });
+  // Record pending transaction
+  db.prepare(`
+    INSERT INTO transactions (user_id, amount, credits, type, gateway_ref)
+    VALUES (?, ?, ?, ?, ?)
+  `).run(req.user.id, planInfo.amount, planInfo.credits || 0,
+    planInfo.credits ? 'credit_purchase' : 'subscription', txId);
+
+  // If Settlesmart is configured, create a payment session
+  if (SETTLESMART_KEY) {
+    try {
+      const payload = {
+        reference: txId,
+        amount: planInfo.amount,
+        currency: 'AUD',
+        description: `PTE Prep - ${planInfo.label}`,
+        customer: { id: req.user.id, email: req.user.email },
+        redirect_url: redirect_url || `${req.protocol}://${req.get('host')}/dashboard.html?payment=success`,
+        webhook_url: `${req.protocol}://${req.get('host')}/api/webhook/settlesmart`,
+        metadata: { plan, user_id: req.user.id, tx_id: txId },
+      };
+      const response = await fetch(`${SETTLESMART_BASE}/payment-sessions`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${SETTLESMART_KEY}`,
+        },
+        body: JSON.stringify(payload),
+      });
+      const data = await response.json();
+      if (data.checkout_url) {
+        return res.json({ checkout_url: data.checkout_url, tx_id: txId });
+      }
+    } catch (e) {
+      console.error('Settlesmart error:', e.message);
+    }
   }
 
-  res.json(result);
-});
-
-// ─── Email report endpoint ────────────────────────────────────────────────────
-
-app.get('/api/email-report', (req, res) => {
-  const period = parseInt(req.query.period || '30');
-  const format = req.query.format || 'html';
-
-  // Gather all data inline
-  const { from, to } = dateRange(period);
-
-  const startActive = db.prepare(`SELECT COUNT(*) as c, COALESCE(SUM(mrr),0) as mrr FROM customers WHERE created_at <= ? AND (churned_at IS NULL OR churned_at > ?)`).get(from, from);
-  const churned = db.prepare(`SELECT COUNT(*) as c, COALESCE(SUM(mrr),0) as mrr FROM customers WHERE churned_at >= ? AND churned_at <= ?`).get(from, to);
-  const newC = db.prepare(`SELECT COUNT(*) as c, COALESCE(SUM(mrr),0) as mrr FROM customers WHERE created_at >= ? AND created_at <= ?`).get(from, to);
-  const atRisk = db.prepare(`SELECT COUNT(*) as c, COALESCE(SUM(mrr),0) as mrr FROM customers WHERE status='at_risk'`).get();
-  const totalMrr = db.prepare(`SELECT COALESCE(SUM(mrr),0) as mrr FROM customers WHERE status='active'`).get().mrr;
-
-  const churnRate = startActive.c > 0 ? ((churned.c / startActive.c) * 100).toFixed(1) : '0.0';
-  const revenueChurnRate = startActive.mrr > 0 ? ((churned.mrr / startActive.mrr) * 100).toFixed(1) : '0.0';
-
-  const dau_mau = db.prepare(`
-    WITH d AS (SELECT customer_id, COUNT(DISTINCT session_date) as days FROM sessions WHERE session_date >= ? AND session_date <= ? AND customer_id IN (SELECT id FROM customers WHERE status IN ('active','at_risk')) GROUP BY customer_id)
-    SELECT AVG(CAST(days AS REAL)/?) as ratio FROM d
-  `).get(from, to, period);
-  const stickiness = ((dau_mau.ratio || 0) * 100).toFixed(1);
-
-  const topAtRisk = db.prepare(`
-    SELECT name, company, plan, mrr FROM customers WHERE status='at_risk' ORDER BY mrr DESC LIMIT 5
-  `).all();
-
-  const recentChurns = db.prepare(`
-    SELECT name, company, plan, mrr, churned_at, churn_reason FROM customers WHERE status='churned' AND churned_at >= ? ORDER BY churned_at DESC LIMIT 5
-  `).all(from);
-
-  const metrics = {
-    period,
-    churnRate,
-    revenueChurnRate,
-    stickiness,
-    totalMrr,
-    lostMrr: churned.mrr,
-    netMrrChange: newC.mrr - churned.mrr,
-    activeCustomers: db.prepare(`SELECT COUNT(*) as c FROM customers WHERE status='active'`).get().c,
-    atRiskCount: atRisk.c,
-    atRiskMrr: atRisk.mrr,
-    churnedCount: churned.c,
-    newCount: newC.c,
-    topAtRisk,
-    recentChurns,
-    generatedAt: new Date('2026-05-01').toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }),
-  };
-
-  const html = emailTemplate(metrics);
-
-  if (format === 'json') {
-    return res.json(metrics);
+  // Demo mode: auto-approve (no real payment gateway configured)
+  if (!SETTLESMART_KEY) {
+    activatePlan(req.user.id, plan, txId);
+    return res.json({ success: true, demo: true, message: 'Payment simulated (demo mode)' });
   }
 
-  res.setHeader('Content-Type', 'text/html');
-  res.send(html);
+  res.status(502).json({ error: 'Payment gateway unavailable' });
 });
+
+app.post('/api/webhook/settlesmart', (req, res) => {
+  // Verify webhook signature
+  const sig = req.headers['x-settlesmart-signature'] || '';
+  if (SETTLESMART_SECRET) {
+    const expected = crypto.createHmac('sha256', SETTLESMART_SECRET)
+      .update(JSON.stringify(req.body)).digest('hex');
+    if (sig !== expected) return res.status(401).json({ error: 'Invalid signature' });
+  }
+
+  const { status, metadata } = req.body;
+  if (status === 'completed' && metadata) {
+    activatePlan(metadata.user_id, metadata.plan, metadata.tx_id);
+  }
+
+  res.json({ received: true });
+});
+
+function activatePlan(userId, plan, txId) {
+  const planInfo = PLANS[plan];
+  if (!planInfo) return;
+
+  const now = new Date();
+
+  if (planInfo.credits) {
+    db.prepare('UPDATE users SET plan = \'credits\', credits = credits + ? WHERE id = ?')
+      .run(planInfo.credits, userId);
+  } else {
+    const expires = new Date(now);
+    if (planInfo.billing_cycle === 'monthly') expires.setMonth(expires.getMonth() + 1);
+    else expires.setFullYear(expires.getFullYear() + 1);
+
+    db.prepare('UPDATE users SET plan = ?, plan_expires_at = ? WHERE id = ?')
+      .run(plan, expires.toISOString(), userId);
+
+    db.prepare('INSERT INTO subscriptions (user_id, plan, amount, billing_cycle, expires_at, gateway_ref) VALUES (?, ?, ?, ?, ?, ?)')
+      .run(userId, plan, planInfo.amount, planInfo.billing_cycle, expires.toISOString(), txId);
+  }
+
+  db.prepare('UPDATE transactions SET status = \'completed\', completed_at = datetime(\'now\') WHERE gateway_ref = ?').run(txId);
+}
+
+// ─── Admin routes ─────────────────────────────────────────────────────────────
+
+app.get('/api/admin/stats', requireAdmin, (req, res) => {
+  const users = db.prepare('SELECT COUNT(*) as c FROM users').get().c;
+  const paid = db.prepare('SELECT COUNT(*) as c FROM users WHERE plan != \'free\'').get().c;
+  const monthly = db.prepare('SELECT COUNT(*) as c FROM users WHERE plan = \'monthly\'').get().c;
+  const annual = db.prepare('SELECT COUNT(*) as c FROM users WHERE plan = \'annual\'').get().c;
+  const revenue = db.prepare('SELECT COALESCE(SUM(amount), 0) as total FROM transactions WHERE status = \'completed\'').get().total;
+  const attempts = db.prepare('SELECT COUNT(*) as c FROM attempts').get().c;
+  res.json({ users, paid, monthly, annual, revenue, attempts });
+});
+
+// ─── Serve SPA routes ─────────────────────────────────────────────────────────
+
+app.get('/dashboard', (req, res) => res.sendFile(path.join(__dirname, 'public/dashboard.html')));
+app.get('/test', (req, res) => res.sendFile(path.join(__dirname, 'public/test.html')));
+app.get('/results', (req, res) => res.sendFile(path.join(__dirname, 'public/test.html')));
+app.get('/login', (req, res) => res.sendFile(path.join(__dirname, 'public/index.html')));
 
 app.listen(PORT, () => {
-  console.log(`Retention Audit Dashboard running at http://localhost:${PORT}`);
+  console.log(`PTE Prep Dashboard running at http://localhost:${PORT}`);
 });

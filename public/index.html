@@ -1,290 +1,368 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Retention Audit Dashboard</title>
-  <link rel="stylesheet" href="style.css" />
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>PTEMaster — Authentic PTE Academic Practice</title>
+  <meta name="description" content="Practice PTE Academic with 200+ authentic mock tests, real-time scoring, and expert feedback. Trusted by 10,000+ students worldwide."/>
+  <link rel="stylesheet" href="style.css"/>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
 </head>
-<body>
-  <div class="layout">
-    <aside class="sidebar">
-      <div class="logo">
-        <svg width="28" height="28" viewBox="0 0 28 28" fill="none"><circle cx="14" cy="14" r="14" fill="#6366f1"/><path d="M7 19c0-3.866 3.134-7 7-7s7 3.134 7 7" stroke="#fff" stroke-width="2" stroke-linecap="round"/><circle cx="14" cy="10" r="3" fill="#fff"/></svg>
-        <span>RetainIQ</span>
-      </div>
-      <nav>
-        <a class="nav-item active" data-view="overview" href="#">
-          <svg viewBox="0 0 20 20" fill="currentColor"><path d="M2 10a8 8 0 1116 0A8 8 0 012 10zm8-4a1 1 0 00-1 1v3H6a1 1 0 000 2h3v3a1 1 0 002 0v-3h3a1 1 0 000-2h-3V7a1 1 0 00-1-1z"/></svg>
-          Overview
-        </a>
-        <a class="nav-item" data-view="customers" href="#">
-          <svg viewBox="0 0 20 20" fill="currentColor"><path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 015 5v1H1v-1a5 5 0 015-5z"/></svg>
-          Customers
-        </a>
-        <a class="nav-item" data-view="stickiness" href="#">
-          <svg viewBox="0 0 20 20" fill="currentColor"><path d="M2 11a1 1 0 011-1h2a1 1 0 011 1v5a1 1 0 01-1 1H3a1 1 0 01-1-1v-5zM8 7a1 1 0 011-1h2a1 1 0 011 1v9a1 1 0 01-1 1H9a1 1 0 01-1-1V7zM14 4a1 1 0 011-1h2a1 1 0 011 1v12a1 1 0 01-1 1h-2a1 1 0 01-1-1V4z"/></svg>
-          Stickiness
-        </a>
-        <a class="nav-item" data-view="churn" href="#">
-          <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>
-          Churn Analysis
-        </a>
-        <a class="nav-item" data-view="revenue" href="#">
-          <svg viewBox="0 0 20 20" fill="currentColor"><path d="M8.433 7.418c.155-.103.346-.196.567-.267v1.698a2.305 2.305 0 01-.567-.267C8.07 8.34 8 8.114 8 8c0-.114.07-.34.433-.582zM11 12.849v-1.698c.22.071.412.164.567.267.364.243.433.468.433.582 0 .114-.07.34-.433.582a2.305 2.305 0 01-.567.267z"/><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-13a1 1 0 10-2 0v.092a4.535 4.535 0 00-1.676.662C6.602 6.234 6 7.009 6 8c0 .99.602 1.765 1.324 2.246.48.32 1.054.545 1.676.662v1.941c-.391-.127-.68-.317-.843-.504a1 1 0 10-1.51 1.31c.562.649 1.413 1.028 2.353 1.118V15a1 1 0 102 0v-.092a4.535 4.535 0 001.676-.662C13.398 13.766 14 12.991 14 12c0-.99-.602-1.765-1.324-2.246A4.535 4.535 0 0011 9.092V7.151c.391.127.68.317.843.504a1 1 0 101.511-1.31c-.563-.649-1.413-1.028-2.354-1.118V5z" clip-rule="evenodd"/></svg>
-          Revenue Loss
-        </a>
-      </nav>
-      <div class="sidebar-footer">
-        <div class="period-label">Reporting period</div>
-        <select id="periodSelect">
-          <option value="7">Last 7 days</option>
-          <option value="30" selected>Last 30 days</option>
-          <option value="60">Last 60 days</option>
-          <option value="90">Last 90 days</option>
-        </select>
-        <button class="email-btn" id="emailBtn">
-          <svg viewBox="0 0 20 20" fill="currentColor"><path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z"/><path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z"/></svg>
-          Email Report
-        </button>
-      </div>
-    </aside>
+<body class="landing">
 
-    <main class="main">
-      <!-- OVERVIEW -->
-      <section id="view-overview" class="view active">
-        <header class="view-header">
-          <div>
-            <h1>Retention Overview</h1>
-            <p class="subtitle">As of May 1, 2026 · <span id="overviewPeriodLabel">Last 30 days</span></p>
-          </div>
-          <div class="header-actions">
-            <div class="status-pill active-pill">Live</div>
-          </div>
-        </header>
-
-        <div class="kpi-grid" id="kpiGrid">
-          <div class="kpi-card" id="kpiChurn">
-            <div class="kpi-label">Churn Rate</div>
-            <div class="kpi-value" id="churnRate">—</div>
-            <div class="kpi-sub" id="churnSub">customers lost</div>
-            <div class="kpi-bar"><div class="kpi-fill danger" id="churnFill" style="width:0%"></div></div>
-          </div>
-          <div class="kpi-card" id="kpiRevChurn">
-            <div class="kpi-label">Revenue Churn</div>
-            <div class="kpi-value" id="revChurnRate">—</div>
-            <div class="kpi-sub" id="revChurnSub">MRR lost</div>
-            <div class="kpi-bar"><div class="kpi-fill warning" id="revChurnFill" style="width:0%"></div></div>
-          </div>
-          <div class="kpi-card" id="kpiStickiness">
-            <div class="kpi-label">Stickiness (DAU/MAU)</div>
-            <div class="kpi-value" id="stickinessVal">—</div>
-            <div class="kpi-sub">engagement ratio</div>
-            <div class="kpi-bar"><div class="kpi-fill success" id="stickFill" style="width:0%"></div></div>
-          </div>
-          <div class="kpi-card" id="kpiMrr">
-            <div class="kpi-label">Active MRR</div>
-            <div class="kpi-value" id="totalMrr">—</div>
-            <div class="kpi-sub" id="mrrChange">net change this period</div>
-          </div>
-        </div>
-
-        <div class="section-row">
-          <div class="card chart-card">
-            <div class="card-header">
-              <h2>Churn Rate Trend</h2>
-              <span class="card-badge">12 weeks</span>
-            </div>
-            <div class="chart-area" id="churnChart"></div>
-          </div>
-          <div class="card chart-card">
-            <div class="card-header">
-              <h2>MRR Timeline</h2>
-              <span class="card-badge">6 months</span>
-            </div>
-            <div class="chart-area" id="mrrChart"></div>
-          </div>
-        </div>
-
-        <div class="section-row">
-          <div class="card">
-            <div class="card-header">
-              <h2>At-Risk Customers</h2>
-              <span class="card-badge warning-badge" id="atRiskBadge">—</span>
-            </div>
-            <table class="data-table" id="atRiskTable">
-              <thead><tr><th>Customer</th><th>Plan</th><th>MRR</th><th>Health</th></tr></thead>
-              <tbody></tbody>
-            </table>
-          </div>
-          <div class="card">
-            <div class="card-header">
-              <h2>Churn Reasons</h2>
-            </div>
-            <div id="churnReasonsList" class="reasons-list"></div>
-          </div>
-        </div>
-      </section>
-
-      <!-- CUSTOMERS -->
-      <section id="view-customers" class="view">
-        <header class="view-header">
-          <div>
-            <h1>Customer Health</h1>
-            <p class="subtitle">All customers with engagement scores</p>
-          </div>
-          <div class="header-actions">
-            <select id="statusFilter">
-              <option value="all">All statuses</option>
-              <option value="active">Active</option>
-              <option value="at_risk">At Risk</option>
-              <option value="churned">Churned</option>
-            </select>
-          </div>
-        </header>
-        <div class="card">
-          <table class="data-table full-table" id="customerTable">
-            <thead>
-              <tr>
-                <th>Customer</th>
-                <th>Plan</th>
-                <th>MRR</th>
-                <th>Status</th>
-                <th>Active Days (30d)</th>
-                <th>Stickiness</th>
-                <th>Health Score</th>
-              </tr>
-            </thead>
-            <tbody></tbody>
-          </table>
-        </div>
-      </section>
-
-      <!-- STICKINESS -->
-      <section id="view-stickiness" class="view">
-        <header class="view-header">
-          <div>
-            <h1>Customer Stickiness</h1>
-            <p class="subtitle">DAU/MAU engagement by customer</p>
-          </div>
-        </header>
-        <div class="section-row">
-          <div class="card chart-card wide">
-            <div class="card-header"><h2>Stickiness by Customer (30d)</h2></div>
-            <div class="chart-area tall" id="stickinessChart"></div>
-          </div>
-        </div>
-        <div class="card">
-          <table class="data-table full-table" id="stickinessTable">
-            <thead>
-              <tr>
-                <th>Customer</th>
-                <th>Plan</th>
-                <th>MRR</th>
-                <th>7-day</th>
-                <th>30-day</th>
-                <th>90-day</th>
-                <th>Avg Features Used</th>
-                <th>Segment</th>
-              </tr>
-            </thead>
-            <tbody></tbody>
-          </table>
-        </div>
-      </section>
-
-      <!-- CHURN ANALYSIS -->
-      <section id="view-churn" class="view">
-        <header class="view-header">
-          <div>
-            <h1>Churn Analysis</h1>
-            <p class="subtitle">Detailed churn breakdown and trends</p>
-          </div>
-        </header>
-        <div class="section-row">
-          <div class="card chart-card">
-            <div class="card-header"><h2>Weekly Churn Rate</h2></div>
-            <div class="chart-area" id="churnChartFull"></div>
-          </div>
-          <div class="card chart-card">
-            <div class="card-header"><h2>Weekly MRR Lost</h2></div>
-            <div class="chart-area" id="mrrLostChart"></div>
-          </div>
-        </div>
-        <div class="card">
-          <div class="card-header"><h2>Churned Customers</h2></div>
-          <table class="data-table full-table" id="churnedTable">
-            <thead>
-              <tr>
-                <th>Customer</th>
-                <th>Plan</th>
-                <th>MRR Lost</th>
-                <th>Churned On</th>
-                <th>Reason</th>
-                <th>Tenure</th>
-              </tr>
-            </thead>
-            <tbody></tbody>
-          </table>
-        </div>
-      </section>
-
-      <!-- REVENUE LOSS -->
-      <section id="view-revenue" class="view">
-        <header class="view-header">
-          <div>
-            <h1>Revenue Loss</h1>
-            <p class="subtitle">MRR impact of churn and at-risk accounts</p>
-          </div>
-        </header>
-        <div class="kpi-grid">
-          <div class="kpi-card">
-            <div class="kpi-label">Total MRR</div>
-            <div class="kpi-value" id="revTotalMrr">—</div>
-            <div class="kpi-sub">from active customers</div>
-          </div>
-          <div class="kpi-card">
-            <div class="kpi-label">MRR Lost (period)</div>
-            <div class="kpi-value danger-text" id="revLostMrr">—</div>
-            <div class="kpi-sub">from churned accounts</div>
-          </div>
-          <div class="kpi-card">
-            <div class="kpi-label">At-Risk MRR</div>
-            <div class="kpi-value warning-text" id="revAtRiskMrr">—</div>
-            <div class="kpi-sub">exposure if all churn</div>
-          </div>
-          <div class="kpi-card">
-            <div class="kpi-label">Net MRR Change</div>
-            <div class="kpi-value" id="revNetChange">—</div>
-            <div class="kpi-sub">new vs lost</div>
-          </div>
-        </div>
-        <div class="card chart-card wide">
-          <div class="card-header"><h2>MRR vs Churn Revenue (6 months)</h2></div>
-          <div class="chart-area tall" id="revStackChart"></div>
-        </div>
-      </section>
-    </main>
-  </div>
-
-  <!-- EMAIL MODAL -->
-  <div class="modal-overlay" id="emailModal">
-    <div class="modal">
-      <div class="modal-header">
-        <h2>Email Report Preview</h2>
-        <button class="close-btn" id="closeModal">✕</button>
-      </div>
-      <div class="modal-actions">
-        <button class="btn-secondary" id="copyHtmlBtn">Copy HTML</button>
-        <a class="btn-primary" id="openEmailPreview" href="#" target="_blank">Open in New Tab</a>
-      </div>
-      <div class="modal-body">
-        <iframe id="emailIframe" title="Email Preview" style="width:100%;height:520px;border:1px solid #e2e8f0;border-radius:8px;"></iframe>
-      </div>
-      <p class="modal-hint">Paste the copied HTML directly into your email client or ESP template editor. Works in Gmail, Outlook, and all major clients.</p>
+<!-- NAV -->
+<nav class="nav">
+  <div class="nav-inner">
+    <a href="/" class="nav-logo">PTE<span>Master</span></a>
+    <div class="nav-links">
+      <a href="#features">Features</a>
+      <a href="#format">Test Format</a>
+      <a href="#pricing">Pricing</a>
+      <a href="#faq">FAQ</a>
+    </div>
+    <div class="nav-cta">
+      <a href="dashboard.html" class="btn btn-ghost" id="nav-login">Log In</a>
+      <a href="dashboard.html?signup=1" class="btn btn-primary" id="nav-signup">Start Free</a>
     </div>
   </div>
+</nav>
 
-  <script src="app.js"></script>
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-badge">✓ Authentic PTE Format &nbsp;·&nbsp; 200+ Mock Tests &nbsp;·&nbsp; Real-time Scoring</div>
+  <h1>Ace Your <span class="gradient-text">PTE Academic</span><br/>with Confidence</h1>
+  <p class="hero-sub">The most authentic PTE preparation platform. Practice all 20 question types with AI-powered feedback, timed conditions, and detailed score reports — exactly like exam day.</p>
+  <div class="hero-actions">
+    <a href="dashboard.html?signup=1" class="btn btn-primary btn-lg">Start Free — No Credit Card</a>
+    <a href="#format" class="btn btn-ghost btn-lg">See All Question Types</a>
+  </div>
+  <div class="hero-stats">
+    <div class="stat"><strong>200+</strong><span>Mock Tests</span></div>
+    <div class="stat"><strong>20</strong><span>Question Types</span></div>
+    <div class="stat"><strong>10,000+</strong><span>Students</span></div>
+    <div class="stat"><strong>90%</strong><span>Pass Rate</span></div>
+  </div>
+</section>
+
+<!-- TRUST BAND -->
+<div class="trust-band">
+  <span>Trusted by students heading to</span>
+  <div class="trust-logos">
+    <span>🇦🇺 Australia</span>
+    <span>🇨🇦 Canada</span>
+    <span>🇬🇧 United Kingdom</span>
+    <span>🇳🇿 New Zealand</span>
+    <span>🇮🇳 India</span>
+    <span>🇵🇭 Philippines</span>
+  </div>
+</div>
+
+<!-- FEATURES -->
+<section class="section" id="features">
+  <div class="container">
+    <div class="section-header">
+      <span class="label">Why PTEMaster</span>
+      <h2>Everything You Need to Score 79+</h2>
+      <p>Built by PTE experts, designed to replicate the exact exam environment.</p>
+    </div>
+    <div class="features-grid">
+      <div class="feature-card">
+        <div class="feature-icon">🎯</div>
+        <h3>Authentic Test Format</h3>
+        <p>All 20 question types across Speaking, Writing, Reading, and Listening — verified against Pearson's official PTE Academic guidelines.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">⏱️</div>
+        <h3>Real-Time Conditions</h3>
+        <p>Timed sections, countdown timers, automatic audio playback, preparation beeps, and response recording — exam pressure from home.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🤖</div>
+        <h3>Instant Auto-Scoring</h3>
+        <p>Immediate scores for reading and listening. Writing tasks scored on content, form, grammar, vocabulary, and spelling.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🎙️</div>
+        <h3>Speaking Practice</h3>
+        <p>Record your responses for all speaking tasks using your browser microphone. Replay and self-assess your pronunciation and fluency.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">📊</div>
+        <h3>Detailed Analytics</h3>
+        <p>Track progress across all four sections. Identify weak areas, monitor score trends, and focus study where it matters most.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🔊</div>
+        <h3>Audio Simulation</h3>
+        <p>Listening questions use high-quality text-to-speech. Write from Dictation, Highlight Incorrect Words — audio plays once, just like the real test.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TEST FORMAT -->
+<section class="section section-alt" id="format">
+  <div class="container">
+    <div class="section-header">
+      <span class="label">Authentic Format</span>
+      <h2>Every Section. Every Question Type.</h2>
+      <p>PTEMaster covers the complete PTE Academic format — verified against official Pearson guidelines.</p>
+    </div>
+    <div class="format-tabs">
+      <button class="tab-btn active" data-tab="speaking">Speaking &amp; Writing</button>
+      <button class="tab-btn" data-tab="reading">Reading</button>
+      <button class="tab-btn" data-tab="listening">Listening</button>
+    </div>
+    <div class="tab-content active" id="tab-speaking">
+      <div class="question-types">
+        <div class="qtype"><span class="qtype-badge speaking">Speaking</span><strong>Personal Introduction</strong><p>1–2 min · Not scored · Sets up your profile</p></div>
+        <div class="qtype"><span class="qtype-badge speaking">Speaking</span><strong>Read Aloud</strong><p>6–7 items · 30–40 sec prep · 35 sec to read</p></div>
+        <div class="qtype"><span class="qtype-badge speaking">Speaking</span><strong>Repeat Sentence</strong><p>10–12 items · Audio plays once · 15 sec to respond</p></div>
+        <div class="qtype"><span class="qtype-badge speaking">Speaking</span><strong>Describe Image</strong><p>3–4 items · 25 sec prep · 40 sec to describe</p></div>
+        <div class="qtype"><span class="qtype-badge speaking">Speaking</span><strong>Re-tell Lecture</strong><p>1–2 items · Up to 90 sec audio · 40 sec to retell</p></div>
+        <div class="qtype"><span class="qtype-badge speaking">Speaking</span><strong>Answer Short Question</strong><p>10–12 items · One-word or very short answers</p></div>
+        <div class="qtype"><span class="qtype-badge writing">Writing</span><strong>Summarize Written Text</strong><p>1–2 items · 200–300 word passage · 10 min each</p></div>
+        <div class="qtype"><span class="qtype-badge writing">Writing</span><strong>Write Essay</strong><p>1–2 items · 200–300 words required · 20 min each</p></div>
+      </div>
+    </div>
+    <div class="tab-content" id="tab-reading">
+      <div class="question-types">
+        <div class="qtype"><span class="qtype-badge reading">Reading</span><strong>Reading &amp; Writing: Fill in the Blanks</strong><p>5–6 items · Dropdown selections from word lists</p></div>
+        <div class="qtype"><span class="qtype-badge reading">Reading</span><strong>Multiple Choice, Multiple Answers</strong><p>1–2 items · Partial scoring · Penalties for wrong selections</p></div>
+        <div class="qtype"><span class="qtype-badge reading">Reading</span><strong>Re-order Paragraphs</strong><p>2–3 items · Drag text boxes into correct order</p></div>
+        <div class="qtype"><span class="qtype-badge reading">Reading</span><strong>Reading: Fill in the Blanks</strong><p>4–5 items · Select from a word bank · Partial scoring</p></div>
+        <div class="qtype"><span class="qtype-badge reading">Reading</span><strong>Multiple Choice, Single Answer</strong><p>1–2 items · Choose best answer from passage</p></div>
+      </div>
+    </div>
+    <div class="tab-content" id="tab-listening">
+      <div class="question-types">
+        <div class="qtype"><span class="qtype-badge listening">Listening</span><strong>Summarize Spoken Text</strong><p>2–3 items · Up to 90 sec audio · 10 min to write</p></div>
+        <div class="qtype"><span class="qtype-badge listening">Listening</span><strong>Multiple Choice, Multiple Answers</strong><p>1–2 items · Audio clip · Select multiple answers</p></div>
+        <div class="qtype"><span class="qtype-badge listening">Listening</span><strong>Fill in the Blanks</strong><p>2–3 items · Type missing words while listening</p></div>
+        <div class="qtype"><span class="qtype-badge listening">Listening</span><strong>Highlight Correct Summary</strong><p>1–2 items · Choose which summary matches audio</p></div>
+        <div class="qtype"><span class="qtype-badge listening">Listening</span><strong>Multiple Choice, Single Answer</strong><p>1–2 items · One audio clip, one correct answer</p></div>
+        <div class="qtype"><span class="qtype-badge listening">Listening</span><strong>Select Missing Word</strong><p>1–2 items · Audio trails off — choose final word</p></div>
+        <div class="qtype"><span class="qtype-badge listening">Listening</span><strong>Highlight Incorrect Words</strong><p>2–3 items · Read along and spot differences</p></div>
+        <div class="qtype"><span class="qtype-badge listening">Listening</span><strong>Write from Dictation</strong><p>3–4 items · Type exactly what you hear</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PRICING -->
+<section class="section" id="pricing">
+  <div class="container">
+    <div class="section-header">
+      <span class="label">Pricing</span>
+      <h2>Simple, Transparent Pricing</h2>
+      <p>Choose the plan that fits your study schedule. Cancel any time.</p>
+    </div>
+    <div class="pricing-grid">
+
+      <div class="price-card">
+        <div class="price-tier">Free</div>
+        <div class="price-amount">$0<span>/forever</span></div>
+        <p class="price-desc">Get a taste of PTEMaster</p>
+        <ul class="price-features">
+          <li class="yes">2 free mock tests</li>
+          <li class="yes">All question types</li>
+          <li class="yes">Basic score report</li>
+          <li class="no">Audio simulation</li>
+          <li class="no">Detailed analytics</li>
+          <li class="no">Progress tracking</li>
+        </ul>
+        <a href="dashboard.html?signup=1" class="btn btn-outline btn-block">Get Started Free</a>
+      </div>
+
+      <div class="price-card">
+        <div class="price-tier">Credits</div>
+        <div class="price-amount">from $9.99</div>
+        <p class="price-desc">Pay only for what you use</p>
+        <ul class="price-features">
+          <li class="yes">Credits never expire</li>
+          <li class="yes">All question types</li>
+          <li class="yes">Full score report</li>
+          <li class="yes">Audio simulation</li>
+          <li class="yes">Progress tracking</li>
+          <li class="yes">1 credit = 1 mock test</li>
+        </ul>
+        <div class="credit-options">
+          <a href="dashboard.html?plan=credits_5" class="btn btn-outline btn-sm btn-block">5 credits — $9.99</a>
+          <a href="dashboard.html?plan=credits_15" class="btn btn-outline btn-sm btn-block" style="margin-top:8px">15 credits — $24.99</a>
+          <a href="dashboard.html?plan=credits_30" class="btn btn-outline btn-sm btn-block" style="margin-top:8px">30 credits — $39.99</a>
+        </div>
+      </div>
+
+      <div class="price-card price-card-featured">
+        <div class="price-badge">Most Popular</div>
+        <div class="price-tier">Monthly</div>
+        <div class="price-amount">$29.99<span>/month</span></div>
+        <p class="price-desc">Unlimited practice, maximum results</p>
+        <ul class="price-features">
+          <li class="yes">Unlimited mock tests</li>
+          <li class="yes">All 200+ question bank</li>
+          <li class="yes">Full score reports</li>
+          <li class="yes">Audio simulation</li>
+          <li class="yes">Detailed analytics</li>
+          <li class="yes">Progress over time</li>
+        </ul>
+        <a href="dashboard.html?plan=monthly" class="btn btn-primary btn-block">Start Monthly Plan</a>
+        <p class="price-note">Cancel anytime. No lock-in.</p>
+      </div>
+
+      <div class="price-card">
+        <div class="price-badge price-badge-gold">Best Value</div>
+        <div class="price-tier">Annual</div>
+        <div class="price-amount">$199.99<span>/year</span></div>
+        <p class="price-desc">Save 44% — just $16.67/month</p>
+        <ul class="price-features">
+          <li class="yes">Everything in Monthly</li>
+          <li class="yes">12 months access</li>
+          <li class="yes">Priority support</li>
+          <li class="yes">New tests as added</li>
+          <li class="yes">Score trend reports</li>
+          <li class="yes">Exam-day strategy guide</li>
+        </ul>
+        <a href="dashboard.html?plan=annual" class="btn btn-outline btn-block">Start Annual Plan</a>
+        <p class="price-note">Best for multi-attempt prep</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TESTIMONIALS -->
+<section class="section section-alt">
+  <div class="container">
+    <div class="section-header">
+      <span class="label">Student Stories</span>
+      <h2>Real Results from Real Students</h2>
+    </div>
+    <div class="testimonials-grid">
+      <div class="testimonial">
+        <div class="stars">★★★★★</div>
+        <p>"I scored 79 in my first attempt after 3 weeks of practice on PTEMaster. The test format is identical to the real exam. Highly recommend!"</p>
+        <div class="testimonial-author"><strong>Priya S.</strong><span>Melbourne, Australia</span></div>
+      </div>
+      <div class="testimonial">
+        <div class="stars">★★★★★</div>
+        <p>"The Write from Dictation and Repeat Sentence practice is outstanding. I went from 58 to 85 in listening after two weeks of targeted practice."</p>
+        <div class="testimonial-author"><strong>Carlos M.</strong><span>Toronto, Canada</span></div>
+      </div>
+      <div class="testimonial">
+        <div class="stars">★★★★★</div>
+        <p>"Best PTE platform I've used. The timed conditions and audio simulation really helped me manage exam anxiety. Got my 65 on second try!"</p>
+        <div class="testimonial-author"><strong>Fatima A.</strong><span>Dubai, UAE</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="section" id="faq">
+  <div class="container">
+    <div class="section-header">
+      <span class="label">FAQ</span>
+      <h2>Common Questions</h2>
+    </div>
+    <div class="faq-list">
+      <div class="faq-item">
+        <button class="faq-q">Is PTEMaster based on the official PTE Academic format?</button>
+        <div class="faq-a">Yes. Our question types, timing, and format are modeled on Pearson's official PTE Academic test specifications. We cover all 20 question types across all four sections as they appear in the real exam.</div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q">How is my speaking scored?</button>
+        <div class="faq-a">Speaking responses are recorded and submitted. Our platform provides baseline score estimates. The real PTE uses AI to score content, oral fluency, and pronunciation — our platform shows estimates and your recordings for self-review.</div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q">What does "1 credit = 1 mock test" mean?</button>
+        <div class="faq-a">Each full mock test costs 1 credit. Section-only practice tests (e.g., Listening only) also cost 1 credit. Credits never expire and can be used any time.</div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q">Can I cancel my monthly subscription?</button>
+        <div class="faq-a">Yes, cancel any time from your account dashboard. You retain access until your current billing period ends. No fees, no hassle.</div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q">Do I need a microphone for speaking practice?</button>
+        <div class="faq-a">A microphone is required for speaking question types. Most laptops and phones have built-in microphones. The platform requests microphone permission when you start a speaking task.</div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q">How many tests are in the question bank?</button>
+        <div class="faq-a">We have 200+ individual questions across 20 full mock tests and targeted section practice sets. New tests are added regularly.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA FOOTER -->
+<section class="cta-section">
+  <div class="container">
+    <h2>Ready to Score 79+?</h2>
+    <p>Join thousands of students who've achieved their PTE goals with PTEMaster.</p>
+    <a href="dashboard.html?signup=1" class="btn btn-primary btn-xl">Start Free Today</a>
+    <p class="cta-sub">No credit card required · 2 free mock tests included</p>
+  </div>
+</section>
+
+<footer class="footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div>
+        <div class="nav-logo" style="margin-bottom:12px">PTE<span>Master</span></div>
+        <p>The most authentic PTE Academic preparation platform. Not affiliated with Pearson Education.</p>
+      </div>
+      <div>
+        <h4>Platform</h4>
+        <a href="#features">Features</a>
+        <a href="#format">Test Format</a>
+        <a href="#pricing">Pricing</a>
+        <a href="dashboard.html">Dashboard</a>
+      </div>
+      <div>
+        <h4>Support</h4>
+        <a href="#faq">FAQ</a>
+        <a href="mailto:support@ptemaster.com">Contact Us</a>
+        <a href="#">Privacy Policy</a>
+        <a href="#">Terms of Service</a>
+      </div>
+      <div>
+        <h4>Secure Payment</h4>
+        <p style="font-size:13px;color:var(--text-muted)">Payments processed securely via Settlesmart</p>
+        <div class="payment-badges">
+          <span class="badge">Visa</span>
+          <span class="badge">Mastercard</span>
+          <span class="badge">PayPal</span>
+          <span class="badge">BPAY</span>
+        </div>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>© 2026 PTEMaster. Not affiliated with Pearson Education Ltd or PTE Academic™.</p>
+    </div>
+  </div>
+</footer>
+
+<script>
+  document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+      btn.classList.add('active');
+      document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
+    });
+  });
+
+  document.querySelectorAll('.faq-q').forEach(btn => {
+    btn.addEventListener('click', () => btn.parentElement.classList.toggle('open'));
+  });
+
+  const token = localStorage.getItem('pte_token');
+  if (token) {
+    document.getElementById('nav-login').textContent = 'Dashboard';
+    document.getElementById('nav-login').href = 'dashboard.html';
+    document.getElementById('nav-signup').textContent = 'Dashboard';
+    document.getElementById('nav-signup').href = 'dashboard.html';
+  }
+</script>
 </body>
 </html>
