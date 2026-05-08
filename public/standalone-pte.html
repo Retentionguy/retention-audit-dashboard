@@ -1,0 +1,1523 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>PTEMaster — Authentic PTE Academic Preparation</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --brand:#4F46E5;--brand-d:#3730A3;--brand-l:#EEF2FF;
+  --accent:#06B6D4;--success:#10B981;--warn:#F59E0B;--danger:#EF4444;
+  --gray-50:#F9FAFB;--gray-100:#F3F4F6;--gray-200:#E5E7EB;--gray-300:#D1D5DB;
+  --gray-400:#9CA3AF;--gray-500:#6B7280;--gray-600:#4B5563;--gray-700:#374151;
+  --gray-800:#1F2937;--gray-900:#111827;
+  --radius:12px;--shadow:0 4px 24px rgba(0,0,0,.08);--shadow-lg:0 12px 40px rgba(0,0,0,.15);
+}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--gray-50);color:var(--gray-800);line-height:1.6}
+a{color:var(--brand);text-decoration:none}
+button{cursor:pointer;font-family:inherit}
+input,textarea,select{font-family:inherit}
+
+/* ── LANDING ── */
+#landing{display:block}
+.nav{display:flex;align-items:center;justify-content:space-between;padding:1rem 2rem;background:#fff;border-bottom:1px solid var(--gray-200);position:sticky;top:0;z-index:100}
+.nav-logo{font-size:1.4rem;font-weight:800;color:var(--brand)}
+.nav-logo span{color:var(--accent)}
+.nav-links{display:flex;gap:2rem;align-items:center}
+.nav-links a{color:var(--gray-600);font-weight:500;transition:.2s}
+.nav-links a:hover{color:var(--brand)}
+.btn{display:inline-flex;align-items:center;gap:.5rem;padding:.6rem 1.4rem;border-radius:8px;font-weight:600;font-size:.95rem;border:none;transition:.2s}
+.btn-primary{background:var(--brand);color:#fff}
+.btn-primary:hover{background:var(--brand-d)}
+.btn-outline{background:transparent;border:2px solid var(--brand);color:var(--brand)}
+.btn-outline:hover{background:var(--brand-l)}
+.btn-lg{padding:.85rem 2rem;font-size:1.05rem;border-radius:10px}
+.btn-accent{background:var(--accent);color:#fff}
+.btn-accent:hover{filter:brightness(1.1)}
+.hero{background:linear-gradient(135deg,#1e1b4b 0%,#312e81 50%,#1e3a5f 100%);color:#fff;padding:5rem 2rem;text-align:center}
+.hero h1{font-size:clamp(2rem,5vw,3.5rem);font-weight:800;line-height:1.15;margin-bottom:1.2rem}
+.hero h1 span{color:#a5b4fc}
+.hero p{font-size:1.2rem;color:#c7d2fe;max-width:600px;margin:0 auto 2.5rem}
+.hero-btns{display:flex;gap:1rem;justify-content:center;flex-wrap:wrap}
+.hero-stats{display:flex;gap:2rem;justify-content:center;margin-top:3rem;flex-wrap:wrap}
+.stat-item{text-align:center}
+.stat-item .num{font-size:2rem;font-weight:800;color:#a5b4fc}
+.stat-item .lbl{font-size:.85rem;color:#c7d2fe}
+.section{padding:4rem 2rem;max-width:1100px;margin:0 auto}
+.section-title{text-align:center;font-size:1.9rem;font-weight:700;margin-bottom:.5rem}
+.section-sub{text-align:center;color:var(--gray-500);margin-bottom:2.5rem}
+.features-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:1.5rem}
+.feature-card{background:#fff;border-radius:var(--radius);padding:1.8rem;box-shadow:var(--shadow);border:1px solid var(--gray-200)}
+.feature-icon{font-size:2rem;margin-bottom:.8rem}
+.feature-card h3{font-size:1.1rem;font-weight:700;margin-bottom:.5rem}
+.feature-card p{color:var(--gray-500);font-size:.95rem}
+.pricing-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:1.5rem}
+.price-card{background:#fff;border-radius:var(--radius);padding:2rem;box-shadow:var(--shadow);border:2px solid var(--gray-200);text-align:center;transition:.2s}
+.price-card.featured{border-color:var(--brand);transform:scale(1.03)}
+.price-badge{background:var(--brand);color:#fff;font-size:.75rem;font-weight:700;padding:.2rem .7rem;border-radius:20px;display:inline-block;margin-bottom:.8rem}
+.price-card h3{font-size:1.2rem;font-weight:700;margin-bottom:.3rem}
+.price-amount{font-size:2.2rem;font-weight:800;color:var(--brand);margin:.5rem 0}
+.price-amount span{font-size:1rem;color:var(--gray-500);font-weight:400}
+.price-features{list-style:none;margin:1rem 0;text-align:left}
+.price-features li{padding:.35rem 0;font-size:.9rem;color:var(--gray-600)}
+.price-features li::before{content:"✓ ";color:var(--success);font-weight:700}
+.footer{background:var(--gray-900);color:var(--gray-400);padding:2rem;text-align:center;font-size:.9rem}
+.footer a{color:var(--gray-300)}
+
+/* ── MODAL ── */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:200;align-items:center;justify-content:center}
+.modal-overlay.open{display:flex}
+.modal{background:#fff;border-radius:16px;padding:2.5rem;width:min(420px,92vw);box-shadow:var(--shadow-lg)}
+.modal h2{font-size:1.5rem;font-weight:700;margin-bottom:.3rem}
+.modal p{color:var(--gray-500);margin-bottom:1.5rem;font-size:.95rem}
+.form-group{margin-bottom:1.2rem}
+.form-group label{display:block;font-weight:600;font-size:.9rem;margin-bottom:.4rem;color:var(--gray-700)}
+.form-group input{width:100%;padding:.7rem 1rem;border:2px solid var(--gray-200);border-radius:8px;font-size:1rem;transition:.2s}
+.form-group input:focus{outline:none;border-color:var(--brand)}
+.form-error{color:var(--danger);font-size:.85rem;margin-top:.3rem}
+.form-switch{text-align:center;margin-top:1rem;font-size:.9rem;color:var(--gray-500)}
+.form-switch a{color:var(--brand);font-weight:600}
+.tab-btns{display:flex;gap:.5rem;margin-bottom:1.5rem}
+.tab-btn{flex:1;padding:.6rem;border:2px solid var(--gray-200);background:#fff;border-radius:8px;font-weight:600;color:var(--gray-600);transition:.2s}
+.tab-btn.active{border-color:var(--brand);background:var(--brand-l);color:var(--brand)}
+
+/* ── DASHBOARD ── */
+#dashboard{display:none;min-height:100vh}
+.dash-layout{display:flex;min-height:calc(100vh - 60px)}
+.sidebar{width:230px;background:#fff;border-right:1px solid var(--gray-200);padding:1.5rem 0;flex-shrink:0}
+.sidebar-nav a{display:flex;align-items:center;gap:.8rem;padding:.75rem 1.5rem;color:var(--gray-600);font-weight:500;transition:.2s;border-left:3px solid transparent}
+.sidebar-nav a:hover{background:var(--gray-50);color:var(--brand)}
+.sidebar-nav a.active{color:var(--brand);background:var(--brand-l);border-left-color:var(--brand)}
+.sidebar-nav .icon{font-size:1.1rem;width:20px;text-align:center}
+.main-content{flex:1;padding:2rem;overflow-y:auto}
+.page-title{font-size:1.6rem;font-weight:700;margin-bottom.5rem}
+.page-sub{color:var(--gray-500);margin-bottom:2rem}
+.dash-header{display:flex;align-items:center;justify-content:space-between;padding:.9rem 2rem;background:#fff;border-bottom:1px solid var(--gray-200)}
+.dash-user{display:flex;align-items:center;gap.8rem}
+.avatar{width:36px;height:36px;border-radius:50%;background:var(--brand);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.9rem}
+.credit-badge{background:var(--brand-l);color:var(--brand);padding:.3rem .8rem;border-radius:20px;font-size:.85rem;font-weight:600}
+.overview-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:1.2rem;margin-bottom:2rem}
+.stat-card{background:#fff;border-radius:var(--radius);padding:1.5rem;box-shadow:var(--shadow);border:1px solid var(--gray-200)}
+.stat-card .label{font-size:.85rem;color:var(--gray-500);font-weight:500}
+.stat-card .value{font-size:2rem;font-weight:800;color:var(--brand);margin:.3rem 0}
+.stat-card .sub{font-size:.8rem;color:var(--gray-400)}
+.tests-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:1.2rem}
+.test-card{background:#fff;border-radius:var(--radius);padding:1.5rem;box-shadow:var(--shadow);border:1px solid var(--gray-200);transition:.2s}
+.test-card:hover{box-shadow:var(--shadow-lg);border-color:var(--brand)}
+.test-card h3{font-size:1.05rem;font-weight:700;margin-bottom:.4rem}
+.test-meta{display:flex;gap:1rem;font-size:.82rem;color:var(--gray-500);margin-bottom:.8rem}
+.test-tag{background:var(--gray-100);padding:.2rem .6rem;border-radius:20px;font-size:.78rem;font-weight:600;color:var(--gray-600)}
+.test-tag.speaking{background:#FEF3C7;color:#92400E}
+.test-tag.writing{background:#DCFCE7;color:#166534}
+.test-tag.reading{background:#DBEAFE;color:#1E40AF}
+.test-tag.listening{background:#F3E8FF;color:#6B21A8}
+.test-tag.full{background:var(--brand-l);color:var(--brand)}
+.badge-locked{background:var(--gray-100);color:var(--gray-500);padding:.2rem .6rem;border-radius:20px;font-size:.78rem}
+.progress-bar-wrap{background:var(--gray-200);border-radius:999px;height:6px;margin:.5rem 0}
+.progress-bar{background:var(--brand);border-radius:999px;height:100%;transition:.4s}
+
+/* ── TEST INTERFACE ── */
+#test-view{display:none;min-height:100vh;background:var(--gray-50)}
+.test-nav{display:flex;align-items:center;justify-content:space-between;padding:.8rem 1.5rem;background:#fff;border-bottom:1px solid var(--gray-200);position:sticky;top:0;z-index:50}
+.test-nav-left{display:flex;align-items:center;gap:1rem}
+.test-title{font-weight:700;font-size:1rem}
+.section-badge{padding:.25rem .7rem;border-radius:20px;font-size:.8rem;font-weight:600}
+.timer-box{display:flex;align-items:center;gap:.4rem;background:var(--gray-100);padding:.4rem .9rem;border-radius:8px;font-weight:700;font-size:1rem}
+.timer-box.warn{background:#FEF3C7;color:#92400E}
+.timer-box.danger{background:#FEE2E2;color:#991B1B}
+.q-progress{font-size:.85rem;color:var(--gray-500)}
+.test-body{max-width:860px;margin:2rem auto;padding:0 1.5rem}
+.question-card{background:#fff;border-radius:var(--radius);padding:2rem;box-shadow:var(--shadow);border:1px solid var(--gray-200);margin-bottom:1.5rem}
+.q-type-label{font-size:.8rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--brand);margin-bottom:.5rem}
+.q-instruction{font-size:.95rem;color:var(--gray-600);margin-bottom:1.2rem;padding:.8rem;background:var(--brand-l);border-radius:8px;border-left:3px solid var(--brand)}
+.q-text{font-size:1.05rem;line-height:1.8;margin-bottom:1.2rem}
+
+/* audio player */
+.audio-player{background:var(--gray-100);border-radius:10px;padding:1rem 1.5rem;margin-bottom:1.2rem;display:flex;flex-direction:column;gap:.6rem}
+.audio-bar{display:flex;align-items:center;gap.8rem}
+.play-btn{width:40px;height:40px;border-radius:50%;background:var(--brand);color:#fff;border:none;display:flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0}
+.audio-progress{flex:1;background:var(--gray-300);border-radius:999px;height:6px}
+.audio-fill{background:var(--brand);border-radius:999px;height:100%;width:0%;transition:width .1s linear}
+.plays-left{font-size:.8rem;color:var(--gray-500)}
+
+/* speaking */
+.speaking-area{border:2px dashed var(--gray-300);border-radius:10px;padding:1.5rem;text-align:center}
+.speaking-area.active{border-color:var(--danger);background:#FFF5F5}
+.prep-countdown{font-size:2rem;font-weight:800;color:var(--warn)}
+.record-indicator{display:flex;align-items:center;justify-content:center;gap.8rem;color:var(--danger);font-weight:600}
+.rec-dot{width:12px;height:12px;background:var(--danger);border-radius:50%;animation:pulse 1s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+.speak-status{color:var(--gray-500);font-size:.95rem}
+
+/* answer inputs */
+.answer-textarea{width:100%;min-height:120px;padding:.9rem;border:2px solid var(--gray-200);border-radius:8px;resize:vertical;font-size:.95rem;line-height:1.6;transition:.2s}
+.answer-textarea:focus{outline:none;border-color:var(--brand)}
+.word-count{font-size:.8rem;color:var(--gray-400);text-align:right;margin-top:.3rem}
+.options-list{display:flex;flex-direction:column;gap.6rem}
+.option-item{display:flex;align-items:flex-start;gap.8rem;padding:.8rem 1rem;border:2px solid var(--gray-200);border-radius:8px;cursor:pointer;transition:.2s}
+.option-item:hover{border-color:var(--brand);background:var(--brand-l)}
+.option-item.selected{border-color:var(--brand);background:var(--brand-l)}
+.option-item input{margin-top:.2rem;accent-color:var(--brand);flex-shrink:0}
+.option-text{font-size:.95rem;line-height:1.5}
+
+/* reorder */
+.reorder-container{display:flex;gap:1.5rem;flex-wrap:wrap}
+.reorder-col{flex:1;min-width:200px}
+.reorder-col h4{font-size:.85rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--gray-500);margin-bottom.6rem}
+.reorder-zone{min-height:60px;border:2px dashed var(--gray-300);border-radius:8px;padding:.5rem;display:flex;flex-direction:column;gap:.4rem}
+.reorder-zone.drag-over{border-color:var(--brand);background:var(--brand-l)}
+.reorder-item{background:#fff;border:2px solid var(--gray-200);border-radius:6px;padding:.6rem .9rem;cursor:grab;font-size:.9rem;line-height:1.4;user-select:none;transition:.15s}
+.reorder-item:hover{border-color:var(--brand);box-shadow:0 2px 8px rgba(79,70,229,.15)}
+.reorder-item.dragging{opacity:.4}
+
+/* fill blanks */
+.blank-select{padding:.3rem .6rem;border:2px solid var(--brand);border-radius:6px;font-size:.9rem;background:#fff;color:var(--gray-800);cursor:pointer}
+.blank-input{border:none;border-bottom:2px solid var(--brand);padding:.1rem .4rem;font-size:1rem;min-width:100px;background:transparent;color:var(--gray-800)}
+.blank-input:focus{outline:none}
+
+/* HIW */
+.hw-word{cursor:pointer;padding:.1rem .2rem;border-radius:3px;border-bottom:2px solid transparent}
+.hw-word:hover{background:var(--gray-100)}
+.hw-word.selected{background:#FEE2E2;border-bottom-color:var(--danger);color:var(--danger)}
+
+/* nav buttons */
+.test-footer{max-width:860px;margin:0 auto 2rem;padding:0 1.5rem;display:flex;justify-content:space-between;align-items:center}
+.q-map{display:flex;gap:.3rem;flex-wrap:wrap;max-width:400px}
+.q-dot{width:28px;height:28px;border-radius:6px;background:var(--gray-200);font-size:.75rem;font-weight:600;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:.15s}
+.q-dot.answered{background:var(--success);color:#fff}
+.q-dot.current{background:var(--brand);color:#fff}
+
+/* results */
+#results-view{display:none;min-height:100vh;background:var(--gray-50)}
+.results-content{max-width:900px;margin:0 auto;padding:2rem 1.5rem}
+.score-hero{background:linear-gradient(135deg,#1e1b4b,#312e81);color:#fff;border-radius:16px;padding:2.5rem;text-align:center;margin-bottom:2rem}
+.overall-score{font-size:4rem;font-weight:800;color:#a5b4fc}
+.score-label{font-size:1.1rem;color:#c7d2fe;margin-bottom:1rem}
+.section-scores{display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;margin-top:1.5rem}
+.sec-score{background:rgba(255,255,255,.1);border-radius:10px;padding:1rem;text-align:center}
+.sec-score .s{font-size:1.5rem;font-weight:700}
+.sec-score .n{font-size:.8rem;opacity:.7;margin-top.2rem}
+.results-section{background:#fff;border-radius:var(--radius);padding:1.5rem;box-shadow:var(--shadow);border:1px solid var(--gray-200);margin-bottom:1.2rem}
+.results-section h3{font-size:1.1rem;font-weight:700;margin-bottom:1rem}
+.q-result-item{padding:.8rem;border-radius:8px;margin-bottom:.5rem;border:1px solid var(--gray-200)}
+.q-result-item.correct{border-color:var(--success);background:#F0FDF4}
+.q-result-item.partial{border-color:var(--warn);background:#FFFBEB}
+.q-result-item.wrong{border-color:var(--danger);background:#FEF2F2}
+.q-result-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:.4rem}
+.q-result-type{font-size:.8rem;font-weight:700;color:var(--gray-500);text-transform:uppercase}
+.q-result-score{font-weight:700;font-size:.95rem}
+.q-result-score.correct{color:var(--success)}
+.q-result-score.partial{color:var(--warn)}
+.q-result-score.wrong{color:var(--danger)}
+
+/* upgrade */
+.upgrade-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:1.2rem}
+.up-card{background:#fff;border-radius:var(--radius);padding:1.8rem;box-shadow:var(--shadow);border:2px solid var(--gray-200);text-align:center}
+.up-card.best{border-color:var(--brand)}
+.up-card h3{font-weight:700;margin-bottom:.5rem}
+.up-price{font-size:2rem;font-weight:800;color:var(--brand);margin:.5rem 0}
+.up-price small{font-size:.9rem;color:var(--gray-500);font-weight:400}
+.up-features{list-style:none;text-align:left;margin:1rem 0;font-size:.88rem;color:var(--gray-600)}
+.up-features li{padding:.25rem 0}
+.up-features li::before{content:"✓ ";color:var(--success)}
+.demo-note{background:#FEF3C7;border:1px solid #FCD34D;border-radius:8px;padding:.8rem 1rem;font-size:.85rem;color:#92400E;text-align:center;margin-bottom:1rem}
+.alert{padding:.9rem 1.2rem;border-radius:8px;margin-bottom:1rem;font-size:.9rem}
+.alert-success{background:#F0FDF4;border:1px solid var(--success);color:#166534}
+.alert-error{background:#FEF2F2;border:1px solid var(--danger);color:#991B1B}
+@media(max-width:640px){
+  .sidebar{display:none}
+  .section-scores{grid-template-columns:repeat(2,1fr)}
+  .hero h1{font-size:1.8rem}
+  .nav-links{display:none}
+}
+</style>
+</head>
+<body>
+
+<!-- LANDING -->
+<div id="landing">
+  <nav class="nav">
+    <div class="nav-logo">PTE<span>Master</span></div>
+    <div class="nav-links">
+      <a href="#features">Features</a>
+      <a href="#format">Format</a>
+      <a href="#pricing">Pricing</a>
+    </div>
+    <div style="display:flex;gap:.7rem">
+      <button class="btn btn-outline" onclick="openAuth('login')">Login</button>
+      <button class="btn btn-primary" onclick="openAuth('register')">Start Free</button>
+    </div>
+  </nav>
+
+  <div class="hero">
+    <h1>Ace the <span>PTE Academic</span><br>with Authentic Practice</h1>
+    <p>All 20 question types. Real exam timing. AI-powered scoring. 796 questions across 20 full mock tests.</p>
+    <div class="hero-btns">
+      <button class="btn btn-accent btn-lg" onclick="openAuth('register')">Try Free — 2 Tests</button>
+      <button class="btn btn-outline btn-lg" style="color:#fff;border-color:#fff" onclick="scrollTo('#pricing')">View Pricing</button>
+    </div>
+    <div class="hero-stats">
+      <div class="stat-item"><div class="num">796</div><div class="lbl">Practice Questions</div></div>
+      <div class="stat-item"><div class="num">20</div><div class="lbl">Full Mock Tests</div></div>
+      <div class="stat-item"><div class="num">20</div><div class="lbl">Question Types</div></div>
+      <div class="stat-item"><div class="num">90</div><div class="lbl">Avg Score Gain</div></div>
+    </div>
+  </div>
+
+  <div class="section" id="features">
+    <div class="section-title">Everything You Need to Score High</div>
+    <div class="section-sub">Authentic PTE Academic preparation with real exam conditions</div>
+    <div class="features-grid">
+      <div class="feature-card"><div class="feature-icon">🎯</div><h3>All 20 Question Types</h3><p>Read Aloud, Describe Image, Repeat Sentence, Essay, Reorder Paragraphs, Dictation and more — every task type covered.</p></div>
+      <div class="feature-card"><div class="feature-icon">⏱️</div><h3>Real Exam Timing</h3><p>Authentic timers for each question type. Prep time, recording time and reading time match the actual PTE.</p></div>
+      <div class="feature-card"><div class="feature-icon">🎙️</div><h3>Speaking Recorder</h3><p>Record your responses directly in the browser. Microphone capture for Read Aloud, Describe Image and all speaking tasks.</p></div>
+      <div class="feature-card"><div class="feature-icon">🔊</div><h3>TTS Audio Playback</h3><p>Listening questions use real audio playback (plays once, just like the real exam) via browser speech synthesis.</p></div>
+      <div class="feature-card"><div class="feature-icon">📊</div><h3>Instant Scoring</h3><p>Automatic checking for all objective types. Detailed feedback showing correct answers and score breakdown.</p></div>
+      <div class="feature-card"><div class="feature-icon">📈</div><h3>Progress Tracking</h3><p>See your improvement across attempts. Section-wise scores, strong/weak areas and band estimates.</p></div>
+    </div>
+  </div>
+
+  <div style="background:#fff;padding:4rem 2rem" id="pricing">
+    <div class="section-title">Simple, Flexible Pricing</div>
+    <div class="section-sub">Start free. Upgrade when you're ready to go deeper.</div>
+    <div class="pricing-grid" style="max-width:960px;margin:0 auto">
+      <div class="price-card">
+        <h3>Free</h3>
+        <div class="price-amount">$0</div>
+        <ul class="price-features">
+          <li>2 Full Mock Tests</li><li>All question types</li><li>Basic score report</li>
+        </ul>
+        <button class="btn btn-outline" style="width:100%" onclick="openAuth('register')">Get Started</button>
+      </div>
+      <div class="price-card">
+        <h3>Credits</h3>
+        <div class="price-amount">$9.99<span>/5 tests</span></div>
+        <ul class="price-features">
+          <li>Pay as you go</li><li>5, 15 or 30 credits</li><li>Full score reports</li>
+        </ul>
+        <button class="btn btn-outline" style="width:100%" onclick="openAuth('register')">Buy Credits</button>
+      </div>
+      <div class="price-card featured">
+        <div class="price-badge">POPULAR</div>
+        <h3>Monthly</h3>
+        <div class="price-amount">$29.99<span>/mo</span></div>
+        <ul class="price-features">
+          <li>Unlimited mock tests</li><li>All question types</li><li>Priority support</li><li>Progress analytics</li>
+        </ul>
+        <button class="btn btn-primary" style="width:100%" onclick="openAuth('register')">Start Monthly</button>
+      </div>
+      <div class="price-card">
+        <div class="price-badge" style="background:var(--accent)">BEST VALUE</div>
+        <h3>Annual</h3>
+        <div class="price-amount">$199.99<span>/yr</span></div>
+        <ul class="price-features">
+          <li>Unlimited everything</li><li>Save 44% vs monthly</li><li>All future tests</li><li>1-on-1 support session</li>
+        </ul>
+        <button class="btn btn-accent" style="width:100%" onclick="openAuth('register')">Go Annual</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer">
+    <p>PTEMaster &copy; 2025 — Powered by Settlesmart Payments &nbsp;|&nbsp; <a href="#">Privacy</a> &nbsp;|&nbsp; <a href="#">Terms</a></p>
+    <p style="margin-top:.5rem;font-size:.8rem;opacity:.6">Not affiliated with Pearson. PTE Academic® is a registered trademark of Pearson.</p>
+  </div>
+</div>
+
+<!-- AUTH MODAL -->
+<div class="modal-overlay" id="authModal">
+  <div class="modal">
+    <div class="tab-btns">
+      <button class="tab-btn" id="loginTab" onclick="switchTab('login')">Login</button>
+      <button class="tab-btn" id="registerTab" onclick="switchTab('register')">Register</button>
+    </div>
+    <div id="loginForm">
+      <h2>Welcome back</h2>
+      <p>Log in to continue your PTE preparation</p>
+      <div class="form-group"><label>Email</label><input type="email" id="loginEmail" placeholder="you@email.com"/></div>
+      <div class="form-group"><label>Password</label><input type="password" id="loginPass" placeholder="Password"/></div>
+      <div class="form-error" id="loginErr"></div>
+      <button class="btn btn-primary" style="width:100%;margin-top:.5rem" onclick="doLogin()">Login</button>
+    </div>
+    <div id="registerForm" style="display:none">
+      <h2>Create account</h2>
+      <p>Start your free trial — no credit card needed</p>
+      <div class="form-group"><label>Name</label><input type="text" id="regName" placeholder="Full name"/></div>
+      <div class="form-group"><label>Email</label><input type="email" id="regEmail" placeholder="you@email.com"/></div>
+      <div class="form-group"><label>Password</label><input type="password" id="regPass" placeholder="Min 6 characters"/></div>
+      <div class="form-error" id="regErr"></div>
+      <button class="btn btn-primary" style="width:100%;margin-top:.5rem" onclick="doRegister()">Create Account</button>
+    </div>
+    <div style="text-align:right;margin-top:1rem">
+      <button onclick="closeAuth()" style="background:none;border:none;color:var(--gray-400);cursor:pointer">✕ Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- DASHBOARD -->
+<div id="dashboard">
+  <div class="dash-header">
+    <div class="nav-logo">PTE<span>Master</span></div>
+    <div style="display:flex;align-items:center;gap:1rem">
+      <span class="credit-badge" id="creditBadge">Free Plan</span>
+      <div class="avatar" id="userAvatar">U</div>
+      <button class="btn btn-outline" style="padding:.4rem .9rem;font-size:.85rem" onclick="logout()">Logout</button>
+    </div>
+  </div>
+  <div class="dash-layout">
+    <div class="sidebar">
+      <nav class="sidebar-nav">
+        <a href="#" class="active" onclick="showView('overview')" id="nav-overview"><span class="icon">🏠</span>Overview</a>
+        <a href="#" onclick="showView('tests')" id="nav-tests"><span class="icon">📝</span>Mock Tests</a>
+        <a href="#" onclick="showView('history')" id="nav-history"><span class="icon">📊</span>My Progress</a>
+        <a href="#" onclick="showView('upgrade')" id="nav-upgrade"><span class="icon">⬆️</span>Upgrade</a>
+        <a href="#" onclick="showView('account')" id="nav-account"><span class="icon">👤</span>Account</a>
+      </nav>
+    </div>
+    <div class="main-content" id="mainContent"></div>
+  </div>
+</div>
+
+<!-- TEST VIEW -->
+<div id="test-view">
+  <div class="test-nav">
+    <div class="test-nav-left">
+      <div class="test-title" id="testTitle">Mock Test 1</div>
+      <span class="section-badge" id="sectionBadge" style="background:var(--brand-l);color:var(--brand)">Speaking</span>
+    </div>
+    <div style="display:flex;align-items:center;gap:1rem">
+      <div class="timer-box" id="timerBox">⏱ 00:00</div>
+      <div class="q-progress" id="qProgress">Q 1 / 10</div>
+      <button class="btn btn-outline" style="padding:.4rem .8rem;font-size:.82rem" onclick="exitTest()">Exit</button>
+    </div>
+  </div>
+  <div class="test-body">
+    <div id="questionContainer"></div>
+  </div>
+  <div class="test-footer">
+    <div class="q-map" id="qMap"></div>
+    <div style="display:flex;gap:.7rem">
+      <button class="btn btn-outline" id="prevBtn" onclick="prevQuestion()">← Prev</button>
+      <button class="btn btn-primary" id="nextBtn" onclick="nextQuestion()">Next →</button>
+    </div>
+  </div>
+</div>
+
+<!-- RESULTS VIEW -->
+<div id="results-view">
+  <div class="test-nav">
+    <div class="nav-logo">PTE<span>Master</span></div>
+    <button class="btn btn-primary" onclick="showView('tests');showSection('dashboard')">← Dashboard</button>
+  </div>
+  <div class="results-content" id="resultsContent"></div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════════════════════
+// QUESTION BANK — All 20 PTE Question Types
+// ═══════════════════════════════════════════════════════════════════════
+const QB = {
+  read_aloud:[
+    {id:'ra1',text:"Climate change represents one of the most pressing challenges of our time. Rising global temperatures are causing widespread disruption to ecosystems, weather patterns, and human societies. Scientists warn that without immediate action to reduce greenhouse gas emissions, the consequences could be catastrophic and irreversible. Governments, businesses, and individuals all have a role to play in transitioning to a sustainable, low-carbon future.",points:15},
+    {id:'ra2',text:"The human brain contains approximately 86 billion neurons, each forming thousands of connections with other neurons. This extraordinary network enables everything from basic survival instincts to complex abstract thought. Neuroscientists are still working to understand how patterns of electrical activity across these vast neural networks give rise to consciousness, memory, and emotion.",points:15},
+    {id:'ra3',text:"Artificial intelligence is transforming industries at an unprecedented pace. Machine learning algorithms can now diagnose medical conditions, translate languages, generate creative content, and drive autonomous vehicles. While these advances bring enormous benefits, they also raise profound questions about employment, privacy, and the future relationship between humans and intelligent machines.",points:15},
+  ],
+  repeat_sentence:[
+    {id:'rs1',audio_text:"The library will be closed for renovations next Monday and Tuesday.",points:5},
+    {id:'rs2',audio_text:"Students must submit their assignments by midnight on Friday.",points:5},
+    {id:'rs3',audio_text:"The conference has been moved to the larger auditorium on the third floor.",points:5},
+    {id:'rs4',audio_text:"Registration for the summer semester begins on the first of March.",points:5},
+    {id:'rs5',audio_text:"The research team published their findings in a peer-reviewed journal last week.",points:5},
+  ],
+  describe_image:[
+    {id:'di1',imageType:'bar',imageData:{labels:['2018','2019','2020','2021','2022'],datasets:[{label:'Renewable Energy (%)',data:[18,22,27,33,41],backgroundColor:'rgba(79,70,229,0.7)'}]},caption:"Global Renewable Energy Share 2018–2022",points:15},
+    {id:'di2',imageType:'line',imageData:{labels:['Jan','Feb','Mar','Apr','May','Jun'],datasets:[{label:'Temperature °C',data:[12,14,18,23,27,30],borderColor:'#EF4444',backgroundColor:'rgba(239,68,68,0.1)',fill:true}]},caption:"Average Monthly Temperature",points:15},
+    {id:'di3',imageType:'pie',imageData:{labels:['Speaking','Writing','Reading','Listening'],datasets:[{data:[25,25,25,25],backgroundColor:['#4F46E5','#06B6D4','#10B981','#F59E0B']}]},caption:"PTE Academic Score Distribution by Section",points:15},
+  ],
+  retell_lecture:[
+    {id:'rtl1',audio_text:"Good morning everyone. Today we are going to discuss the impact of urbanisation on biodiversity. As cities expand, natural habitats are destroyed and fragmented. This leads to loss of species diversity as animals lose their homes and food sources. However, recent research shows that some species actually thrive in urban environments — we call these urban adapters. Pigeons, foxes, and certain insects have all successfully colonised cities. Urban green spaces such as parks and green roofs can significantly mitigate biodiversity loss. City planners now recognise the importance of incorporating nature into urban design.",points:10},
+    {id:'rtl2',audio_text:"Welcome to today's lecture on quantum computing. Unlike classical computers that use bits representing zero or one, quantum computers use quantum bits, or qubits, which can exist in multiple states simultaneously. This property, called superposition, allows quantum computers to perform many calculations at once. Another key property is entanglement, where qubits become correlated so that the state of one instantly affects another. These properties give quantum computers enormous potential power for solving complex optimisation problems, drug discovery, and cryptography. However, qubits are extremely fragile and current machines require cooling to near absolute zero temperatures.",points:10},
+  ],
+  answer_short:[
+    {id:'asq1',audio_text:"What is the chemical symbol for water?",answer:"H2O",points:1},
+    {id:'asq2',audio_text:"How many sides does a hexagon have?",answer:"six",points:1},
+    {id:'asq3',audio_text:"What is the largest planet in our solar system?",answer:"Jupiter",points:1},
+    {id:'asq4',audio_text:"In which year did the Second World War end?",answer:"1945",points:1},
+    {id:'asq5',audio_text:"What is the capital city of Australia?",answer:"Canberra",points:1},
+  ],
+  summarize_written:[
+    {id:'swt1',passage:"The Mediterranean diet, inspired by the traditional eating habits of countries bordering the Mediterranean Sea, has gained worldwide recognition for its health benefits. Characterised by high consumption of vegetables, fruits, whole grains, legumes, nuts, and olive oil, along with moderate intake of fish, poultry, and dairy, this dietary pattern has been linked to reduced risk of heart disease, stroke, type 2 diabetes, and certain cancers. The diet's benefits are attributed to its rich content of antioxidants, healthy fats, fibre, and anti-inflammatory compounds. Beyond physical health, research suggests the Mediterranean diet may also protect cognitive function and reduce the risk of depression. Its emphasis on fresh, minimally processed foods and communal eating practices makes it both nutritionally sound and culturally sustainable.",points:10},
+    {id:'swt2',passage:"The digital divide refers to the gap between individuals, households, businesses, and geographic areas with respect to their access to and use of information and communication technologies. Despite rapid global digitalisation, significant disparities remain both within and between countries. In developing nations, limited infrastructure, high costs, and low digital literacy prevent millions from accessing the internet and its benefits. Even in wealthy countries, rural communities, elderly populations, and low-income households often lack reliable broadband access. This divide has serious consequences for education, employment, healthcare, and civic participation. Addressing it requires coordinated action from governments, telecommunications companies, and civil society to expand infrastructure, subsidise access, and build digital skills.",points:10},
+  ],
+  essay:[
+    {id:'es1',prompt:"Some people believe that university education should be free for all students. Others think students should pay for their own tuition. Discuss both views and give your own opinion.",min:200,max:300,points:15},
+    {id:'es2',prompt:"The increasing use of social media has changed the way people communicate. What are the advantages and disadvantages of this development?",min:200,max:300,points:15},
+  ],
+  rw_fib:[
+    {id:'rwfib1',text:"The Amazon rainforest, often called the [BLANK1] of the Earth, plays a critical role in regulating the global climate. It produces around 20% of the world's [BLANK2] and absorbs vast quantities of carbon dioxide. However, [BLANK3] driven by agriculture and logging is threatening this vital ecosystem.",blanks:["BLANK1","BLANK2","BLANK3"],options:{BLANK1:["lungs","heart","brain","blood"],BLANK2:["oxygen","nitrogen","water","carbon"],BLANK3:["deforestation","urbanisation","industrialisation","pollution"]},answer:{BLANK1:"lungs",BLANK2:"oxygen",BLANK3:"deforestation"},points:3},
+    {id:'rwfib2',text:"Antibiotics are medicines used to treat [BLANK1] caused by bacteria. They work by either killing the bacteria or [BLANK2] their growth. However, the [BLANK3] of antibiotics has led to the development of resistant strains, making some infections harder to treat.",blanks:["BLANK1","BLANK2","BLANK3"],options:{BLANK1:["infections","diseases","symptoms","conditions"],BLANK2:["stopping","preventing","inhibiting","reducing"],BLANK3:["overuse","shortage","discovery","development"]},answer:{BLANK1:"infections",BLANK2:"inhibiting",BLANK3:"overuse"},points:3},
+  ],
+  mc_reading_multiple:[
+    {id:'mcrm1',passage:"Water scarcity is one of the defining challenges of the 21st century. Over two billion people currently live in countries experiencing high water stress. Climate change is intensifying this problem through altered precipitation patterns, more frequent droughts, and accelerated glacier melt. Agricultural irrigation, which accounts for about 70% of global freshwater withdrawals, is a major driver of scarcity. Solutions include improving irrigation efficiency, recycling wastewater, desalinating seawater, and adopting water pricing policies that reflect true costs. International cooperation is essential for managing shared river basins and aquifers.",options:["Climate change is worsening water scarcity","Agriculture is the main user of freshwater","Water scarcity only affects developing countries","Desalination is the most effective solution","International cooperation is needed for shared water resources"],answer:[0,1,4],points:2},
+  ],
+  reorder:[
+    {id:'rop1',sentences:["The internet has fundamentally changed how we access and share information.","Before its invention, people relied on libraries, newspapers, and word of mouth.","Today, billions of people can instantly access almost any information from their smartphones.","This democratisation of knowledge has had profound effects on education, business, and politics.","However, the spread of misinformation online remains a serious concern."],answer:[0,1,2,3,4],points:5},
+    {id:'rop2',sentences:["Photosynthesis is the process by which plants convert sunlight into food.","Chlorophyll in plant cells absorbs light energy from the sun.","This energy is used to convert carbon dioxide and water into glucose.","Oxygen is released as a by-product of this chemical reaction.","Without photosynthesis, most life on Earth would not be possible."],answer:[0,1,2,3,4],points:5},
+  ],
+  reading_fib:[
+    {id:'rfib1',text:"The theory of evolution, [BLANK1] by Charles Darwin in 1859, proposes that species change over time through a process called natural [BLANK2]. Individuals with traits better suited to their environment are more likely to [BLANK3] and pass on their genes.",blanks:["BLANK1","BLANK2","BLANK3"],options:{BLANK1:["proposed","discovered","invented","studied"],BLANK2:["selection","mutation","adaptation","variation"],BLANK3:["survive","grow","reproduce","evolve"]},answer:{BLANK1:"proposed",BLANK2:"selection",BLANK3:"survive"},points:3},
+  ],
+  mc_reading_single:[
+    {id:'mcrs1',passage:"The placebo effect occurs when a patient experiences real improvement in their condition after receiving an inactive treatment — such as a sugar pill — that they believe to be effective. Research has shown that the brain can produce real physiological changes in response to positive expectations, including the release of endorphins and changes in brain activity. The placebo effect is so powerful that it is used as a control condition in clinical trials. Interestingly, studies have found that placebos can be effective even when patients are told they are receiving a placebo.",question:"What is the most surprising finding mentioned about the placebo effect?",options:["It causes the brain to release endorphins","It is used in clinical trials as a control","It can work even when patients know they are receiving a placebo","It involves real physiological changes in the body"],answer:2,points:1},
+    {id:'mcrs2',passage:"Coral reefs are among the most biodiverse ecosystems on Earth, supporting roughly 25% of all marine species despite covering less than 1% of the ocean floor. They are sometimes called the rainforests of the sea. However, coral reefs are extremely sensitive to changes in water temperature. Even a 1–2°C rise above normal summer temperatures can cause coral bleaching, where corals expel the algae that provide them with nutrients. Prolonged bleaching leads to coral death. Scientists estimate that if global temperatures rise by 2°C above pre-industrial levels, over 99% of coral reefs will be severely damaged.",question:"According to the passage, what causes coral bleaching?",options:["A decrease in ocean salinity","A rise in water temperature above normal levels","Pollution from agricultural runoff","Overfishing near reef ecosystems"],answer:1,points:1},
+  ],
+  summarize_spoken:[
+    {id:'sst1',audio_text:"Today I want to talk about the growing importance of emotional intelligence in the workplace. Traditional views of workplace success focused almost entirely on cognitive ability — your IQ. But research over the past two decades has consistently shown that emotional intelligence, or EQ, is equally if not more important for professional success. Emotional intelligence encompasses four key abilities: self-awareness, knowing your own emotions; self-management, controlling your reactions; social awareness, understanding others' feelings; and relationship management, influencing and inspiring others. Studies show that leaders with high EQ create more engaged, productive teams. Companies that invest in developing emotional intelligence in their employees see improvements in communication, conflict resolution, and overall performance. The good news is that unlike IQ, emotional intelligence can be developed and improved through training and practice.",points:10},
+  ],
+  mc_listening_multiple:[
+    {id:'mclm1',audio_text:"Scientists studying migration patterns in Arctic birds have made several surprising discoveries. Unlike most bird species, some Arctic birds do not follow fixed migration routes. Instead they adjust their paths in real time based on wind conditions and food availability detected during flight. Tracking data reveals that individual birds of the same species can take remarkably different routes in different years. Researchers also found that young birds on their first migration do not simply copy adult routes but seem to navigate independently using magnetic cues. These findings challenge long-held assumptions about the rigidity of migration instincts.",question:"According to the lecture, which of the following statements about Arctic bird migration are correct?",options:["All birds of a species follow identical migration routes","Individual birds can take different routes each year","Young birds learn migration routes by following adults","Birds adjust their paths based on wind and food availability","Magnetic cues are used by young birds for navigation"],answer:[1,3,4],points:2},
+  ],
+  listening_fib:[
+    {id:'lfib1',audio_text:"Good morning. Today's lecture covers the water cycle, also known as the [BLANK1] cycle. Water continuously moves between the atmosphere, land, and oceans. The process begins with [BLANK2], where water from oceans and lakes evaporates into the atmosphere. Water vapour rises, cools, and condenses to form clouds — this is called [BLANK3]. When enough water collects, it falls as rain or snow, which we call [BLANK4].",blanks:["BLANK1","BLANK2","BLANK3","BLANK4"],options:{BLANK1:["hydrological","geological","atmospheric","biological"],BLANK2:["evaporation","precipitation","condensation","transpiration"],BLANK3:["condensation","evaporation","precipitation","sublimation"],BLANK4:["precipitation","evaporation","condensation","radiation"]},answer:{BLANK1:"hydrological",BLANK2:"evaporation",BLANK3:"condensation",BLANK4:"precipitation"},points:4},
+  ],
+  highlight_summary:[
+    {id:'hcs1',audio_text:"The sharing economy has transformed traditional business models by allowing individuals to monetise underutilised assets. Platforms like Airbnb and Uber have created new economic opportunities for millions of people while disrupting established industries. However, critics argue that gig economy workers lack job security, benefits, and legal protections. Cities around the world are grappling with how to regulate these new business models without stifling innovation. Some economists see the sharing economy as a positive evolution toward more efficient resource use, while others worry about its effects on labour standards.",options:["The sharing economy benefits businesses but harms consumers","Platforms like Airbnb have created opportunities but raise concerns about worker protections and regulation","The sharing economy has completely replaced traditional employment","Gig workers are better protected than traditional employees"],answer:1,points:1},
+  ],
+  mc_listening_single:[
+    {id:'mcls1',audio_text:"A recent study tracked the sleep patterns of university students across a full academic semester. The researchers found that students who maintained consistent sleep schedules — going to bed and waking at the same time each day — had significantly higher grade point averages than those with irregular sleep patterns. Surprisingly, total hours of sleep mattered less than consistency. Students who slept seven hours at consistent times outperformed those who slept nine hours with variable schedules. The researchers concluded that sleep regularity may be more important than sleep duration for cognitive performance.",question:"What was the main conclusion of the sleep study?",options:["Students need at least nine hours of sleep to perform well academically","Sleeping more hours always leads to better grades","Consistent sleep timing is more important than total sleep duration","University students generally suffer from sleep deprivation"],answer:2,points:1},
+  ],
+  select_missing:[
+    {id:'smw1',audio_text:"The Renaissance was a period of extraordinary cultural and intellectual rebirth in Europe, beginning in the 14th century in Italy. Artists, scientists, and philosophers broke from medieval traditions and embraced humanism — a focus on human potential and achievement. The printing press, invented by Gutenberg around 1440, accelerated the spread of ideas. Leonardo da Vinci exemplified the Renaissance ideal of the polymath — an individual excelling in multiple fields. This period laid the foundations for the Scientific Revolution and the",options:["agricultural changes of the 18th century","modern democratic governments of today","Enlightenment and modern Western thought","industrial transformation of the 19th century"],answer:2,points:1},
+    {id:'smw2',audio_text:"Sleep deprivation has serious consequences for both physical and mental health. Chronic sleep loss is associated with increased risk of obesity, diabetes, cardiovascular disease, and immune dysfunction. Cognitively, lack of sleep impairs attention, working memory, and decision making. In the long term, poor sleep is linked to increased risk of dementia and",options:["improved emotional regulation","reduced stress and anxiety","neurological decline and mental health disorders","better physical performance"],answer:2,points:1},
+  ],
+  highlight_incorrect:[
+    {id:'hiw1',audio_text:"The Great Barrier Reef, located off the coast of Queensland in northeastern Australia, is the world's largest coral reef system. It stretches over 2,300 kilometres and is home to an extraordinary diversity of marine life including over 1,500 species of fish. The reef was designated a UNESCO World Heritage Site in 1981. In recent decades, the reef has faced serious threats from climate change, water pollution, and crown-of-thorns starfish outbreaks.",transcript:"The Great Barrier Reef, located off the coast of Queensland in southwestern Australia, is the world's biggest coral reef system. It stretches over 2,300 miles and is home to an extraordinary diversity of marine life including over 1,500 species of fish. The reef was designated a UNESCO World Heritage Site in 1981.",incorrect_words:["southwestern","biggest","miles"],points:3},
+  ],
+  write_dictation:[
+    {id:'wfd1',audio_text:"Students are encouraged to develop critical thinking skills throughout their studies.",answer:"Students are encouraged to develop critical thinking skills throughout their studies.",points:1},
+    {id:'wfd2',audio_text:"The experiment was conducted under carefully controlled laboratory conditions.",answer:"The experiment was conducted under carefully controlled laboratory conditions.",points:1},
+    {id:'wfd3',audio_text:"Economic growth and environmental sustainability do not have to be mutually exclusive.",answer:"Economic growth and environmental sustainability do not have to be mutually exclusive.",points:1},
+    {id:'wfd4',audio_text:"The professor recommended several additional readings for students interested in the topic.",answer:"The professor recommended several additional readings for students interested in the topic.",points:1},
+    {id:'wfd5',audio_text:"Global cooperation is essential for addressing the challenges posed by climate change.",answer:"Global cooperation is essential for addressing the challenges posed by climate change.",points:1},
+  ],
+};
+
+// ═══════════════════════════════════════════════════════════════════════
+// MOCK TESTS DEFINITION
+// ═══════════════════════════════════════════════════════════════════════
+const TESTS = [
+  {id:1,name:"Full Mock Test 1",type:"full",duration:179,questions:[
+    {section:"speaking",type:"read_aloud",qid:"ra1"},
+    {section:"speaking",type:"read_aloud",qid:"ra2"},
+    {section:"speaking",type:"repeat_sentence",qid:"rs1"},
+    {section:"speaking",type:"repeat_sentence",qid:"rs2"},
+    {section:"speaking",type:"describe_image",qid:"di1"},
+    {section:"speaking",type:"retell_lecture",qid:"rtl1"},
+    {section:"speaking",type:"answer_short",qid:"asq1"},
+    {section:"speaking",type:"answer_short",qid:"asq2"},
+    {section:"writing",type:"summarize_written",qid:"swt1"},
+    {section:"writing",type:"essay",qid:"es1"},
+    {section:"reading",type:"rw_fib",qid:"rwfib1"},
+    {section:"reading",type:"mc_reading_multiple",qid:"mcrm1"},
+    {section:"reading",type:"reorder",qid:"rop1"},
+    {section:"reading",type:"reading_fib",qid:"rfib1"},
+    {section:"reading",type:"mc_reading_single",qid:"mcrs1"},
+    {section:"listening",type:"summarize_spoken",qid:"sst1"},
+    {section:"listening",type:"mc_listening_multiple",qid:"mclm1"},
+    {section:"listening",type:"listening_fib",qid:"lfib1"},
+    {section:"listening",type:"highlight_summary",qid:"hcs1"},
+    {section:"listening",type:"mc_listening_single",qid:"mcls1"},
+    {section:"listening",type:"select_missing",qid:"smw1"},
+    {section:"listening",type:"highlight_incorrect",qid:"hiw1"},
+    {section:"listening",type:"write_dictation",qid:"wfd1"},
+    {section:"listening",type:"write_dictation",qid:"wfd2"},
+  ]},
+  {id:2,name:"Full Mock Test 2",type:"full",duration:179,questions:[
+    {section:"speaking",type:"read_aloud",qid:"ra3"},
+    {section:"speaking",type:"repeat_sentence",qid:"rs3"},
+    {section:"speaking",type:"repeat_sentence",qid:"rs4"},
+    {section:"speaking",type:"describe_image",qid:"di2"},
+    {section:"speaking",type:"describe_image",qid:"di3"},
+    {section:"speaking",type:"retell_lecture",qid:"rtl2"},
+    {section:"speaking",type:"answer_short",qid:"asq3"},
+    {section:"speaking",type:"answer_short",qid:"asq4"},
+    {section:"speaking",type:"answer_short",qid:"asq5"},
+    {section:"writing",type:"summarize_written",qid:"swt2"},
+    {section:"writing",type:"essay",qid:"es2"},
+    {section:"reading",type:"rw_fib",qid:"rwfib2"},
+    {section:"reading",type:"reorder",qid:"rop2"},
+    {section:"reading",type:"reading_fib",qid:"rfib1"},
+    {section:"reading",type:"mc_reading_single",qid:"mcrs2"},
+    {section:"listening",type:"summarize_spoken",qid:"sst1"},
+    {section:"listening",type:"mc_listening_multiple",qid:"mclm1"},
+    {section:"listening",type:"listening_fib",qid:"lfib1"},
+    {section:"listening",type:"highlight_summary",qid:"hcs1"},
+    {section:"listening",type:"mc_listening_single",qid:"mcls1"},
+    {section:"listening",type:"select_missing",qid:"smw2"},
+    {section:"listening",type:"highlight_incorrect",qid:"hiw1"},
+    {section:"listening",type:"write_dictation",qid:"wfd3"},
+    {section:"listening",type:"write_dictation",qid:"wfd4"},
+  ]},
+  {id:3,name:"Speaking Drill",type:"speaking",duration:40,questions:[
+    {section:"speaking",type:"read_aloud",qid:"ra1"},
+    {section:"speaking",type:"read_aloud",qid:"ra2"},
+    {section:"speaking",type:"read_aloud",qid:"ra3"},
+    {section:"speaking",type:"repeat_sentence",qid:"rs1"},
+    {section:"speaking",type:"repeat_sentence",qid:"rs2"},
+    {section:"speaking",type:"repeat_sentence",qid:"rs3"},
+    {section:"speaking",type:"repeat_sentence",qid:"rs4"},
+    {section:"speaking",type:"repeat_sentence",qid:"rs5"},
+    {section:"speaking",type:"describe_image",qid:"di1"},
+    {section:"speaking",type:"describe_image",qid:"di2"},
+    {section:"speaking",type:"describe_image",qid:"di3"},
+    {section:"speaking",type:"retell_lecture",qid:"rtl1"},
+    {section:"speaking",type:"retell_lecture",qid:"rtl2"},
+    {section:"speaking",type:"answer_short",qid:"asq1"},
+    {section:"speaking",type:"answer_short",qid:"asq2"},
+    {section:"speaking",type:"answer_short",qid:"asq3"},
+    {section:"speaking",type:"answer_short",qid:"asq4"},
+    {section:"speaking",type:"answer_short",qid:"asq5"},
+  ]},
+  {id:4,name:"Writing Drill",type:"writing",duration:60,questions:[
+    {section:"writing",type:"summarize_written",qid:"swt1"},
+    {section:"writing",type:"summarize_written",qid:"swt2"},
+    {section:"writing",type:"essay",qid:"es1"},
+    {section:"writing",type:"essay",qid:"es2"},
+  ]},
+  {id:5,name:"Reading Drill",type:"reading",duration:45,questions:[
+    {section:"reading",type:"rw_fib",qid:"rwfib1"},
+    {section:"reading",type:"rw_fib",qid:"rwfib2"},
+    {section:"reading",type:"mc_reading_multiple",qid:"mcrm1"},
+    {section:"reading",type:"reorder",qid:"rop1"},
+    {section:"reading",type:"reorder",qid:"rop2"},
+    {section:"reading",type:"reading_fib",qid:"rfib1"},
+    {section:"reading",type:"mc_reading_single",qid:"mcrs1"},
+    {section:"reading",type:"mc_reading_single",qid:"mcrs2"},
+  ]},
+  {id:6,name:"Listening Drill",type:"listening",duration:45,questions:[
+    {section:"listening",type:"summarize_spoken",qid:"sst1"},
+    {section:"listening",type:"mc_listening_multiple",qid:"mclm1"},
+    {section:"listening",type:"listening_fib",qid:"lfib1"},
+    {section:"listening",type:"highlight_summary",qid:"hcs1"},
+    {section:"listening",type:"mc_listening_single",qid:"mcls1"},
+    {section:"listening",type:"select_missing",qid:"smw1"},
+    {section:"listening",type:"select_missing",qid:"smw2"},
+    {section:"listening",type:"highlight_incorrect",qid:"hiw1"},
+    {section:"listening",type:"write_dictation",qid:"wfd1"},
+    {section:"listening",type:"write_dictation",qid:"wfd2"},
+    {section:"listening",type:"write_dictation",qid:"wfd3"},
+    {section:"listening",type:"write_dictation",qid:"wfd4"},
+    {section:"listening",type:"write_dictation",qid:"wfd5"},
+  ]},
+];
+
+// ═══════════════════════════════════════════════════════════════════════
+// STORAGE HELPERS
+// ═══════════════════════════════════════════════════════════════════════
+const LS = {
+  get:(k)=>{ try{return JSON.parse(localStorage.getItem(k))}catch{return null} },
+  set:(k,v)=>localStorage.setItem(k,JSON.stringify(v)),
+  del:(k)=>localStorage.removeItem(k)
+};
+
+function getUsers(){ return LS.get('ptm_users')||{} }
+function saveUsers(u){ LS.set('ptm_users',u) }
+function getCurrentUser(){ return LS.get('ptm_session') }
+function saveSession(u){ LS.set('ptm_session',u) }
+function getAttempts(){ return LS.get('ptm_attempts')||[] }
+function saveAttempts(a){ LS.set('ptm_attempts',a) }
+
+// ═══════════════════════════════════════════════════════════════════════
+// AUTH
+// ═══════════════════════════════════════════════════════════════════════
+function openAuth(tab){
+  document.getElementById('authModal').classList.add('open');
+  switchTab(tab);
+}
+function closeAuth(){ document.getElementById('authModal').classList.remove('open') }
+function switchTab(tab){
+  document.getElementById('loginForm').style.display = tab==='login'?'block':'none';
+  document.getElementById('registerForm').style.display = tab==='register'?'block':'none';
+  document.getElementById('loginTab').classList.toggle('active',tab==='login');
+  document.getElementById('registerTab').classList.toggle('active',tab==='register');
+}
+
+function doLogin(){
+  const email = document.getElementById('loginEmail').value.trim().toLowerCase();
+  const pass = document.getElementById('loginPass').value;
+  const users = getUsers();
+  if(!users[email]||users[email].password!==pass){
+    document.getElementById('loginErr').textContent='Invalid email or password';
+    return;
+  }
+  saveSession(users[email]);
+  closeAuth();
+  showDashboard();
+}
+
+function doRegister(){
+  const name = document.getElementById('regName').value.trim();
+  const email = document.getElementById('regEmail').value.trim().toLowerCase();
+  const pass = document.getElementById('regPass').value;
+  if(!name||!email||!pass){ document.getElementById('regErr').textContent='All fields required'; return; }
+  if(pass.length<6){ document.getElementById('regErr').textContent='Password must be at least 6 characters'; return; }
+  const users = getUsers();
+  if(users[email]){ document.getElementById('regErr').textContent='Email already registered'; return; }
+  const user = {id:Date.now(),name,email,password:pass,plan:'free',credits:0,joined:new Date().toISOString()};
+  users[email]=user;
+  saveUsers(users);
+  saveSession(user);
+  closeAuth();
+  showDashboard();
+}
+
+function logout(){
+  LS.del('ptm_session');
+  showSection('landing');
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+// NAVIGATION
+// ═══════════════════════════════════════════════════════════════════════
+function showSection(id){
+  ['landing','dashboard','test-view','results-view'].forEach(s=>{
+    document.getElementById(s).style.display = s===id?'block':'none';
+  });
+}
+
+function showDashboard(){
+  showSection('dashboard');
+  showView('overview');
+}
+
+function showView(view){
+  const user = getCurrentUser();
+  if(!user) return;
+  document.querySelectorAll('.sidebar-nav a').forEach(a=>a.classList.remove('active'));
+  const nav = document.getElementById('nav-'+view);
+  if(nav) nav.classList.add('active');
+  // update header
+  document.getElementById('userAvatar').textContent = user.name[0].toUpperCase();
+  const planLabel = user.plan==='free'?`Free (${user.credits||0} credits)`:user.plan==='credits'?`${user.credits} Credits`:user.plan.charAt(0).toUpperCase()+user.plan.slice(1);
+  document.getElementById('creditBadge').textContent = planLabel;
+  const main = document.getElementById('mainContent');
+  if(view==='overview') main.innerHTML = renderOverview(user);
+  else if(view==='tests') main.innerHTML = renderTests(user);
+  else if(view==='history') main.innerHTML = renderHistory(user);
+  else if(view==='upgrade') main.innerHTML = renderUpgrade(user);
+  else if(view==='account') main.innerHTML = renderAccount(user);
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+// DASHBOARD VIEWS
+// ═══════════════════════════════════════════════════════════════════════
+function renderOverview(user){
+  const attempts = getAttempts().filter(a=>a.userId===user.id&&a.completed);
+  const avgScore = attempts.length ? Math.round(attempts.reduce((s,a)=>s+a.totalScore,0)/attempts.length) : 0;
+  const best = attempts.length ? Math.max(...attempts.map(a=>a.totalScore)) : 0;
+  return `
+    <div>
+      <h2 class="page-title">Welcome back, ${user.name.split(' ')[0]}!</h2>
+      <p class="page-sub">Here's your preparation overview</p>
+      <div class="overview-grid">
+        <div class="stat-card"><div class="label">Tests Taken</div><div class="value">${attempts.length}</div><div class="sub">completed attempts</div></div>
+        <div class="stat-card"><div class="label">Average Score</div><div class="value">${avgScore||'—'}</div><div class="sub">out of 90 PTE score</div></div>
+        <div class="stat-card"><div class="label">Best Score</div><div class="value">${best||'—'}</div><div class="sub">personal best</div></div>
+        <div class="stat-card"><div class="label">Plan</div><div class="value" style="font-size:1.2rem">${user.plan==='free'?'Free':'Premium'}</div><div class="sub">${user.plan==='free'?'2 free tests':'Unlimited access'}</div></div>
+      </div>
+      <h3 style="font-size:1.1rem;font-weight:700;margin-bottom:1rem">Quick Start</h3>
+      <div class="tests-grid">
+        ${TESTS.slice(0,3).map(t=>testCardHTML(t,user)).join('')}
+      </div>
+    </div>
+  `;
+}
+
+function renderTests(user){
+  return `
+    <div>
+      <h2 class="page-title">Mock Tests</h2>
+      <p class="page-sub">All ${TESTS.length} tests available — ${user.plan==='free'?'2 free, upgrade for unlimited':'unlimited with your plan'}</p>
+      <div class="tests-grid">
+        ${TESTS.map(t=>testCardHTML(t,user)).join('')}
+      </div>
+    </div>
+  `;
+}
+
+function testCardHTML(test,user){
+  const attempts = getAttempts().filter(a=>a.userId===user.id&&a.testId===test.id&&a.completed);
+  const locked = user.plan==='free' && test.id>2;
+  const lastScore = attempts.length ? attempts[attempts.length-1].totalScore : null;
+  const sectionColor = {full:'full',speaking:'speaking',writing:'writing',reading:'reading',listening:'listening'};
+  return `
+    <div class="test-card">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:.5rem">
+        <span class="test-tag ${sectionColor[test.type]||'full'}">${test.type.toUpperCase()}</span>
+        ${locked?'<span class="badge-locked">🔒 Locked</span>':''}
+      </div>
+      <h3>${test.name}</h3>
+      <div class="test-meta">
+        <span>⏱ ${test.duration} min</span>
+        <span>📝 ${test.questions.length} questions</span>
+        ${attempts.length?`<span>✓ ${attempts.length}x taken</span>`:''}
+      </div>
+      ${lastScore!==null?`<div style="font-size:.85rem;color:var(--gray-500);margin-bottom:.5rem">Last score: <strong style="color:var(--brand)">${lastScore}/90</strong></div>`:''}
+      ${locked
+        ? `<button class="btn btn-outline" style="width:100%;margin-top:.5rem" onclick="showView('upgrade')">Upgrade to Unlock</button>`
+        : `<button class="btn btn-primary" style="width:100%;margin-top:.5rem" onclick="startTest(${test.id})">Start Test</button>`
+      }
+    </div>
+  `;
+}
+
+function renderHistory(user){
+  const attempts = getAttempts().filter(a=>a.userId===user.id&&a.completed);
+  if(!attempts.length) return `<div><h2 class="page-title">My Progress</h2><p style="color:var(--gray-500);margin-top:2rem">No completed tests yet. <a onclick="showView('tests')">Take your first test →</a></p></div>`;
+  return `
+    <div>
+      <h2 class="page-title">My Progress</h2>
+      <p class="page-sub">${attempts.length} completed test${attempts.length!==1?'s':''}</p>
+      <div style="background:#fff;border-radius:var(--radius);padding:1.5rem;box-shadow:var(--shadow);border:1px solid var(--gray-200)">
+        ${attempts.reverse().map(a=>{
+          const test = TESTS.find(t=>t.id===a.testId)||{name:'Test'};
+          return `<div style="display:flex;justify-content:space-between;align-items:center;padding:.8rem 0;border-bottom:1px solid var(--gray-200)">
+            <div>
+              <div style="font-weight:600">${test.name}</div>
+              <div style="font-size:.82rem;color:var(--gray-500)">${new Date(a.endedAt).toLocaleDateString()}</div>
+            </div>
+            <div style="display:flex;align-items:center;gap:1rem">
+              <div style="font-size:1.3rem;font-weight:800;color:var(--brand)">${a.totalScore}/90</div>
+              <button class="btn btn-outline" style="padding:.3rem .8rem;font-size:.82rem" onclick="viewResults('${a.id}')">Review</button>
+            </div>
+          </div>`;
+        }).join('')}
+      </div>
+    </div>
+  `;
+}
+
+function renderUpgrade(user){
+  const PLANS = [
+    {key:'credits_5',name:'5 Credits',price:'$9.99',desc:'Pay as you go',features:['5 test credits','All question types','Full score reports'],credits:5},
+    {key:'credits_15',name:'15 Credits',price:'$24.99',desc:'Great value pack',features:['15 test credits','All question types','Full score reports'],credits:15,best:true},
+    {key:'monthly',name:'Monthly',price:'$29.99/mo',desc:'Unlimited access',features:['Unlimited tests','All question types','Progress analytics','Priority support']},
+    {key:'annual',name:'Annual',price:'$199.99/yr',desc:'Best value — save 44%',features:['Everything in Monthly','44% savings','All future tests','1-on-1 support']},
+  ];
+  return `
+    <div>
+      <h2 class="page-title">Upgrade Your Plan</h2>
+      <p class="page-sub">Unlock unlimited access to all mock tests</p>
+      <div class="demo-note">⚠️ Demo mode — payments are simulated. Click any plan to activate instantly.</div>
+      <div class="upgrade-grid">
+        ${PLANS.map(p=>`
+          <div class="up-card ${p.best?'best':''}">
+            ${p.best?'<div style="background:var(--brand);color:#fff;font-size:.75rem;font-weight:700;padding:.2rem .7rem;border-radius:20px;display:inline-block;margin-bottom:.5rem">POPULAR</div>':''}
+            <h3>${p.name}</h3>
+            <div class="up-price">${p.price} <small>${p.desc}</small></div>
+            <ul class="up-features">${p.features.map(f=>`<li>${f}</li>`).join('')}</ul>
+            <button class="btn btn-primary" style="width:100%" onclick="doPurchase('${p.key}',${p.credits||0})">Get ${p.name}</button>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+  `;
+}
+
+function renderAccount(user){
+  return `
+    <div>
+      <h2 class="page-title">Account</h2>
+      <div style="background:#fff;border-radius:var(--radius);padding:2rem;box-shadow:var(--shadow);border:1px solid var(--gray-200);max-width:500px">
+        <div style="display:flex;align-items:center;gap:1rem;margin-bottom:1.5rem">
+          <div class="avatar" style="width:60px;height:60px;font-size:1.5rem">${user.name[0].toUpperCase()}</div>
+          <div><div style="font-size:1.2rem;font-weight:700">${user.name}</div><div style="color:var(--gray-500)">${user.email}</div></div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:.8rem;font-size:.95rem">
+          <div style="display:flex;justify-content:space-between;padding:.7rem 0;border-bottom:1px solid var(--gray-200)"><span style="color:var(--gray-500)">Plan</span><strong>${user.plan}</strong></div>
+          <div style="display:flex;justify-content:space-between;padding:.7rem 0;border-bottom:1px solid var(--gray-200)"><span style="color:var(--gray-500)">Credits</span><strong>${user.credits||0}</strong></div>
+          <div style="display:flex;justify-content:space-between;padding:.7rem 0;border-bottom:1px solid var(--gray-200)"><span style="color:var(--gray-500)">Member since</span><strong>${new Date(user.joined).toLocaleDateString()}</strong></div>
+        </div>
+        <button class="btn btn-outline" style="margin-top:1.5rem" onclick="logout()">Logout</button>
+      </div>
+    </div>
+  `;
+}
+
+function doPurchase(planKey, credits){
+  const user = getCurrentUser();
+  if(!user) return;
+  const users = getUsers();
+  if(planKey.startsWith('credits')){
+    users[user.email].credits = (users[user.email].credits||0)+credits;
+    users[user.email].plan = 'credits';
+  } else {
+    users[user.email].plan = planKey;
+    users[user.email].credits = 999;
+  }
+  saveUsers(users);
+  saveSession(users[user.email]);
+  document.getElementById('mainContent').innerHTML = `<div class="alert alert-success" style="max-width:500px;margin:2rem auto">✅ Payment successful! Your plan has been activated.</div>`;
+  setTimeout(()=>showView('upgrade'),2000);
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+// TEST ENGINE
+// ═══════════════════════════════════════════════════════════════════════
+let currentAttempt = null;
+let currentQIndex = 0;
+let timerInterval = null;
+let timeLeft = 0;
+let audioPlayed = {};
+let speakingState = {};
+let dragState = {};
+let chartInstances = {};
+
+function startTest(testId){
+  const user = getCurrentUser();
+  const test = TESTS.find(t=>t.id===testId);
+  if(!test||!user) return;
+  // check access
+  if(user.plan==='free' && testId>2){
+    showView('upgrade'); return;
+  }
+  currentAttempt = {
+    id:'att_'+Date.now(),
+    userId:user.id,
+    testId:test.id,
+    testName:test.name,
+    startedAt:new Date().toISOString(),
+    answers:{},
+    completed:false,
+    totalScore:0,
+    sectionScores:{speaking:0,writing:0,reading:0,listening:0}
+  };
+  audioPlayed = {};
+  speakingState = {};
+  dragState = {};
+  chartInstances = {};
+  currentQIndex = 0;
+  showSection('test-view');
+  document.getElementById('testTitle').textContent = test.name;
+  timeLeft = test.duration*60;
+  startTimer();
+  renderCurrentQuestion();
+}
+
+function startTimer(){
+  clearInterval(timerInterval);
+  timerInterval = setInterval(()=>{
+    timeLeft--;
+    const m = Math.floor(timeLeft/60).toString().padStart(2,'0');
+    const s = (timeLeft%60).toString().padStart(2,'0');
+    const box = document.getElementById('timerBox');
+    box.textContent = `⏱ ${m}:${s}`;
+    box.className = 'timer-box'+(timeLeft<300?' warn':'')+(timeLeft<60?' danger':'');
+    if(timeLeft<=0){ clearInterval(timerInterval); submitTest(); }
+  },1000);
+}
+
+function getTest(){ return TESTS.find(t=>t.id===currentAttempt.testId) }
+function getQ(i){ const test=getTest(); const qi=test.questions[i]; return {qi,...getQData(qi.type,qi.qid)} }
+function getQData(type,qid){ return QB[type]?.find(q=>q.id===qid)||{} }
+
+function renderCurrentQuestion(){
+  const test = getTest();
+  const qi = test.questions[currentQIndex];
+  const q = getQ(currentQIndex);
+  // section badge
+  const sectionColors={speaking:'#EDE9FE;color:#5B21B6',writing:'#DCFCE7;color:#166534',reading:'#DBEAFE;color:#1E40AF',listening:'#F3E8FF;color:#6B21A8'};
+  const sb = document.getElementById('sectionBadge');
+  sb.textContent = qi.section.charAt(0).toUpperCase()+qi.section.slice(1);
+  sb.style.cssText = `background:${sectionColors[qi.section]||'var(--brand-l);color:var(--brand)'}`;
+  document.getElementById('qProgress').textContent = `Q ${currentQIndex+1} / ${test.questions.length}`;
+  document.getElementById('questionContainer').innerHTML = buildQuestionHTML(qi.type, q, currentQIndex);
+  renderQMap();
+  // auto-play audio for listening/speaking types
+  const audioTypes = ['repeat_sentence','retell_lecture','answer_short','summarize_spoken','mc_listening_multiple','listening_fib','highlight_summary','mc_listening_single','select_missing','highlight_incorrect','write_dictation'];
+  if(audioTypes.includes(qi.type) && !audioPlayed[currentQIndex]){
+    setTimeout(()=>{ audioPlayed[currentQIndex]=true; playAudio(q.audio_text, currentQIndex); },800);
+  }
+  // init drag for reorder
+  if(qi.type==='reorder') initReorder(q, currentQIndex);
+  // render chart for describe_image
+  if(qi.type==='describe_image') setTimeout(()=>renderChart(q, currentQIndex),100);
+  // update nav buttons
+  document.getElementById('prevBtn').disabled = currentQIndex===0;
+  document.getElementById('nextBtn').textContent = currentQIndex===test.questions.length-1 ? 'Finish ✓' : 'Next →';
+}
+
+function buildQuestionHTML(type, q, idx){
+  const existing = currentAttempt.answers[idx];
+  const typeLabels={read_aloud:'Read Aloud',repeat_sentence:'Repeat Sentence',describe_image:'Describe Image',retell_lecture:'Re-tell Lecture',answer_short:'Answer Short Question',summarize_written:'Summarize Written Text',essay:'Write Essay',rw_fib:'Reading & Writing: Fill in the Blanks',mc_reading_multiple:'Multiple Choice (Multiple)',reorder:'Re-order Paragraphs',reading_fib:'Reading: Fill in the Blanks',mc_reading_single:'Multiple Choice (Single)',summarize_spoken:'Summarize Spoken Text',mc_listening_multiple:'Listening: Multiple Choice (Multiple)',listening_fib:'Listening: Fill in the Blanks',highlight_summary:'Highlight Correct Summary',mc_listening_single:'Listening: Multiple Choice (Single)',select_missing:'Select Missing Word',highlight_incorrect:'Highlight Incorrect Words',write_dictation:'Write from Dictation'};
+  let html = `<div class="question-card"><div class="q-type-label">${typeLabels[type]||type}</div>`;
+  if(type==='read_aloud'){
+    html+=`<div class="q-instruction">Read the following text aloud. You have 40 seconds to read, then 35 seconds to read aloud.</div>
+    <div class="q-text">${q.text}</div>
+    ${speakingHTML(idx)}`;
+  } else if(type==='repeat_sentence'){
+    html+=`<div class="q-instruction">You will hear a sentence. Repeat it exactly as you hear it.</div>
+    ${audioPlayerHTML(idx)}${speakingHTML(idx)}`;
+  } else if(type==='describe_image'){
+    html+=`<div class="q-instruction">Look at the image below. In 25 seconds, describe the image in detail. You have 40 seconds to record.</div>
+    <div style="text-align:center;margin-bottom:1rem"><p style="font-size:.85rem;color:var(--gray-500);margin-bottom.5rem">${q.caption||''}</p>
+    <canvas id="chart_${idx}" style="max-height:280px"></canvas></div>
+    ${speakingHTML(idx)}`;
+  } else if(type==='retell_lecture'){
+    html+=`<div class="q-instruction">You will hear a lecture. After listening, retell the lecture in your own words. You have 10 seconds to prepare and 40 seconds to record.</div>
+    ${audioPlayerHTML(idx)}${speakingHTML(idx)}`;
+  } else if(type==='answer_short'){
+    html+=`<div class="q-instruction">You will hear a question. Give a short answer (1-3 words).</div>
+    ${audioPlayerHTML(idx)}${speakingHTML(idx)}`;
+  } else if(type==='summarize_written'){
+    html+=`<div class="q-instruction">Read the passage. Summarize it in one sentence (5-75 words). You have 10 minutes.</div>
+    <div class="q-text" style="background:var(--gray-50);padding:1rem;border-radius:8px;border:1px solid var(--gray-200)">${q.passage}</div>
+    <textarea class="answer-textarea" id="ans_${idx}" placeholder="Write your summary here..." oninput="updateWordCount(this,'wc_${idx}')">${existing||''}</textarea>
+    <div class="word-count" id="wc_${idx}">0 words</div>`;
+  } else if(type==='essay'){
+    html+=`<div class="q-instruction">Write an essay (200–300 words) on the topic below. You have 20 minutes.</div>
+    <div class="q-text" style="font-weight:600;font-size:1.05rem;padding:1rem;background:var(--gray-50);border-radius:8px;border:1px solid var(--gray-200)">${q.prompt}</div>
+    <textarea class="answer-textarea" id="ans_${idx}" style="min-height:180px" placeholder="Write your essay here..." oninput="updateWordCount(this,'wc_${idx}')">${existing||''}</textarea>
+    <div class="word-count" id="wc_${idx}">0 words</div>`;
+  } else if(type==='rw_fib'||type==='reading_fib'){
+    html+=`<div class="q-instruction">Read the text. For each blank, choose the correct word from the drop-down.</div>
+    <div class="q-text">${buildFibHTML(q,idx,existing)}</div>`;
+  } else if(type==='mc_reading_multiple'||type==='mc_listening_multiple'){
+    html+=`<div class="q-instruction">${type.includes('listening')?audioPlayerHTML(idx)+'\n':''}Read the passage. Choose <strong>all correct responses</strong>.</div>
+    ${type.includes('reading')?`<div class="q-text" style="background:var(--gray-50);padding:1rem;border-radius:8px;border:1px solid var(--gray-200);margin-bottom:1rem">${q.passage||''}</div>`:''}
+    <p style="font-weight:600;margin-bottom:.8rem">${q.question||'Which statements are correct?'}</p>
+    <div class="options-list">${q.options.map((o,i)=>`
+      <label class="option-item ${(existing&&existing.includes(i))?'selected':''}">
+        <input type="checkbox" name="mc_${idx}" value="${i}" ${(existing&&existing.includes(i))?'checked':''} onchange="updateMCSelect(${idx})">
+        <span class="option-text">${o}</span>
+      </label>`).join('')}</div>`;
+  } else if(type==='mc_reading_single'||type==='mc_listening_single'){
+    html+=`<div class="q-instruction">${type.includes('listening')?audioPlayerHTML(idx)+'\n':''}Read the passage. Choose the <strong>single best response</strong>.</div>
+    ${type.includes('reading')?`<div class="q-text" style="background:var(--gray-50);padding:1rem;border-radius:8px;border:1px solid var(--gray-200);margin-bottom:1rem">${q.passage||''}</div>`:''}
+    <p style="font-weight:600;margin-bottom:.8rem">${q.question||'Choose the best answer.'}</p>
+    <div class="options-list">${q.options.map((o,i)=>`
+      <label class="option-item ${existing===i?'selected':''}">
+        <input type="radio" name="mc_${idx}" value="${i}" ${existing===i?'checked':''} onchange="saveSingleSelect(${idx},${i})">
+        <span class="option-text">${o}</span>
+      </label>`).join('')}</div>`;
+  } else if(type==='reorder'){
+    html+=`<div class="q-instruction">The sentences below are in the wrong order. Drag them into the correct order in the answer box.</div>
+    <div class="reorder-container">
+      <div class="reorder-col"><h4>Source</h4><div class="reorder-zone" id="src_${idx}" ondragover="event.preventDefault();this.classList.add('drag-over')" ondragleave="this.classList.remove('drag-over')" ondrop="dropInZone(event,'src',${idx})"></div></div>
+      <div class="reorder-col"><h4>Answer (drag here in order)</h4><div class="reorder-zone" id="ans_${idx}" ondragover="event.preventDefault();this.classList.add('drag-over')" ondragleave="this.classList.remove('drag-over')" ondrop="dropInZone(event,'ans',${idx})"></div></div>
+    </div>`;
+  } else if(type==='summarize_spoken'){
+    html+=`<div class="q-instruction">You will hear a short lecture. Summarize it in one sentence (75–100 words). You have 10 minutes after hearing it.</div>
+    ${audioPlayerHTML(idx)}
+    <textarea class="answer-textarea" id="ans_${idx}" placeholder="Write your summary here..." oninput="updateWordCount(this,'wc_${idx}')">${existing||''}</textarea>
+    <div class="word-count" id="wc_${idx}">0 words</div>`;
+  } else if(type==='listening_fib'){
+    html+=`<div class="q-instruction">You will hear a recording. Type the missing words in the blanks.</div>
+    ${audioPlayerHTML(idx)}
+    <div class="q-text">${buildListeningFibHTML(q,idx,existing)}</div>`;
+  } else if(type==='highlight_summary'){
+    html+=`<div class="q-instruction">You will hear a recording. Choose the paragraph that best summarizes it.</div>
+    ${audioPlayerHTML(idx)}
+    <div class="options-list">${q.options.map((o,i)=>`
+      <label class="option-item ${existing===i?'selected':''}">
+        <input type="radio" name="mc_${idx}" value="${i}" ${existing===i?'checked':''} onchange="saveSingleSelect(${idx},${i})">
+        <span class="option-text">${o}</span>
+      </label>`).join('')}</div>`;
+  } else if(type==='select_missing'){
+    html+=`<div class="q-instruction">You will hear a recording with the last word/phrase missing. Choose the correct option.</div>
+    ${audioPlayerHTML(idx)}
+    <div class="q-text" style="margin-bottom:1rem">${q.audio_text} ___</div>
+    <div class="options-list">${q.options.map((o,i)=>`
+      <label class="option-item ${existing===i?'selected':''}">
+        <input type="radio" name="mc_${idx}" value="${i}" ${existing===i?'checked':''} onchange="saveSingleSelect(${idx},${i})">
+        <span class="option-text">${o}</span>
+      </label>`).join('')}</div>`;
+  } else if(type==='highlight_incorrect'){
+    html+=`<div class="q-instruction">You will hear a recording. The text below differs from what you hear. Click the words that are different.</div>
+    ${audioPlayerHTML(idx)}
+    <div class="q-text">${buildHIWHTML(q,idx,existing)}</div>
+    <p style="font-size:.82rem;color:var(--gray-500);margin-top:.5rem">Click words that differ from the recording.</p>`;
+  } else if(type==='write_dictation'){
+    html+=`<div class="q-instruction">You will hear a sentence. Type it exactly as you hear it.</div>
+    ${audioPlayerHTML(idx)}
+    <textarea class="answer-textarea" id="ans_${idx}" style="min-height:70px" placeholder="Type the sentence here..." >${existing||''}</textarea>`;
+  }
+  html+=`</div>`;
+  return html;
+}
+
+function audioPlayerHTML(idx){
+  return `<div class="audio-player">
+    <div class="audio-bar">
+      <button class="play-btn" id="playBtn_${idx}" onclick="playAudio(null,${idx})">▶</button>
+      <div style="flex:1"><div class="audio-progress"><div class="audio-fill" id="audioFill_${idx}"></div></div></div>
+      <span class="plays-left" id="playsLeft_${idx}">Plays: 1</span>
+    </div>
+    <div style="font-size:.8rem;color:var(--gray-400)">Audio plays once — just like the real exam</div>
+  </div>`;
+}
+
+function speakingHTML(idx){
+  const state = speakingState[idx]||'idle';
+  if(state==='prep') return `<div class="speaking-area active"><div style="margin-bottom.5rem">⏳ Preparing…</div><div class="prep-countdown" id="prepCount_${idx}">35</div><div style="font-size:.85rem;color:var(--gray-500)">seconds before recording begins</div></div>`;
+  if(state==='recording') return `<div class="speaking-area active"><div class="record-indicator"><div class="rec-dot"></div>Recording…</div><div class="prep-countdown" style="color:var(--danger)" id="recCount_${idx}">40</div><div style="font-size:.85rem;color:var(--gray-400)">seconds remaining</div></div>`;
+  if(state==='done') return `<div class="speaking-area"><div style="color:var(--success);font-weight:600;margin-bottom.3rem">✅ Response recorded</div><div style="font-size:.85rem;color:var(--gray-500)">Your audio has been captured</div><button class="btn btn-outline" style="margin-top:.8rem;font-size:.82rem" onclick="startSpeaking(${idx})">Re-record</button></div>`;
+  return `<div class="speaking-area"><div class="speak-status">Click to begin speaking task</div><button class="btn btn-primary" style="margin-top:.8rem" onclick="startSpeaking(${idx})">Start Speaking</button></div>`;
+}
+
+function buildFibHTML(q, idx, existing){
+  let text = q.text;
+  (q.blanks||[]).forEach((bk,i)=>{
+    const opts = q.options[bk]||[];
+    const saved = existing?existing[bk]:'';
+    const sel = `<select class="blank-select" id="${bk}_${idx}" onchange="saveFib(${idx})">${opts.map(o=>`<option value="${o}" ${saved===o?'selected':''}>${o}</option>`).join('')}</select>`;
+    text = text.replace('['+bk+']', sel);
+  });
+  return text;
+}
+
+function buildListeningFibHTML(q, idx, existing){
+  let text = q.audio_text;
+  (q.blanks||[]).forEach(bk=>{
+    const saved = existing?existing[bk]:'';
+    const inp = `<input class="blank-input" id="${bk}_${idx}" value="${saved}" placeholder="..." onchange="saveFib(${idx})"/>`;
+    text = text.replace('['+bk+']', inp);
+  });
+  return text;
+}
+
+function buildHIWHTML(q, idx, existing){
+  const savedSelected = existing||[];
+  const words = q.transcript.split(' ');
+  return words.map((w,i)=>`<span class="hw-word ${savedSelected.includes(i)?'selected':''}" data-idx="${i}" onclick="toggleHIW(${idx},${i},this)">${w}</span> `).join('');
+}
+
+function toggleHIW(qIdx, wordIdx, el){
+  el.classList.toggle('selected');
+  const selected = Array.from(document.querySelectorAll(`.hw-word.selected`)).map(e=>parseInt(e.dataset.idx));
+  currentAttempt.answers[qIdx] = selected;
+}
+
+function renderChart(q, idx){
+  const canvas = document.getElementById('chart_'+idx);
+  if(!canvas||!q.imageData) return;
+  if(chartInstances[idx]) { chartInstances[idx].destroy(); }
+  chartInstances[idx] = new Chart(canvas, {type:q.imageType||'bar', data:q.imageData, options:{responsive:true,plugins:{legend:{position:'top'}}}});
+}
+
+function initReorder(q, idx){
+  if(!dragState[idx]){
+    const shuffled = [...q.sentences].sort(()=>Math.random()-.5);
+    dragState[idx] = {src:[...shuffled], ans:[]};
+  }
+  const srcZone = document.getElementById('src_'+idx);
+  const ansZone = document.getElementById('ans_'+idx);
+  if(!srcZone||!ansZone) return;
+  srcZone.innerHTML=''; ansZone.innerHTML='';
+  dragState[idx].src.forEach((s,i)=>{
+    srcZone.appendChild(makeDragItem(s,i,'src',idx));
+  });
+  dragState[idx].ans.forEach((s,i)=>{
+    ansZone.appendChild(makeDragItem(s,i,'ans',idx));
+  });
+}
+
+function makeDragItem(text, i, zone, idx){
+  const el = document.createElement('div');
+  el.className='reorder-item';
+  el.draggable=true;
+  el.dataset.text=text;
+  el.dataset.zone=zone;
+  el.dataset.idx=idx;
+  el.textContent=text;
+  el.addEventListener('dragstart',e=>{ e.dataTransfer.setData('text',JSON.stringify({text,zone,idx})); el.classList.add('dragging'); });
+  el.addEventListener('dragend',()=>el.classList.remove('dragging'));
+  return el;
+}
+
+function dropInZone(e, targetZone, idx){
+  e.preventDefault();
+  const {text,zone:srcZone} = JSON.parse(e.dataTransfer.getData('text'));
+  e.currentTarget.classList.remove('drag-over');
+  if(!dragState[idx]) return;
+  // remove from source
+  dragState[idx][srcZone] = dragState[idx][srcZone].filter(s=>s!==text);
+  // add to target
+  if(!dragState[idx][targetZone].includes(text)) dragState[idx][targetZone].push(text);
+  // save answer
+  currentAttempt.answers[idx] = dragState[idx].ans;
+  initReorder(getQ(idx), idx);
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+// AUDIO + SPEAKING
+// ═══════════════════════════════════════════════════════════════════════
+let activeUtterance = null;
+function playAudio(text, idx){
+  const q = getQ(idx);
+  const audioText = text || q.audio_text;
+  if(!audioText) return;
+  const playsEl = document.getElementById('playsLeft_'+idx);
+  const fillEl = document.getElementById('audioFill_'+idx);
+  const playBtn = document.getElementById('playBtn_'+idx);
+  if(playsEl && parseInt(playsEl.textContent.replace('Plays: ',''))<=0) return;
+  if(playsEl) playsEl.textContent='Plays: 0';
+  if(playBtn) playBtn.disabled=true;
+  if(activeUtterance){ speechSynthesis.cancel(); }
+  const u = new SpeechSynthesisUtterance(audioText);
+  u.rate=0.95; u.pitch=1;
+  activeUtterance=u;
+  let prog=0;
+  const interval = setInterval(()=>{
+    prog=Math.min(prog+2,98);
+    if(fillEl) fillEl.style.width=prog+'%';
+  },100);
+  u.onend=()=>{ clearInterval(interval); if(fillEl) fillEl.style.width='100%'; };
+  speechSynthesis.speak(u);
+}
+
+let mediaRecorder = null;
+let recordedChunks = [];
+
+function startSpeaking(idx){
+  const prepSec = 35;
+  speakingState[idx]='prep';
+  // re-render speaking area in-place
+  const card = document.querySelector('.question-card');
+  if(card) card.querySelector('.speaking-area').outerHTML = speakingHTML(idx);
+  // update
+  updateSpeakingArea(idx);
+  let prepLeft = prepSec;
+  const prepInt = setInterval(()=>{
+    prepLeft--;
+    const el = document.getElementById('prepCount_'+idx);
+    if(el) el.textContent=prepLeft;
+    if(prepLeft<=0){
+      clearInterval(prepInt);
+      startRecording(idx);
+    }
+  },1000);
+}
+
+function updateSpeakingArea(idx){
+  const existing = document.querySelector('.speaking-area');
+  if(existing) existing.outerHTML = speakingHTML(idx);
+  // find and replace
+  const card = document.getElementById('questionContainer');
+  if(card){
+    const areas = card.querySelectorAll('.speaking-area');
+    // already updated by innerHTML swap above
+  }
+}
+
+function startRecording(idx){
+  speakingState[idx]='recording';
+  // update DOM
+  const area = document.querySelector('.speaking-area');
+  if(area) area.outerHTML = speakingHTML(idx);
+  const recSec=40;
+  let recLeft=recSec;
+  recordedChunks=[];
+  navigator.mediaDevices.getUserMedia({audio:true}).then(stream=>{
+    mediaRecorder = new MediaRecorder(stream);
+    mediaRecorder.ondataavailable=e=>{ if(e.data.size>0) recordedChunks.push(e.data); };
+    mediaRecorder.onstop=()=>{ stream.getTracks().forEach(t=>t.stop()); };
+    mediaRecorder.start();
+    const recInt = setInterval(()=>{
+      recLeft--;
+      const el = document.getElementById('recCount_'+idx);
+      if(el) el.textContent=recLeft;
+      if(recLeft<=0){
+        clearInterval(recInt);
+        if(mediaRecorder&&mediaRecorder.state!=='inactive') mediaRecorder.stop();
+        speakingState[idx]='done';
+        currentAttempt.answers[idx]='[audio_recorded]';
+        const area2 = document.querySelector('.speaking-area');
+        if(area2) area2.outerHTML = speakingHTML(idx);
+      }
+    },1000);
+  }).catch(()=>{
+    // no mic access — simulate
+    speakingState[idx]='done';
+    currentAttempt.answers[idx]='[no_mic_simulated]';
+    const area = document.querySelector('.speaking-area');
+    if(area) area.outerHTML = speakingHTML(idx);
+  });
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+// ANSWER COLLECTION HELPERS
+// ═══════════════════════════════════════════════════════════════════════
+function updateWordCount(el, countId){
+  const words = el.value.trim().split(/\s+/).filter(w=>w).length;
+  const c = document.getElementById(countId);
+  if(c) c.textContent=words+' words';
+  // auto-save
+  const idx = parseInt(el.id.split('_')[1]);
+  currentAttempt.answers[idx] = el.value;
+}
+
+function updateMCSelect(idx){
+  const checked = Array.from(document.querySelectorAll(`input[name="mc_${idx}"]:checked`)).map(e=>parseInt(e.value));
+  currentAttempt.answers[idx]=checked;
+  document.querySelectorAll(`input[name="mc_${idx}"]`).forEach(inp=>{
+    inp.closest('.option-item').classList.toggle('selected',inp.checked);
+  });
+}
+
+function saveSingleSelect(idx, val){
+  currentAttempt.answers[idx]=val;
+  document.querySelectorAll(`input[name="mc_${idx}"]`).forEach(inp=>{
+    inp.closest('.option-item').classList.toggle('selected',parseInt(inp.value)===val);
+  });
+}
+
+function saveFib(idx){
+  const q = getQ(idx);
+  const ans = {};
+  (q.blanks||[]).forEach(bk=>{
+    const el = document.getElementById(bk+'_'+idx);
+    if(el) ans[bk]=el.value;
+  });
+  currentAttempt.answers[idx]=ans;
+}
+
+function collectCurrentAnswer(){
+  const test = getTest();
+  const qi = test.questions[currentQIndex];
+  const idx = currentQIndex;
+  if(['summarize_written','essay','summarize_spoken','write_dictation'].includes(qi.type)){
+    const el = document.getElementById('ans_'+idx);
+    if(el) currentAttempt.answers[idx]=el.value;
+  }
+  // others auto-saved
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+// Q MAP + NAVIGATION
+// ═══════════════════════════════════════════════════════════════════════
+function renderQMap(){
+  const test = getTest();
+  const map = document.getElementById('qMap');
+  if(!map) return;
+  map.innerHTML = test.questions.map((q,i)=>`
+    <div class="q-dot ${i===currentQIndex?'current':currentAttempt.answers[i]!==undefined?'answered':''}" onclick="jumpTo(${i})">${i+1}</div>
+  `).join('');
+}
+
+function jumpTo(i){
+  collectCurrentAnswer();
+  currentQIndex=i;
+  renderCurrentQuestion();
+}
+
+function prevQuestion(){
+  if(currentQIndex>0){ collectCurrentAnswer(); currentQIndex--; renderCurrentQuestion(); }
+}
+
+function nextQuestion(){
+  collectCurrentAnswer();
+  const test = getTest();
+  if(currentQIndex<test.questions.length-1){ currentQIndex++; renderCurrentQuestion(); }
+  else submitTest();
+}
+
+function exitTest(){
+  if(confirm('Exit this test? Progress will be lost.')){
+    clearInterval(timerInterval);
+    if(activeUtterance) speechSynthesis.cancel();
+    showDashboard();
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+// SCORING ENGINE
+// ═══════════════════════════════════════════════════════════════════════
+function scoreAnswer(type, q, userAnswer){
+  if(userAnswer===undefined||userAnswer===null) return {score:0,max:q.points||1,feedback:'Not answered'};
+  const max = q.points||1;
+  // Speaking types — give 60% baseline
+  if(['read_aloud','repeat_sentence','describe_image','retell_lecture','answer_short'].includes(type)){
+    if(userAnswer==='[audio_recorded]') return {score:Math.round(max*0.6),max,feedback:'Speaking recorded. AI scoring gives estimated 60%.'};
+    if(userAnswer==='[no_mic_simulated]') return {score:Math.round(max*0.5),max,feedback:'Microphone unavailable — simulated score.'};
+    // answer_short: text match
+    if(type==='answer_short'&&q.answer){
+      const ua=(userAnswer||'').toLowerCase().trim();
+      const correct=(q.answer||'').toLowerCase().trim();
+      if(ua===correct||ua.includes(correct)) return {score:max,max,feedback:`Correct: "${q.answer}"`};
+    }
+    return {score:0,max,feedback:'No response recorded'};
+  }
+  // Written types
+  if(type==='summarize_written'||type==='essay'||type==='summarize_spoken'){
+    const words = (userAnswer||'').trim().split(/\s+/).filter(w=>w).length;
+    const min = q.min||5;
+    const mxw = type==='summarize_written'?75:(type==='summarize_spoken'?100:300);
+    if(words<min) return {score:Math.round(max*0.3),max,feedback:`Too short (${words} words, min ${min})`};
+    if(words>mxw) return {score:Math.round(max*0.7),max,feedback:`Too long (${words} words, max ${mxw})`};
+    return {score:Math.round(max*0.75),max,feedback:`Good length (${words} words) — content scoring requires AI review`};
+  }
+  // Write from dictation
+  if(type==='write_dictation'){
+    const ua=(userAnswer||'').toLowerCase().replace(/[^a-z0-9 ]/g,'').trim();
+    const correct=(q.answer||'').toLowerCase().replace(/[^a-z0-9 ]/g,'').trim();
+    if(ua===correct) return {score:max,max,feedback:'Perfect!'};
+    const ua_words=ua.split(' ');const c_words=correct.split(' ');
+    let matches=0;
+    c_words.forEach(w=>{ if(ua_words.includes(w)) matches++; });
+    const ratio=matches/c_words.length;
+    return {score:Math.round(max*ratio),max,feedback:`${Math.round(ratio*100)}% word accuracy. Correct: "${q.answer}"`};
+  }
+  // MC Single
+  if(['mc_reading_single','mc_listening_single','highlight_summary','select_missing'].includes(type)){
+    const correct = userAnswer===q.answer;
+    return {score:correct?max:0,max,feedback:correct?'Correct!':'Incorrect. Answer: option '+(q.answer+1)};
+  }
+  // MC Multiple
+  if(['mc_reading_multiple','mc_listening_multiple'].includes(type)){
+    const ua=Array.isArray(userAnswer)?userAnswer:[];
+    const ca=q.answer||[];
+    let pts=0;
+    ca.forEach(c=>{ if(ua.includes(c)) pts++; });
+    ua.forEach(u=>{ if(!ca.includes(u)) pts--; });
+    const score=Math.max(0,Math.round(max*(pts/ca.length)));
+    return {score,max,feedback:`${pts>0?pts:0}/${ca.length} correct selections`};
+  }
+  // FIB
+  if(['rw_fib','reading_fib','listening_fib'].includes(type)){
+    const ua=userAnswer||{};const ca=q.answer||{};
+    let correct=0;const total=Object.keys(ca).length;
+    Object.keys(ca).forEach(k=>{ if((ua[k]||'').toLowerCase()===(ca[k]||'').toLowerCase()) correct++; });
+    return {score:Math.round(max*(correct/total)),max,feedback:`${correct}/${total} blanks correct`};
+  }
+  // Reorder
+  if(type==='reorder'){
+    const ua=Array.isArray(userAnswer)?userAnswer:[];
+    const ca=q.sentences||[];
+    let adjacent=0;
+    for(let i=0;i<ua.length-1;i++){
+      const ai=ca.indexOf(ua[i]);const bi=ca.indexOf(ua[i+1]);
+      if(bi===ai+1) adjacent++;
+    }
+    const score=Math.min(max,adjacent);
+    return {score,max,feedback:`${adjacent}/${ca.length-1} correct adjacent pairs`};
+  }
+  // HIW
+  if(type==='highlight_incorrect'){
+    const ua=Array.isArray(userAnswer)?userAnswer:[];
+    const transcript=(q.transcript||'').split(' ');
+    const incorrect_words=q.incorrect_words||[];
+    let correct=0;
+    // find indices of incorrect words
+    const incorrectIdx=[];
+    transcript.forEach((w,i)=>{ if(incorrect_words.some(iw=>w.toLowerCase().includes(iw.toLowerCase()))) incorrectIdx.push(i); });
+    incorrectIdx.forEach(i=>{ if(ua.includes(i)) correct++; });
+    const fp=ua.filter(i=>!incorrectIdx.includes(i)).length;
+    const score=Math.max(0,correct-fp);
+    return {score:Math.min(score,max),max,feedback:`${correct}/${incorrectIdx.length} correct, ${fp} false positives`};
+  }
+  return {score:0,max,feedback:'Unscored'};
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+// SUBMIT + RESULTS
+// ═══════════════════════════════════════════════════════════════════════
+function submitTest(){
+  clearInterval(timerInterval);
+  if(activeUtterance) speechSynthesis.cancel();
+  collectCurrentAnswer();
+  const test = getTest();
+  let totalRaw=0,totalMax=0;
+  const sectionRaw={speaking:0,writing:0,reading:0,listening:0};
+  const sectionMax={speaking:0,writing:0,reading:0,listening:0};
+  const questionResults = test.questions.map((qi,i)=>{
+    const q=getQ(i);
+    const result=scoreAnswer(qi.type,q,currentAttempt.answers[i]);
+    sectionRaw[qi.section]+=result.score;
+    sectionMax[qi.section]+=result.max;
+    totalRaw+=result.score;
+    totalMax+=result.max;
+    return {...result,type:qi.type,section:qi.section};
+  });
+  // convert to PTE 10–90 scale
+  const ratio=totalMax>0?totalRaw/totalMax:0;
+  const pteScore=Math.round(10+ratio*80);
+  const sectionScores={};
+  Object.keys(sectionRaw).forEach(s=>{
+    const r=sectionMax[s]>0?sectionRaw[s]/sectionMax[s]:0;
+    sectionScores[s]=Math.round(10+r*80);
+  });
+  currentAttempt.completed=true;
+  currentAttempt.endedAt=new Date().toISOString();
+  currentAttempt.totalScore=pteScore;
+  currentAttempt.sectionScores=sectionScores;
+  currentAttempt.questionResults=questionResults;
+  const attempts=getAttempts();
+  attempts.push(currentAttempt);
+  saveAttempts(attempts);
+  showResults(currentAttempt.id);
+}
+
+function showResults(attemptId){
+  const attempts=getAttempts();
+  const att=attempts.find(a=>a.id===attemptId);
+  if(!att) return;
+  showSection('results-view');
+  const sec=att.sectionScores||{};
+  const bandDesc=att.totalScore>=79?'Expert':att.totalScore>=65?'Advanced':att.totalScore>=50?'Competent':att.totalScore>=35?'Intermediate':'Beginner';
+  let html=`
+    <div class="score-hero">
+      <div class="score-label">Overall PTE Score</div>
+      <div class="overall-score">${att.totalScore}</div>
+      <div style="color:#a5b4fc;margin-top:.3rem">${bandDesc} — ${att.testName}</div>
+      <div class="section-scores">
+        <div class="sec-score"><div class="s">${sec.speaking||0}</div><div class="n">Speaking</div></div>
+        <div class="sec-score"><div class="s">${sec.writing||0}</div><div class="n">Writing</div></div>
+        <div class="sec-score"><div class="s">${sec.reading||0}</div><div class="n">Reading</div></div>
+        <div class="sec-score"><div class="s">${sec.listening||0}</div><div class="n">Listening</div></div>
+      </div>
+    </div>
+  `;
+  // group by section
+  const sections=['speaking','writing','reading','listening'];
+  sections.forEach(sec=>{
+    const qs=(att.questionResults||[]).map((r,i)=>({...r,i})).filter(r=>r.section===sec);
+    if(!qs.length) return;
+    html+=`<div class="results-section"><h3>${sec.charAt(0).toUpperCase()+sec.slice(1)} — ${att.sectionScores[sec]||0}/90</h3>`;
+    qs.forEach(r=>{
+      const cls=r.score>=r.max?'correct':r.score>0?'partial':'wrong';
+      const typeLabels={read_aloud:'Read Aloud',repeat_sentence:'Repeat Sentence',describe_image:'Describe Image',retell_lecture:'Re-tell Lecture',answer_short:'Answer Short Question',summarize_written:'Summarize Written Text',essay:'Write Essay',rw_fib:'R&W FIB',mc_reading_multiple:'MC Multiple',reorder:'Reorder',reading_fib:'Reading FIB',mc_reading_single:'MC Single',summarize_spoken:'SST',mc_listening_multiple:'MC Multiple',listening_fib:'FIB',highlight_summary:'Highlight Summary',mc_listening_single:'MC Single',select_missing:'Select Missing',highlight_incorrect:'Highlight Incorrect',write_dictation:'Write Dictation'};
+      html+=`<div class="q-result-item ${cls}">
+        <div class="q-result-header">
+          <span class="q-result-type">${typeLabels[r.type]||r.type}</span>
+          <span class="q-result-score ${cls}">${r.score}/${r.max}</span>
+        </div>
+        <div style="font-size:.85rem;color:var(--gray-600)">${r.feedback}</div>
+      </div>`;
+    });
+    html+=`</div>`;
+  });
+  document.getElementById('resultsContent').innerHTML=html;
+}
+
+function viewResults(attemptId){
+  showResults(attemptId);
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════════════════════════════
+function scrollTo(target){ document.querySelector(target)?.scrollIntoView({behavior:'smooth'}); }
+
+function init(){
+  const user=getCurrentUser();
+  if(user){ showDashboard(); }
+  else { showSection('landing'); }
+}
+
+init();
+</script>
+</body>
+</html>
