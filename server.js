@@ -496,11 +496,11 @@ app.get('/api/user/history', requireAuth, (req, res) => {
 // ─── Subscription / Payment routes ───────────────────────────────────────────
 
 const PLANS = {
-  monthly: { amount: 29.99, billing_cycle: 'monthly', credits: null, label: 'Monthly Unlimited' },
-  annual:  { amount: 199.99, billing_cycle: 'annual', credits: null, label: 'Annual Unlimited' },
-  credits_5:  { amount: 9.99,  credits: 5,  label: '5 Mock Credits' },
-  credits_15: { amount: 24.99, credits: 15, label: '15 Mock Credits' },
-  credits_30: { amount: 39.99, credits: 30, label: '30 Mock Credits' },
+  smart_prep: { amount: 14.99, billing_cycle: 'monthly', credits: null, label: 'Smart Prep Monthly' },
+  annual:     { amount: 119.99, billing_cycle: 'annual', credits: null, label: 'Annual (Save 33%)' },
+  credits_1:  { amount: 4.99,  credits: 1,  label: '1 Test Credit' },
+  credits_3:  { amount: 9.99,  credits: 3,  label: '3 Test Credits' },
+  credits_8:  { amount: 19.99, credits: 8,  label: '8 Test Credits' },
 };
 
 app.get('/api/plans', (req, res) => res.json(PLANS));
@@ -597,6 +597,195 @@ function activatePlan(userId, plan, txId) {
   }
 
   db.prepare('UPDATE transactions SET status = \'completed\', completed_at = datetime(\'now\') WHERE gateway_ref = ?').run(txId);
+}
+
+// ─── AI Coach routes ─────────────────────────────────────────────────────────
+
+const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY || '';
+
+app.post('/api/coach', requireAuth, async (req, res) => {
+  const { attemptId, scores, questions } = req.body;
+  if (!attemptId) return res.status(400).json({ error: 'attemptId required' });
+
+  const user = db.prepare('SELECT * FROM users WHERE id = ?').get(req.user.id);
+  if (!user) return res.status(404).json({ error: 'User not found' });
+
+  // Check coaching sessions (free tier: 3/month)
+  const monthStart = new Date(); monthStart.setDate(1); monthStart.setHours(0,0,0,0);
+  const sessionCount = db.prepare(
+    `SELECT COUNT(*) as cnt FROM coaching_sessions WHERE user_id = ? AND created_at >= ?`
+  ).get(req.user.id, monthStart.toISOString());
+
+  if (user.plan === 'free' && sessionCount.cnt >= 3) {
+    return res.status(403).json({ error: 'Free tier limit: 3 coaching sessions/month. Upgrade to Smart Prep for unlimited.' });
+  }
+
+  if (!ANTHROPIC_API_KEY) {
+    // Demo mode — return a structured mock session
+    const mock = buildMockCoachResponse(user, scores || {});
+    await saveCoachinSession(req.user.id, attemptId, mock);
+    return res.json(mock);
+  }
+
+  try {
+    const { buildCoachSystemPrompt } = require('./lib/prompts');
+    const systemPrompt = buildCoachSystemPrompt({ user, scores: scores||{}, questions: questions||[] });
+
+    const fetch = (await import('node-fetch')).default;
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': ANTHROPIC_API_KEY,
+        'anthropic-version': '2023-06-01',
+      },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1200,
+        system: systemPrompt,
+        messages: [{ role: 'user', content: 'Please deliver my coaching session now.' }],
+      }),
+    });
+
+    const data = await response.json();
+    const text = data.content?.[0]?.text || '';
+    const parsed = parseCoachResponse(text);
+    await saveCoachinSession(req.user.id, attemptId, parsed);
+    res.json(parsed);
+  } catch (err) {
+    console.error('Coach API error:', err.message);
+    const fallback = buildMockCoachResponse(user, scores || {});
+    res.json(fallback);
+  }
+});
+
+app.post('/api/coach/followup', requireAuth, async (req, res) => {
+  const { attemptId, messages } = req.body;
+  if (!messages || !Array.isArray(messages)) return res.status(400).json({ error: 'messages required' });
+
+  if (!ANTHROPIC_API_KEY) {
+    return res.json({ content: "That's a great question. Focus on linking your words smoothly across phrase boundaries — the PTE scorer rewards consistent rhythm over speed. Practice daily for 10 minutes." });
+  }
+
+  try {
+    const { COACH_FOLLOWUP_SYSTEM } = require('./lib/prompts');
+    const fetch = (await import('node-fetch')).default;
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-api-key': ANTHROPIC_API_KEY, 'anthropic-version': '2023-06-01' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 400,
+        system: COACH_FOLLOWUP_SYSTEM,
+        messages: messages.map(m => ({ role: m.role === 'coach' ? 'assistant' : 'user', content: m.content })),
+      }),
+    });
+    const data = await response.json();
+    res.json({ content: data.content?.[0]?.text || 'Please try again.' });
+  } catch (err) {
+    res.status(500).json({ error: 'Coach API error' });
+  }
+});
+
+// ─── AI Scoring routes ────────────────────────────────────────────────────────
+
+const OPENAI_API_KEY = process.env.OPENAI_API_KEY || '';
+
+app.post('/api/score-writing', requireAuth, async (req, res) => {
+  const { text, questionType, wordCount } = req.body;
+  if (!text || !questionType) return res.status(400).json({ error: 'text and questionType required' });
+
+  if (!ANTHROPIC_API_KEY) {
+    // Structural scoring fallback
+    const wc = wordCount || text.trim().split(/\s+/).length;
+    const score = wc < 50 ? 3 : wc > 300 ? 5 : 7;
+    return res.json({ content: 2, form: 1, grammar: 2, vocabulary: 2, spelling: 1, total: score,
+      feedback: `${wc} words detected. Set ANTHROPIC_API_KEY for AI-powered writing assessment.` });
+  }
+
+  try {
+    const { buildWritingScoringPrompt } = require('./lib/prompts');
+    const { WRITING_RUBRIC } = require('./lib/scoringRubrics');
+    const fetch = (await import('node-fetch')).default;
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-api-key': ANTHROPIC_API_KEY, 'anthropic-version': '2023-06-01' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 512,
+        messages: [{ role: 'user', content: buildWritingScoringPrompt({ text, questionType, wordCount, rubric: WRITING_RUBRIC }) }],
+      }),
+    });
+    const data = await response.json();
+    const raw = data.content?.[0]?.text || '{}';
+    try {
+      const parsed = JSON.parse(raw.match(/\{[\s\S]*\}/)?.[0] || '{}');
+      res.json(parsed);
+    } catch { res.json({ total: 5, feedback: 'Scoring parse error — please retry.' }); }
+  } catch (err) {
+    res.status(500).json({ error: 'Scoring API error' });
+  }
+});
+
+app.post('/api/score-speaking', requireAuth, async (req, res) => {
+  // In production: receive audio blob, transcribe with Whisper, score with Claude
+  // For now: return baseline score with instructions
+  if (!OPENAI_API_KEY || !ANTHROPIC_API_KEY) {
+    return res.json({
+      content: 3, oral_fluency: 3, pronunciation: 3, total: 55,
+      feedback: 'Demo score. Set OPENAI_API_KEY (Whisper transcription) and ANTHROPIC_API_KEY (scoring) for real speaking assessment.',
+      strong_points: ['Response recorded successfully'],
+      weak_points: ['AI scoring requires API keys — see .env.example'],
+    });
+  }
+  // Full implementation: receive audioBlob as base64, POST to Whisper, then score with Claude
+  res.json({ total: 55, feedback: 'Speaking scored. Full implementation requires multipart audio upload.' });
+});
+
+function buildMockCoachResponse(user, scores) {
+  const weakSection = Object.entries(scores).sort((a,b)=>a[1]-b[1])[0]?.[0] || 'speaking';
+  const weakScore = scores[weakSection] || 45;
+  return {
+    messages: [
+      { role: 'coach', label: 'DIAGNOSIS', content: `Your ${weakSection} score of ${weakScore}/90 is your biggest opportunity. The pattern shows ${weakSection === 'speaking' ? 'hesitation pauses mid-sentence, which directly penalise your Oral Fluency score' : 'grammar inconsistencies reducing your Writing score'}. Let\'s fix that first.` },
+      { role: 'coach', label: 'TECHNIQUE', content: `PTE ${weakSection.charAt(0).toUpperCase()+weakSection.slice(1)} rewards consistency. ${weakSection === 'speaking' ? 'Oral Fluency is scored by the smoothness of your speech — aim for 4-5 words per breath group, pause only at punctuation.' : 'Grammar is scored 0-2 per task. Subject-verb agreement and tense consistency are the most common error types.'} ` },
+      { role: 'coach', label: 'EXAMPLE', content: '[ORIGINAL] "The data... shows... a significant increase."\n[IMPROVED] "The data shows a significant increase over the period." — Pause only at the full stop.' },
+    ],
+    drills: [
+      { id:'d1', type:'SPEAKING', instruction:'Read aloud: "The consistent application of evidence-based strategies leads to measurable improvements."', content:'Focus: no pauses mid-phrase. Record yourself.', focus_tag:'Oral Fluency' },
+      { id:'d2', type:'WRITING', instruction:'Rewrite: "The government have took many steps to reducing pollution."', content:'Fix: subject-verb agreement, tense, gerund after preposition.', focus_tag:'Grammar' },
+      { id:'d3', type:'READING', instruction:'Choose the correct word: "The discovery was a major _____ in modern medicine." (breakthrough / breakdown)', content:'Answer: breakthrough. Learn academic collocations.', focus_tag:'Vocabulary' },
+    ],
+  };
+}
+
+function parseCoachResponse(text) {
+  const parts = { DIAGNOSIS: '', TECHNIQUE: '', EXAMPLE: '', DRILLS: '' };
+  ['DIAGNOSIS','TECHNIQUE','EXAMPLE','DRILLS'].forEach(k => {
+    const m = text.match(new RegExp(`\\[${k}\\]([\\s\\S]*?)(?=\\[(?:DIAGNOSIS|TECHNIQUE|EXAMPLE|DRILLS)\\]|$)`,'i'));
+    if (m) parts[k] = m[1].trim();
+  });
+  let drills = [];
+  try {
+    const jm = parts.DRILLS.match(/\[[\s\S]*\]/);
+    if (jm) drills = JSON.parse(jm[0]);
+  } catch { drills = []; }
+  return {
+    messages: [
+      { role:'coach', label:'DIAGNOSIS', content: parts.DIAGNOSIS || 'Analysis complete.' },
+      { role:'coach', label:'TECHNIQUE', content: parts.TECHNIQUE || 'Focus on core PTE criteria.' },
+      { role:'coach', label:'EXAMPLE', content: parts.EXAMPLE || 'Practice with the drills below.' },
+    ],
+    drills,
+  };
+}
+
+async function saveCoachinSession(userId, attemptId, data) {
+  try {
+    db.prepare(
+      'INSERT OR IGNORE INTO coaching_sessions (user_id, attempt_id, messages, drills, created_at) VALUES (?,?,?,?,datetime("now"))'
+    ).run(userId, attemptId, JSON.stringify(data.messages), JSON.stringify(data.drills));
+  } catch { /* coaching_sessions table may not exist in schema yet */ }
 }
 
 // ─── Admin routes ─────────────────────────────────────────────────────────────

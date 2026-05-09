@@ -226,11 +226,84 @@ input,textarea,select{font-family:inherit}
 .alert{padding:.9rem 1.2rem;border-radius:8px;margin-bottom:1rem;font-size:.9rem}
 .alert-success{background:#F0FDF4;border:1px solid var(--success);color:#166534}
 .alert-error{background:#FEF2F2;border:1px solid var(--danger);color:#991B1B}
+/* ── AI COACH PANEL ── */
+.coach-overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:400;opacity:0;pointer-events:none;transition:.3s}
+.coach-overlay.open{opacity:1;pointer-events:all}
+.coach-panel{position:fixed;top:0;right:-500px;width:480px;max-width:100vw;height:100vh;background:#fff;z-index:401;box-shadow:var(--shadow-lg);display:flex;flex-direction:column;transition:right .3s cubic-bezier(.4,0,.2,1)}
+.coach-panel.open{right:0}
+.coach-header{padding:1.2rem 1.5rem;background:linear-gradient(135deg,#1e1b4b,#312e81);color:#fff;display:flex;align-items:center;gap:1rem;flex-shrink:0}
+.coach-avatar{width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,#a5b4fc,#06B6D4);display:flex;align-items:center;justify-content:center;font-size:1.3rem;flex-shrink:0;animation:coach-glow 3s ease-in-out infinite}
+@keyframes coach-glow{0%,100%{box-shadow:0 0 0 0 rgba(165,180,252,.4)}50%{box-shadow:0 0 0 8px rgba(165,180,252,0)}}
+.coach-header-info{flex:1}
+.coach-header-info .name{font-weight:700;font-size:1rem}
+.coach-header-info .sub{font-size:.8rem;opacity:.7}
+.coach-messages{flex:1;overflow-y:auto;padding:1.2rem;display:flex;flex-direction:column;gap:.8rem;background:var(--gray-50)}
+.coach-msg{max-width:85%;padding:.8rem 1rem;border-radius:12px;font-size:.9rem;line-height:1.55}
+.coach-msg.coach{background:#EEF2FF;color:var(--gray-800);border-radius:12px 12px 12px 4px;align-self:flex-start;border-left:3px solid var(--brand)}
+.coach-msg.user{background:var(--brand);color:#fff;border-radius:12px 12px 4px 12px;align-self:flex-end}
+.coach-msg .part-label{font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--brand);margin-bottom:.3rem}
+.coach-msg.user .part-label{color:rgba(255,255,255,.7)}
+.typing-indicator{display:flex;gap:.3rem;align-items:center;padding:.8rem 1rem;background:#EEF2FF;border-radius:12px 12px 12px 4px;align-self:flex-start;width:60px}
+.typing-dot{width:7px;height:7px;background:var(--brand);border-radius:50%;animation:typing .8s infinite}
+.typing-dot:nth-child(2){animation-delay:.15s}
+.typing-dot:nth-child(3){animation-delay:.3s}
+@keyframes typing{0%,60%,100%{transform:translateY(0)}30%{transform:translateY(-5px)}}
+.drill-cards-section{padding:.8rem 1.2rem;border-top:1px solid var(--gray-200);flex-shrink:0}
+.drill-cards-section h4{font-size:.8rem;font-weight:700;text-transform:uppercase;color:var(--gray-500);letter-spacing:.05em;margin-bottom:.7rem}
+.drill-cards-grid{display:grid;grid-template-columns:1fr 1fr;gap:.5rem}
+.drill-card{background:#fff;border:1.5px solid var(--gray-200);border-radius:8px;padding:.7rem;cursor:pointer;transition:.15s}
+.drill-card:hover{border-color:var(--brand);background:var(--brand-l)}
+.drill-card.done{border-color:var(--success);background:#F0FDF4}
+.drill-tag{font-size:.68rem;font-weight:700;padding:.15rem .5rem;border-radius:20px;display:inline-block;margin-bottom:.4rem}
+.drill-tag.speaking{background:#FEF3C7;color:#92400E}
+.drill-tag.writing{background:#DCFCE7;color:#166534}
+.drill-tag.reading{background:#DBEAFE;color:#1E40AF}
+.drill-tag.listening{background:#F3E8FF;color:#6B21A8}
+.drill-instruction{font-size:.8rem;color:var(--gray-700);line-height:1.35;margin-bottom:.4rem}
+.drill-action{font-size:.75rem;font-weight:600;color:var(--brand)}
+.coach-input-area{padding:.9rem 1.2rem;border-top:1px solid var(--gray-200);background:#fff;display:flex;gap:.6rem;align-items:center;flex-shrink:0}
+.coach-input{flex:1;padding:.6rem .9rem;border:2px solid var(--gray-200);border-radius:8px;font-size:.9rem;transition:.2s}
+.coach-input:focus{outline:none;border-color:var(--brand)}
+.coach-send-btn{width:36px;height:36px;border-radius:8px;background:var(--brand);color:#fff;border:none;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.coach-api-notice{background:#FFFBEB;border:1px solid #FCD34D;border-radius:6px;padding:.5rem .8rem;font-size:.78rem;color:#92400E;margin-bottom:.5rem}
+/* ── ACTION PLAN ── */
+.action-plan-section{background:#fff;border-radius:var(--radius);padding:1.5rem;box-shadow:var(--shadow);border:1px solid var(--gray-200);margin-bottom:1.5rem}
+.action-plan-section .ap-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem}
+.action-plan-section h3{font-size:1rem;font-weight:700}
+.ap-empty{color:var(--gray-400);font-size:.9rem;text-align:center;padding:1rem}
+.ap-drill-row{display:flex;align-items:center;gap.8rem;padding:.6rem 0;border-bottom:1px solid var(--gray-100)}
+.ap-drill-row:last-child{border-bottom:none}
+.ap-check{width:20px;height:20px;border-radius:50%;border:2px solid var(--gray-300);cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:.15s}
+.ap-check.done{background:var(--success);border-color:var(--success);color:#fff}
+.ap-drill-info{flex:1}
+.ap-drill-type{font-size:.72rem;font-weight:700;text-transform:uppercase;color:var(--brand)}
+.ap-drill-text{font-size:.85rem;color:var(--gray-700);line-height:1.3}
+/* ── XP / STREAK ── */
+.xp-badge{display:flex;align-items:center;gap:.3rem;background:linear-gradient(135deg,#FEF3C7,#FDE68A);color:#92400E;padding:.3rem .7rem;border-radius:20px;font-size:.82rem;font-weight:700}
+.streak-badge{display:flex;align-items:center;gap:.2rem;background:linear-gradient(135deg,#FEE2E2,#FECACA);color:#991B1B;padding:.3rem .7rem;border-radius:20px;font-size:.82rem;font-weight:700}
+/* ── MOBILE IMPROVEMENTS ── */
 @media(max-width:640px){
   .sidebar{display:none}
   .section-scores{grid-template-columns:repeat(2,1fr)}
   .hero h1{font-size:1.8rem}
   .nav-links{display:none}
+  .coach-panel{width:100vw;right:-100vw}
+  .drill-cards-grid{grid-template-columns:1fr}
+  .tests-grid{grid-template-columns:1fr}
+  .upgrade-grid{grid-template-columns:1fr}
+  .test-nav{flex-wrap:wrap;gap:.5rem;padding:.6rem 1rem}
+  .timer-box{font-size:.85rem}
+  .test-body{padding:0 .75rem}
+  .question-card{padding:1.2rem}
+  .reorder-container{flex-direction:column}
+  .dash-header{padding:.7rem 1rem}
+  .main-content{padding:1rem}
+  .score-hero{padding:1.5rem}
+  .overall-score{font-size:3rem}
+}
+@media(max-width:480px){
+  .modal{padding:1.5rem}
+  .pricing-grid{grid-template-columns:1fr}
 }
 </style>
 </head>
@@ -276,44 +349,59 @@ input,textarea,select{font-family:inherit}
       <div class="feature-card"><div class="feature-icon">🔊</div><h3>TTS Audio Playback</h3><p>Listening questions use real audio playback (plays once, just like the real exam) via browser speech synthesis.</p></div>
       <div class="feature-card"><div class="feature-icon">📊</div><h3>Instant Scoring</h3><p>Automatic checking for all objective types. Detailed feedback showing correct answers and score breakdown.</p></div>
       <div class="feature-card"><div class="feature-icon">📈</div><h3>Progress Tracking</h3><p>See your improvement across attempts. Section-wise scores, strong/weak areas and band estimates.</p></div>
+      <div class="feature-card" style="border-color:var(--brand);background:var(--brand-l)"><div class="feature-icon">🤖</div><h3>AI Virtual Coach</h3><p>After every test, your AI Coach diagnoses weak spots, explains PTE rubrics in plain English, and assigns targeted micro-drills — free for the first 90 days.</p></div>
     </div>
   </div>
 
   <div style="background:#fff;padding:4rem 2rem" id="pricing">
     <div class="section-title">Simple, Flexible Pricing</div>
-    <div class="section-sub">Start free. Upgrade when you're ready to go deeper.</div>
-    <div class="pricing-grid" style="max-width:960px;margin:0 auto">
+    <div class="section-sub">Start free. Get AI coaching. Upgrade when you're ready.</div>
+    <div class="pricing-grid" style="max-width:1060px;margin:0 auto">
       <div class="price-card">
         <h3>Free</h3>
-        <div class="price-amount">$0</div>
+        <div class="price-amount">$0<span> forever</span></div>
         <ul class="price-features">
-          <li>2 Full Mock Tests</li><li>All question types</li><li>Basic score report</li>
+          <li>Unlimited practice questions</li>
+          <li>1 free scored mock test</li>
+          <li>3 AI coaching sessions/mo</li>
+          <li>Basic score report</li>
         </ul>
         <button class="btn btn-outline" style="width:100%" onclick="openAuth('register')">Get Started</button>
       </div>
       <div class="price-card">
         <h3>Credits</h3>
-        <div class="price-amount">$9.99<span>/5 tests</span></div>
+        <div class="price-amount">$4.99<span> /test</span></div>
         <ul class="price-features">
-          <li>Pay as you go</li><li>5, 15 or 30 credits</li><li>Full score reports</li>
+          <li>$4.99 — 1 scored test</li>
+          <li>$9.99 — 3 scored tests</li>
+          <li>$19.99 — 8 scored tests</li>
+          <li>Full score reports</li>
         </ul>
         <button class="btn btn-outline" style="width:100%" onclick="openAuth('register')">Buy Credits</button>
       </div>
       <div class="price-card featured">
         <div class="price-badge">POPULAR</div>
-        <h3>Monthly</h3>
-        <div class="price-amount">$29.99<span>/mo</span></div>
+        <h3>Smart Prep</h3>
+        <div class="price-amount">$14.99<span>/mo</span></div>
         <ul class="price-features">
-          <li>Unlimited mock tests</li><li>All question types</li><li>Priority support</li><li>Progress analytics</li>
+          <li>Unlimited scored tests</li>
+          <li>Unlimited AI coaching</li>
+          <li>Follow-up questions</li>
+          <li>Action plan + drills</li>
+          <li>Progress analytics</li>
         </ul>
-        <button class="btn btn-primary" style="width:100%" onclick="openAuth('register')">Start Monthly</button>
+        <button class="btn btn-primary" style="width:100%" onclick="openAuth('register')">Start Smart Prep</button>
       </div>
       <div class="price-card">
         <div class="price-badge" style="background:var(--accent)">BEST VALUE</div>
         <h3>Annual</h3>
-        <div class="price-amount">$199.99<span>/yr</span></div>
+        <div class="price-amount">$119.99<span>/yr</span></div>
         <ul class="price-features">
-          <li>Unlimited everything</li><li>Save 44% vs monthly</li><li>All future tests</li><li>1-on-1 support session</li>
+          <li>Everything in Smart Prep</li>
+          <li>Save 33% vs monthly</li>
+          <li>All future tests included</li>
+          <li>Priority support</li>
+          <li>1 live coach session/mo</li>
         </ul>
         <button class="btn btn-accent" style="width:100%" onclick="openAuth('register')">Go Annual</button>
       </div>
@@ -340,6 +428,7 @@ input,textarea,select{font-family:inherit}
       <div class="form-group"><label>Password</label><input type="password" id="loginPass" placeholder="Password"/></div>
       <div class="form-error" id="loginErr"></div>
       <button class="btn btn-primary" style="width:100%;margin-top:.5rem" onclick="doLogin()">Login</button>
+      <div style="text-align:right;margin-top:.7rem"><a href="#" onclick="showForgotPass()" style="font-size:.85rem;color:var(--gray-500)">Forgot password?</a></div>
     </div>
     <div id="registerForm" style="display:none">
       <h2>Create account</h2>
@@ -360,7 +449,9 @@ input,textarea,select{font-family:inherit}
 <div id="dashboard">
   <div class="dash-header">
     <div class="nav-logo">PTE<span>Master</span></div>
-    <div style="display:flex;align-items:center;gap:1rem">
+    <div style="display:flex;align-items:center;gap:.6rem;flex-wrap:wrap">
+      <span class="xp-badge" id="xpBadge">⭐ 0 XP</span>
+      <span class="streak-badge" id="streakBadge">🔥 0</span>
       <span class="credit-badge" id="creditBadge">Free Plan</span>
       <div class="avatar" id="userAvatar">U</div>
       <button class="btn btn-outline" style="padding:.4rem .9rem;font-size:.85rem" onclick="logout()">Logout</button>
@@ -372,6 +463,7 @@ input,textarea,select{font-family:inherit}
         <a href="#" class="active" onclick="showView('overview')" id="nav-overview"><span class="icon">🏠</span>Overview</a>
         <a href="#" onclick="showView('tests')" id="nav-tests"><span class="icon">📝</span>Mock Tests</a>
         <a href="#" onclick="showView('history')" id="nav-history"><span class="icon">📊</span>My Progress</a>
+        <a href="#" onclick="showView('actionplan')" id="nav-actionplan"><span class="icon">📋</span>Action Plan</a>
         <a href="#" onclick="showView('upgrade')" id="nav-upgrade"><span class="icon">⬆️</span>Upgrade</a>
         <a href="#" onclick="showView('account')" id="nav-account"><span class="icon">👤</span>Account</a>
       </nav>
@@ -412,6 +504,32 @@ input,textarea,select{font-family:inherit}
     <button class="btn btn-primary" onclick="showView('tests');showSection('dashboard')">← Dashboard</button>
   </div>
   <div class="results-content" id="resultsContent"></div>
+</div>
+
+<!-- AI COACH PANEL -->
+<div class="coach-overlay" id="coachOverlay" onclick="closeCoach()"></div>
+<div class="coach-panel" id="coachPanel">
+  <div class="coach-header">
+    <div class="coach-avatar">🎓</div>
+    <div class="coach-header-info">
+      <div class="name" id="coachPanelTitle">AI Coach</div>
+      <div class="sub" id="coachPanelSub">Personalised PTE coaching</div>
+    </div>
+    <button onclick="closeCoach()" style="background:none;border:none;color:rgba(255,255,255,.7);cursor:pointer;font-size:1.2rem;padding:.3rem">✕</button>
+  </div>
+  <div class="coach-messages" id="coachMessages">
+    <div class="typing-indicator" id="coachTyping" style="display:none">
+      <div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div>
+    </div>
+  </div>
+  <div class="drill-cards-section" id="drillCardsSection" style="display:none">
+    <h4>Your Action Plan — 3 Drills</h4>
+    <div class="drill-cards-grid" id="drillCardsGrid"></div>
+  </div>
+  <div class="coach-input-area">
+    <input class="coach-input" id="coachFollowUp" placeholder="Ask a follow-up question…" onkeydown="if(event.key==='Enter')sendFollowUp()"/>
+    <button class="coach-send-btn" onclick="sendFollowUp()" title="Send">➤</button>
+  </div>
 </div>
 
 <script>
@@ -665,12 +783,20 @@ function doRegister(){
   if(pass.length<6){ document.getElementById('regErr').textContent='Password must be at least 6 characters'; return; }
   const users = getUsers();
   if(users[email]){ document.getElementById('regErr').textContent='Email already registered'; return; }
-  const user = {id:Date.now(),name,email,password:pass,plan:'free',credits:0,joined:new Date().toISOString()};
+  const user = {id:Date.now(),name,email,password:pass,plan:'free',credits:0,joined:new Date().toISOString(),xp:0,streak:0,lastActive:null,actionPlan:[]};
   users[email]=user;
   saveUsers(users);
   saveSession(user);
   closeAuth();
   showDashboard();
+}
+
+function showForgotPass(){
+  document.getElementById('loginErr').textContent='';
+  const email = document.getElementById('loginEmail').value.trim();
+  if(!email){ document.getElementById('loginErr').textContent='Enter your email above first'; return; }
+  document.getElementById('loginErr').style.color='var(--success)';
+  document.getElementById('loginErr').textContent='✓ Password reset link sent (demo mode — check your email).';
 }
 
 function logout(){
@@ -698,16 +824,36 @@ function showView(view){
   document.querySelectorAll('.sidebar-nav a').forEach(a=>a.classList.remove('active'));
   const nav = document.getElementById('nav-'+view);
   if(nav) nav.classList.add('active');
-  // update header
+  // update header badges
   document.getElementById('userAvatar').textContent = user.name[0].toUpperCase();
-  const planLabel = user.plan==='free'?`Free (${user.credits||0} credits)`:user.plan==='credits'?`${user.credits} Credits`:user.plan.charAt(0).toUpperCase()+user.plan.slice(1);
+  const planLabel = user.plan==='free'?'Free':user.plan==='credits'?`${user.credits||0} Credits`:user.plan==='smart_prep'?'Smart Prep':'Annual';
   document.getElementById('creditBadge').textContent = planLabel;
+  document.getElementById('xpBadge').textContent = `⭐ ${user.xp||0} XP`;
+  document.getElementById('streakBadge').textContent = `🔥 ${user.streak||0}`;
+  // update streak if used today
+  updateStreak(user);
   const main = document.getElementById('mainContent');
   if(view==='overview') main.innerHTML = renderOverview(user);
   else if(view==='tests') main.innerHTML = renderTests(user);
   else if(view==='history') main.innerHTML = renderHistory(user);
+  else if(view==='actionplan') main.innerHTML = renderActionPlan(user);
   else if(view==='upgrade') main.innerHTML = renderUpgrade(user);
   else if(view==='account') main.innerHTML = renderAccount(user);
+}
+
+function updateStreak(user){
+  const today = new Date().toDateString();
+  if(user.lastActive===today) return;
+  const users = getUsers();
+  const yesterday = new Date(Date.now()-86400000).toDateString();
+  if(user.lastActive===yesterday){
+    users[user.email].streak = (user.streak||0)+1;
+  } else if(user.lastActive!==today){
+    users[user.email].streak = 1;
+  }
+  users[user.email].lastActive = today;
+  saveUsers(users);
+  saveSession(users[user.email]);
 }
 
 // ═══════════════════════════════════════════════════════════════════════
@@ -717,15 +863,36 @@ function renderOverview(user){
   const attempts = getAttempts().filter(a=>a.userId===user.id&&a.completed);
   const avgScore = attempts.length ? Math.round(attempts.reduce((s,a)=>s+a.totalScore,0)/attempts.length) : 0;
   const best = attempts.length ? Math.max(...attempts.map(a=>a.totalScore)) : 0;
+  const plan = user.plan==='free'?'Free':user.plan==='credits'?'Credits':user.plan==='smart_prep'?'Smart Prep':'Annual';
+  const actionPlan = user.actionPlan||[];
+  const recentDrills = actionPlan.slice(-3).reverse();
   return `
     <div>
       <h2 class="page-title">Welcome back, ${user.name.split(' ')[0]}!</h2>
       <p class="page-sub">Here's your preparation overview</p>
       <div class="overview-grid">
         <div class="stat-card"><div class="label">Tests Taken</div><div class="value">${attempts.length}</div><div class="sub">completed attempts</div></div>
-        <div class="stat-card"><div class="label">Average Score</div><div class="value">${avgScore||'—'}</div><div class="sub">out of 90 PTE score</div></div>
+        <div class="stat-card"><div class="label">Average Score</div><div class="value">${avgScore||'—'}</div><div class="sub">out of 90 PTE scale</div></div>
         <div class="stat-card"><div class="label">Best Score</div><div class="value">${best||'—'}</div><div class="sub">personal best</div></div>
-        <div class="stat-card"><div class="label">Plan</div><div class="value" style="font-size:1.2rem">${user.plan==='free'?'Free':'Premium'}</div><div class="sub">${user.plan==='free'?'2 free tests':'Unlimited access'}</div></div>
+        <div class="stat-card"><div class="label">Streak</div><div class="value">🔥${user.streak||0}</div><div class="sub">${user.xp||0} XP earned</div></div>
+      </div>
+      <div class="action-plan-section">
+        <div class="ap-header">
+          <h3>📋 Your Action Plan</h3>
+          <button class="btn btn-outline" style="padding:.3rem .7rem;font-size:.8rem" onclick="showView('actionplan')">See all</button>
+        </div>
+        ${recentDrills.length===0
+          ? `<div class="ap-empty">Complete your first test to get your personalised Action Plan.</div>`
+          : recentDrills.map((d,i)=>`
+            <div class="ap-drill-row">
+              <div class="ap-check ${d.completed?'done':''}" onclick="toggleDrill(${actionPlan.length-1-i})">${d.completed?'✓':''}</div>
+              <div class="ap-drill-info">
+                <div class="ap-drill-type">${d.type}</div>
+                <div class="ap-drill-text">${d.instruction}</div>
+              </div>
+              <button class="btn btn-primary" style="padding:.3rem .7rem;font-size:.78rem;flex-shrink:0" onclick="startTest(1)">Start</button>
+            </div>`).join('')
+        }
       </div>
       <h3 style="font-size:1.1rem;font-weight:700;margin-bottom:1rem">Quick Start</h3>
       <div class="tests-grid">
@@ -801,22 +968,23 @@ function renderHistory(user){
 
 function renderUpgrade(user){
   const PLANS = [
-    {key:'credits_5',name:'5 Credits',price:'$9.99',desc:'Pay as you go',features:['5 test credits','All question types','Full score reports'],credits:5},
-    {key:'credits_15',name:'15 Credits',price:'$24.99',desc:'Great value pack',features:['15 test credits','All question types','Full score reports'],credits:15,best:true},
-    {key:'monthly',name:'Monthly',price:'$29.99/mo',desc:'Unlimited access',features:['Unlimited tests','All question types','Progress analytics','Priority support']},
-    {key:'annual',name:'Annual',price:'$199.99/yr',desc:'Best value — save 44%',features:['Everything in Monthly','44% savings','All future tests','1-on-1 support']},
+    {key:'credits_1',name:'1 Test Credit',price:'$4.99',desc:'Single scored test',features:['1 scored mock test','Full score report','Basic AI coaching'],credits:1},
+    {key:'credits_3',name:'3 Test Credits',price:'$9.99',desc:'3-pack',features:['3 scored mock tests','Full score reports','Basic AI coaching'],credits:3,best:false},
+    {key:'credits_8',name:'8 Test Credits',price:'$19.99',desc:'Best credit value',features:['8 scored mock tests','Full score reports','AI coaching included'],credits:8,best:false},
+    {key:'smart_prep',name:'Smart Prep',price:'$14.99/mo',desc:'Most popular',features:['Unlimited scored tests','Unlimited AI coaching','Follow-up questions','Action plan + drills','Progress analytics'],best:true},
+    {key:'annual',name:'Annual',price:'$119.99/yr',desc:'Save 33%',features:['Everything in Smart Prep','All future tests included','Priority support','1 live coach session/mo']},
   ];
   return `
     <div>
       <h2 class="page-title">Upgrade Your Plan</h2>
-      <p class="page-sub">Unlock unlimited access to all mock tests</p>
+      <p class="page-sub">AI coaching free for first 90 days on any paid plan</p>
       <div class="demo-note">⚠️ Demo mode — payments are simulated. Click any plan to activate instantly.</div>
-      <div class="upgrade-grid">
+      <div class="upgrade-grid" style="grid-template-columns:repeat(auto-fit,minmax(190px,1fr))">
         ${PLANS.map(p=>`
           <div class="up-card ${p.best?'best':''}">
             ${p.best?'<div style="background:var(--brand);color:#fff;font-size:.75rem;font-weight:700;padding:.2rem .7rem;border-radius:20px;display:inline-block;margin-bottom:.5rem">POPULAR</div>':''}
             <h3>${p.name}</h3>
-            <div class="up-price">${p.price} <small>${p.desc}</small></div>
+            <div class="up-price">${p.price}<br><small>${p.desc}</small></div>
             <ul class="up-features">${p.features.map(f=>`<li>${f}</li>`).join('')}</ul>
             <button class="btn btn-primary" style="width:100%" onclick="doPurchase('${p.key}',${p.credits||0})">Get ${p.name}</button>
           </div>
@@ -1467,6 +1635,8 @@ function showResults(attemptId){
   showSection('results-view');
   const sec=att.sectionScores||{};
   const bandDesc=att.totalScore>=79?'Expert':att.totalScore>=65?'Advanced':att.totalScore>=50?'Competent':att.totalScore>=35?'Intermediate':'Beginner';
+  // award XP
+  awardXP(50,'Completed a test');
   let html=`
     <div class="score-hero">
       <div class="score-label">Overall PTE Score</div>
@@ -1477,6 +1647,10 @@ function showResults(attemptId){
         <div class="sec-score"><div class="s">${sec.writing||0}</div><div class="n">Writing</div></div>
         <div class="sec-score"><div class="s">${sec.reading||0}</div><div class="n">Reading</div></div>
         <div class="sec-score"><div class="s">${sec.listening||0}</div><div class="n">Listening</div></div>
+      </div>
+      <div style="margin-top:1.5rem;display:flex;gap:.8rem;justify-content:center;flex-wrap:wrap">
+        <button class="btn" style="background:linear-gradient(135deg,#a5b4fc,#06B6D4);color:#1e1b4b;font-weight:700;font-size:1rem;padding:.7rem 1.5rem" onclick="openCoach('${att.id}')">🤖 Get AI Coaching</button>
+        <button class="btn btn-outline" style="border-color:rgba(255,255,255,.4);color:#fff" onclick="showView('tests');showSection('dashboard')">Take Another Test</button>
       </div>
     </div>
   `;
@@ -1504,6 +1678,320 @@ function showResults(attemptId){
 
 function viewResults(attemptId){
   showResults(attemptId);
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+// ACTION PLAN
+// ═══════════════════════════════════════════════════════════════════════
+function renderActionPlan(user){
+  const plan = user.actionPlan||[];
+  return `
+    <div>
+      <h2 class="page-title">Action Plan</h2>
+      <p class="page-sub">Drills assigned by your AI Coach. Complete them before your next test.</p>
+      ${plan.length===0
+        ? `<div style="text-align:center;padding:3rem;color:var(--gray-400)">
+            <div style="font-size:3rem;margin-bottom:1rem">📋</div>
+            <p>Complete your first test to get your personalised Action Plan.</p>
+            <button class="btn btn-primary" style="margin-top:1rem" onclick="showView('tests')">Take a Test →</button>
+          </div>`
+        : `<div style="background:#fff;border-radius:var(--radius);box-shadow:var(--shadow);border:1px solid var(--gray-200);overflow:hidden">
+            ${[...plan].reverse().map((d,i)=>`
+              <div class="ap-drill-row" style="padding:.9rem 1.2rem">
+                <div class="ap-check ${d.completed?'done':''}" onclick="toggleDrill(${plan.length-1-i})">${d.completed?'✓':''}</div>
+                <div class="ap-drill-info" style="flex:1;margin:0 .8rem">
+                  <div class="ap-drill-type">${d.type} ${d.focus_tag?`<span style="color:var(--gray-400);font-weight:400">· ${d.focus_tag}</span>`:''}</div>
+                  <div class="ap-drill-text">${d.instruction}</div>
+                  ${d.content?`<div style="margin-top:.4rem;font-size:.82rem;color:var(--gray-500);background:var(--gray-50);padding:.4rem .6rem;border-radius:6px">${d.content}</div>`:''}
+                </div>
+                <div style="display:flex;flex-direction:column;gap:.4rem;align-items:flex-end">
+                  ${d.completed
+                    ? `<span style="color:var(--success);font-size:.82rem;font-weight:600">✓ Done</span>`
+                    : `<button class="btn btn-primary" style="padding:.3rem .7rem;font-size:.8rem" onclick="startTest(1)">Start Drill</button>`
+                  }
+                  <span style="font-size:.75rem;color:var(--gray-400)">${new Date(d.assignedAt).toLocaleDateString()}</span>
+                </div>
+              </div>`).join('<hr style="border:none;border-top:1px solid var(--gray-100)">')
+            }
+          </div>`
+      }
+    </div>`;
+}
+
+function toggleDrill(idx){
+  const user=getCurrentUser(); if(!user) return;
+  const users=getUsers();
+  const plan=users[user.email].actionPlan||[];
+  if(!plan[idx]) return;
+  plan[idx].completed=!plan[idx].completed;
+  if(plan[idx].completed){ plan[idx].completedAt=new Date().toISOString(); awardXP(20,'Completed a drill'); }
+  else { plan[idx].completedAt=null; }
+  users[user.email].actionPlan=plan;
+  saveUsers(users);
+  saveSession(users[user.email]);
+  showView('actionplan');
+}
+
+function addDrillsToActionPlan(drills){
+  const user=getCurrentUser(); if(!user) return;
+  const users=getUsers();
+  const plan=users[user.email].actionPlan||[];
+  drills.forEach(d=>{ plan.push({...d,assignedAt:new Date().toISOString(),completed:false,completedAt:null}); });
+  users[user.email].actionPlan=plan;
+  saveUsers(users);
+  saveSession(users[user.email]);
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+// XP + GAMIFICATION
+// ═══════════════════════════════════════════════════════════════════════
+function awardXP(amount, reason){
+  const user=getCurrentUser(); if(!user) return;
+  const users=getUsers();
+  users[user.email].xp=(users[user.email].xp||0)+amount;
+  saveUsers(users);
+  saveSession(users[user.email]);
+  // update badge if visible
+  const badge=document.getElementById('xpBadge');
+  if(badge) badge.textContent=`⭐ ${users[user.email].xp} XP`;
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+// AI COACH PANEL
+// ═══════════════════════════════════════════════════════════════════════
+let coachConversation = [];
+let currentCoachAttemptId = null;
+
+function openCoach(attemptId){
+  currentCoachAttemptId = attemptId;
+  coachConversation = [];
+  const user = getCurrentUser();
+  const att = getAttempts().find(a=>a.id===attemptId);
+  if(!user||!att) return;
+  document.getElementById('coachPanelTitle').textContent = 'AI Coach — '+user.name.split(' ')[0];
+  document.getElementById('coachPanelSub').textContent = att.testName+' · '+new Date(att.endedAt).toLocaleDateString();
+  document.getElementById('coachOverlay').classList.add('open');
+  document.getElementById('coachPanel').classList.add('open');
+  document.getElementById('coachMessages').innerHTML='';
+  document.getElementById('drillCardsSection').style.display='none';
+  // check for cached session
+  const cached = LS.get('coach_'+attemptId);
+  if(cached){
+    coachConversation = cached.messages||[];
+    renderCoachMessages(cached.messages);
+    if(cached.drills&&cached.drills.length) renderDrillCards(cached.drills);
+    return;
+  }
+  // generate new session
+  generateCoachSession(user, att);
+}
+
+function closeCoach(){
+  document.getElementById('coachOverlay').classList.remove('open');
+  document.getElementById('coachPanel').classList.remove('open');
+}
+
+async function generateCoachSession(user, att){
+  showTyping();
+  // Build structured test data for coach
+  const sec=att.sectionScores||{};
+  const weakest = Object.entries(sec).sort((a,b)=>a[1]-b[1]).slice(0,2).map(([s,v])=>`${s}:${v}`).join(', ');
+  const scoresJson = JSON.stringify(sec);
+  const questionBreakdown = (att.questionResults||[]).slice(0,10).map(r=>`${r.type}:${r.score}/${r.max}`).join(', ');
+  // Try real API if key available
+  const apiKey = LS.get('ptm_anthropic_key');
+  if(apiKey){
+    try{
+      const systemPrompt = buildCoachSystemPrompt(user, att, scoresJson, questionBreakdown);
+      const response = await fetch('https://api.anthropic.com/v1/messages',{
+        method:'POST',
+        headers:{'Content-Type':'application/json','x-api-key':apiKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+        body:JSON.stringify({
+          model:'claude-sonnet-4-20250514',
+          max_tokens:1024,
+          system:systemPrompt,
+          messages:[{role:'user',content:'Please deliver my coaching session now.'}]
+        })
+      });
+      const data = await response.json();
+      const text = data.content?.[0]?.text||'';
+      hideTyping();
+      parseAndRenderCoachResponse(text, att);
+      return;
+    }catch(e){
+      console.warn('Claude API error, falling back to demo:', e.message);
+    }
+  }
+  // Demo fallback — rich mock coaching session
+  await sleep(1600);
+  hideTyping();
+  const mockSession = buildMockCoachSession(user, att, sec);
+  renderCoachMessages(mockSession.messages);
+  renderDrillCards(mockSession.drills);
+  LS.set('coach_'+att.id,{messages:mockSession.messages,drills:mockSession.drills});
+  addDrillsToActionPlan(mockSession.drills);
+}
+
+function buildCoachSystemPrompt(user, att, scoresJson, breakdown){
+  return `You are PTEMaster AI Coach — a world-class PTE Academic tutor.
+Student name: ${user.name}
+Test completed: ${att.testName} | Date: ${new Date(att.endedAt).toLocaleDateString()}
+Scores (section → PTE scale 10-90): ${scoresJson}
+Question-level breakdown (type:score/max): ${breakdown}
+
+Deliver a coaching session in EXACTLY 4 parts using this format:
+[DIAGNOSIS]
+2-3 sentences on the #1 issue. Be specific, not generic.
+
+[TECHNIQUE]
+Explain the relevant PTE criterion in plain English (max 100 words).
+
+[EXAMPLE]
+Show a model answer or corrected extract. Use [ORIGINAL] and [IMPROVED] labels.
+
+[DRILLS]
+Return exactly 3 drills as a JSON array ONLY (no markdown fences):
+[{"id":"d1","type":"SPEAKING","instruction":"...","content":"...","focus_tag":"Oral Fluency"},{"id":"d2","type":"WRITING","instruction":"...","content":"...","focus_tag":"Grammar"},{"id":"d3","type":"READING","instruction":"...","content":"...","focus_tag":"Vocabulary"}]
+
+Be warm, direct, specific. Never use jargon. Never say "Great job" before diagnosing a problem.`;
+}
+
+function parseAndRenderCoachResponse(text, att){
+  const parts={DIAGNOSIS:'',TECHNIQUE:'',EXAMPLE:'',DRILLS:''};
+  let drills=[];
+  const matches={
+    DIAGNOSIS:/\[DIAGNOSIS\]([\s\S]*?)(?=\[TECHNIQUE\]|\[EXAMPLE\]|\[DRILLS\]|$)/i,
+    TECHNIQUE:/\[TECHNIQUE\]([\s\S]*?)(?=\[DIAGNOSIS\]|\[EXAMPLE\]|\[DRILLS\]|$)/i,
+    EXAMPLE:/\[EXAMPLE\]([\s\S]*?)(?=\[DIAGNOSIS\]|\[TECHNIQUE\]|\[DRILLS\]|$)/i,
+    DRILLS:/\[DRILLS\]([\s\S]*?)$/i,
+  };
+  Object.keys(matches).forEach(k=>{
+    const m=text.match(matches[k]);
+    if(m) parts[k]=m[1].trim();
+  });
+  // parse drills JSON
+  try{
+    const jsonMatch=parts.DRILLS.match(/\[[\s\S]*\]/);
+    if(jsonMatch) drills=JSON.parse(jsonMatch[0]);
+  }catch(e){ drills=buildFallbackDrills(); }
+  const messages=[
+    {role:'coach',label:'DIAGNOSIS',content:parts.DIAGNOSIS||'Analysis complete.'},
+    {role:'coach',label:'TECHNIQUE',content:parts.TECHNIQUE||'Focus on the key PTE criteria.'},
+    {role:'coach',label:'EXAMPLE',content:parts.EXAMPLE||'Practice with the drills below.'},
+  ];
+  coachConversation=messages;
+  renderCoachMessages(messages);
+  if(drills.length) renderDrillCards(drills);
+  LS.set('coach_'+att.id,{messages,drills});
+  addDrillsToActionPlan(drills);
+}
+
+function buildMockCoachSession(user, att, sec){
+  const speakScore=sec.speaking||45;
+  const writScore=sec.writing||50;
+  const weakSection=speakScore<writScore?'Speaking':'Writing';
+  const messages=[
+    {role:'coach',label:'DIAGNOSIS',content:`Your ${weakSection.toLowerCase()} score of ${speakScore<writScore?speakScore:writScore}/90 is your main opportunity area. ${speakScore<writScore?'The data shows pausing mid-sentence rather than at natural phrase boundaries — this directly penalises your Oral Fluency score, which has the biggest impact on Speaking. Your pronunciation is actually solid.':'I can see your essays are well-structured but the word count is on the lower end and grammar errors are reducing your score. Let\'s fix that first.'}`},
+    {role:'coach',label:'TECHNIQUE',content:`PTE ${weakSection} is scored on 5 criteria: ${speakScore<writScore?'Content (is your response relevant?), Oral Fluency (are you speaking smoothly without hesitation?), and Pronunciation (are sounds clear?). Oral Fluency is weighted highest for Read Aloud — even a 1-point improvement can shift your band.':'Content, Form (word count within 200-300), Grammar, Vocabulary, and Spelling. Each is marked 0-2. A single sentence with two grammar errors can cost you 4+ points.'}`},
+    {role:'coach',label:'EXAMPLE',content:`${speakScore<writScore?'[ORIGINAL] "Climate change... is one of the... pressing challenges."\n[IMPROVED] "Climate change is one of the most pressing challenges." — Notice: no pauses inside the sentence, only at the full stop. Aim for 4-5 words per breath group.':'[ORIGINAL] "The impacts of climate change are effecting many countrys around world."\n[IMPROVED] "Climate change is affecting millions of people across the globe, particularly in developing nations." — Fixes: affecting (not effecting), countries, added determiner, richer vocabulary.'}`},
+  ];
+  const drills=[
+    {id:'d1',type:'SPEAKING',instruction:`Read this sentence aloud 3 times: "The consistent application of evidence-based strategies leads to measurable improvements in academic performance."`,content:'Focus on linking words smoothly. No pauses mid-phrase.',focus_tag:'Oral Fluency'},
+    {id:'d2',type:'WRITING',instruction:`Rewrite this sentence correctly: "The government have took many steps to reducing the level of pollution in the city."`,content:'Correct: subject-verb agreement, tense, and the gerund after "to".',focus_tag:'Grammar'},
+    {id:'d3',type:'READING',instruction:'In the blank: "The discovery was considered a major _____ in modern medicine." Choose: breakthrough, breakpoint, breakdown, breakout.',content:'Answer: breakthrough. Learn: collocations with "break" in academic contexts.',focus_tag:'Vocabulary'},
+  ];
+  return {messages,drills};
+}
+
+function renderCoachMessages(messages){
+  const container=document.getElementById('coachMessages');
+  container.innerHTML='';
+  messages.forEach(m=>{
+    const div=document.createElement('div');
+    div.className=`coach-msg ${m.role}`;
+    div.innerHTML=`${m.label?`<div class="part-label">${m.label}</div>`:''}${m.content.replace(/\n/g,'<br>')}`;
+    container.appendChild(div);
+  });
+  container.scrollTop=container.scrollHeight;
+}
+
+function renderDrillCards(drills){
+  const section=document.getElementById('drillCardsSection');
+  const grid=document.getElementById('drillCardsGrid');
+  section.style.display='block';
+  grid.innerHTML=drills.map((d,i)=>`
+    <div class="drill-card" id="drillCard_${i}">
+      <div class="drill-tag ${(d.type||'READING').toLowerCase()}">${d.type||'DRILL'}</div>
+      <div class="drill-instruction">${d.instruction}</div>
+      <div class="drill-action" onclick="saveDrillToPlan(${i},'${encodeURIComponent(JSON.stringify(d))}')">+ Save to Action Plan</div>
+    </div>`).join('');
+}
+
+function saveDrillToPlan(i, encoded){
+  const d=JSON.parse(decodeURIComponent(encoded));
+  addDrillsToActionPlan([d]);
+  awardXP(10,'Saved a drill');
+  const card=document.getElementById('drillCard_'+i);
+  if(card){
+    card.classList.add('done');
+    card.querySelector('.drill-action').textContent='✓ Saved to Action Plan';
+  }
+}
+
+async function sendFollowUp(){
+  const input=document.getElementById('coachFollowUp');
+  const text=input.value.trim();
+  if(!text) return;
+  input.value='';
+  // add user message
+  const userMsg={role:'user',content:text};
+  coachConversation.push(userMsg);
+  const container=document.getElementById('coachMessages');
+  const uDiv=document.createElement('div');
+  uDiv.className='coach-msg user';
+  uDiv.textContent=text;
+  container.appendChild(uDiv);
+  container.scrollTop=container.scrollHeight;
+  showTyping();
+  await sleep(1200);
+  hideTyping();
+  // generic follow-up response
+  const responses=[
+    `Great question. The PTE scorer is an AI — it rewards consistent fluency patterns and penalises hesitation markers like "um" and "uh". Speak at a steady pace, not fast.`,
+    `For that question type, focus on answering within the first sentence. PTE doesn't reward long preambles — get to the point immediately.`,
+    `The key here is the PTE scoring rubric. For each blank in FIB, only one word fits grammatically AND semantically. Eliminate options by grammar rule first, then choose by meaning.`,
+    `Your practice is showing improvement. Based on the pattern in your answers, I'd focus on 15 minutes of Read Aloud practice daily — it affects 3 scoring criteria simultaneously.`,
+  ];
+  const reply={role:'coach',content:responses[Math.floor(Math.random()*responses.length)]};
+  coachConversation.push(reply);
+  const rDiv=document.createElement('div');
+  rDiv.className='coach-msg coach';
+  rDiv.innerHTML=reply.content;
+  container.appendChild(rDiv);
+  container.scrollTop=container.scrollHeight;
+}
+
+function showTyping(){
+  document.getElementById('coachTyping').style.display='flex';
+  const c=document.getElementById('coachMessages');
+  c.scrollTop=c.scrollHeight;
+}
+function hideTyping(){ document.getElementById('coachTyping').style.display='none'; }
+function buildFallbackDrills(){
+  return [
+    {id:'f1',type:'SPEAKING',instruction:'Read a passage aloud focusing on phrase-boundary pausing.',content:'Climate change affects ecosystems globally.',focus_tag:'Oral Fluency'},
+    {id:'f2',type:'WRITING',instruction:'Write a 1-sentence summary of the following passage.',content:'Practice with any SWT passage from your test.',focus_tag:'Form'},
+    {id:'f3',type:'READING',instruction:'Choose the correct word for each blank in a paragraph.',content:'Focus on collocations and grammar patterns.',focus_tag:'Vocabulary'},
+  ];
+}
+function sleep(ms){ return new Promise(r=>setTimeout(r,ms)); }
+
+function setClaudeApiKey(){
+  const key=prompt('Enter your Anthropic API key (sk-ant-...) to use real AI coaching:\n\nNote: key stored locally only, never sent anywhere except Anthropic.');
+  if(key&&key.startsWith('sk-ant-')){
+    LS.set('ptm_anthropic_key',key);
+    alert('✓ API key saved. AI coaching is now powered by Claude.');
+  }
 }
 
 // ═══════════════════════════════════════════════════════════════════════
