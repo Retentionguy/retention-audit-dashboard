@@ -165,7 +165,7 @@
   <div class="brand"><span id="bizName">Lead lifecycle engine</span><b>Speed · Persistence · Retention</b></div>
   <div class="clock" aria-live="off">
     <div class="time" id="clockTime">--:--</div>
-    <div class="meta"><span id="pillBiz" class="pill off">CLOSED</span><span id="pillSms" class="pill off">SMS QUIET</span><span id="pillMode" class="pill warn">SIM</span></div>
+    <div class="meta"><span id="pillBiz" class="pill off">CLOSED</span><span id="pillSms" class="pill off">SMS QUIET</span><span id="pillMode" class="pill warn">SIM</span><span id="pillTz" class="pill off">TZ</span></div>
   </div>
   <div class="seg" role="group" aria-label="Clock speed" id="speedSeg">
     <button type="button" data-speed="live">Live</button>
@@ -175,6 +175,7 @@
     <button type="button" data-speed="0">Pause</button>
   </div>
   <div class="actions">
+    <button type="button" class="btn dark" data-act="feed" id="feedBtn" hidden aria-pressed="false">Demo feed</button>
     <button type="button" class="btn dark" data-act="skip">Skip to next action</button>
     <button type="button" class="btn primary" data-act="newLead">+ New lead</button>
   </div>
@@ -194,6 +195,7 @@
 <main>
   <section id="tab-pipeline">
     <div class="kpis" id="kpis"></div>
+    <div class="toolbar"><label for="q" class="sr">Search leads and clients</label><input id="q" type="search" class="btn" style="min-width:260px;justify-content:flex-start;cursor:text" placeholder="Search name, enquiry, product, phone…"><span class="muted" id="qInfo"></span></div>
     <div class="board" id="board"></div>
   </section>
   <section id="tab-tasks" hidden><div class="panel" id="tasksPanel"></div></section>
@@ -206,8 +208,9 @@
 <div id="drawerRoot"></div>
 
 <dialog id="leadDialog" aria-labelledby="leadDlgTitle">
-  <form method="dialog" id="leadForm">
+  <form id="leadForm" novalidate onsubmit="return false">
     <h2 id="leadDlgTitle">New lead</h2>
+    <p id="lfErr" class="muted" style="margin:0;color:var(--bad)" hidden>Add a name first.</p>
     <p class="muted" style="margin:0">The first touch fires the moment you save — same as a form, lead ad or webhook hitting the system.</p>
     <div class="grid2">
       <div class="field"><label for="lfName">Name *</label><input id="lfName" name="name" required autocomplete="off"></div>
@@ -220,7 +223,7 @@
     </div>
     <div class="acts" style="justify-content: space-between">
       <button type="button" class="btn" data-act="fillSample">Fill sample data</button>
-      <div class="acts"><button type="button" class="btn" data-act="closeDialog">Cancel</button><button type="submit" class="btn primary" value="save">Capture lead</button></div>
+      <div class="acts"><button type="button" class="btn" data-act="closeDialog">Cancel</button><button type="button" class="btn primary" data-act="saveLead">Capture lead</button></div>
     </div>
   </form>
 </dialog>
@@ -289,6 +292,7 @@ function fresh() {
 }
 
 /* ───────────────────────── State ───────────────────────── */
+let seeding = false, needsDemo = false;
 let S = load();
 let dirty = true, saveDue = false, tab = 'pipeline', openId = null, outFilter = 'all';
 
@@ -306,6 +310,7 @@ function load() {
       return s;
     }
   } catch (e) { /* storage unavailable or corrupt: start fresh */ }
+  needsDemo = true;
   return fresh();
 }
 function persist() {
@@ -390,7 +395,10 @@ function slotTime(base, dayOffset, slot) {
 }
 
 /* ───────────────────────── Formatting ───────────────────────── */
-function fmtTime(t) { return dtf(S.settings.tz, { weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit', hourCycle: 'h23' }, 'full').format(new Date(t)); }
+function fmtTime(t) {
+  const otherYear = parts(t).y !== parts(now()).y;
+  return dtf(S.settings.tz, otherYear ? { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', hourCycle: 'h23' } : { weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit', hourCycle: 'h23' }, otherYear ? 'fully' : 'full').format(new Date(t));
+}
 function fmtClock(t) { return dtf(S.settings.tz, { hour: '2-digit', minute: '2-digit', second: '2-digit', hourCycle: 'h23' }, 'clock').format(new Date(t)); }
 function fmtDay(t) { return dtf(S.settings.tz, { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' }, 'day').format(new Date(t)); }
 function fmtDur(ms) {
@@ -417,7 +425,7 @@ function pendingFor(lid) { return S.jobs.filter(j => j.leadId === lid && (j.stat
 function tl(lead, at, kind, title, text, extra) { lead.tl.push(Object.assign({ at, kind, title, text: text || '' }, extra || {})); touch(); }
 function logEv(at, lead, text, kind) {
   S.log.push({ at, leadId: lead ? lead.id : null, name: lead ? lead.name : '', text, kind: kind || 'sys' });
-  if (S.log.length > 1500) S.log.splice(0, S.log.length - 1500);
+  if (!seeding && S.log.length > 3000) S.log.splice(0, S.log.length - 3000);
   touch();
 }
 function addTask(lead, title, priority, owner) {
@@ -448,6 +456,7 @@ function resolveCh(ch, lead) { return ch === 'pref' ? (lead.pref || S.settings.r
 
 /* ───────────────────────── Webhook ───────────────────────── */
 function dispatch(event, lead, data, msg) {
+  if (seeding) { if (msg) msg.wh = 'demo'; return; }
   const url = (S.settings.webhook || '').trim();
   if (!url) { if (msg) msg.wh = 'not configured'; return; }
   const payload = { event, at: new Date(now()).toISOString(), business: S.settings.business, lead: lead ? { id: lead.id, name: lead.name, phone: lead.phone, email: lead.email, topic: lead.topic, source: lead.source, stage: lead.stage, product: lead.product || null, preferredChannel: lead.pref || null } : null, data: data || {} };
@@ -464,7 +473,7 @@ function send(lead, ch, tplKey, at, why) {
   const t = S.settings.templates[tplKey] || { body: '' };
   const msg = { id: id('m'), at, leadId: lead.id, name: lead.name, ch, tpl: tplKey, label: t.label || tplKey, subject: t.subject ? render(t.subject, lead) : '', body: render(t.body, lead), to: ch === 'email' ? lead.email : lead.phone, wh: '' };
   S.messages.push(msg);
-  if (S.messages.length > 2000) S.messages.splice(0, S.messages.length - 2000);
+  if (!seeding && S.messages.length > 3000) S.messages.splice(0, S.messages.length - 3000);
   if (!lead.firstTouchAt) lead.firstTouchAt = at;
   tl(lead, at, ch === 'voicemail' ? 'call' : 'out', CH[ch] + (why ? ' · ' + why : ''), (msg.subject ? msg.subject + '\n\n' : '') + msg.body);
   dispatch('message.send', lead, { channel: ch, to: msg.to, template: tplKey, subject: msg.subject, body: msg.body }, msg);
@@ -509,7 +518,7 @@ function startCall(job, lead, at) {
   if (!lead.firstDialAt) lead.firstDialAt = at;
   job.status = 'ringing';
   S.calls.push({ id: id('c'), leadId: lead.id, jobId: job.id, attempt: lead.attempts, startedReal: Date.now(), startedAt: at });
-  if (!S.clock.live && !S.clock.hold) { S.clock = { live: false, simAt: at, realAt: Date.now(), speed: S.clock.speed, hold: true }; }
+  if (!seeding && !S.clock.live && !S.clock.hold) { S.clock = { live: false, simAt: at, realAt: Date.now(), speed: S.clock.speed, hold: true }; }
   tl(lead, at, 'call', 'Calling — attempt ' + lead.attempts, lead.phone ? 'Dialling ' + lead.phone : '');
   logEv(at, lead, 'Dialling (attempt ' + lead.attempts + ')', 'call');
   dispatch('call.start', lead, { attempt: lead.attempts, phone: lead.phone });
@@ -715,6 +724,7 @@ function jobLabel(j, lead) {
 /* ───────────────────────── Tick ───────────────────────── */
 let lastSave = 0;
 function tick() {
+  demoFeedTick();
   for (const c of S.calls.slice()) {
     if (Date.now() - c.startedReal > S.settings.ringTimeout * SEC) callOutcome(c.id, false, 'Rang out — no answer');
   }
@@ -735,6 +745,7 @@ const $ = (sel) => document.querySelector(sel);
 function renderAll() {
   $('#bizName').textContent = S.settings.business + ' · lead lifecycle engine';
   renderSpeed(); renderDialer(); renderLive(); placeDrawer();
+  const fb = $('#feedBtn'); fb.hidden = !S.demo; fb.setAttribute('aria-pressed', String(!!S.demoFeed)); fb.textContent = 'Demo feed: ' + (S.demoFeed ? 'on' : 'off');
   const open = S.tasks.filter(t => !t.done);
   const tc = $('#taskCount'); tc.textContent = open.length; tc.className = 'count' + (open.some(t => t.priority === 'high') ? ' hot' : '');
   if (tab === 'pipeline') renderPipeline();
@@ -750,6 +761,7 @@ function renderLive() {
   const biz = inBusiness(t), sms = smsAllowed(t);
   const pb = $('#pillBiz'); pb.textContent = biz ? 'OPEN' : 'CLOSED'; pb.className = 'pill ' + (biz ? 'on' : 'off');
   const ps = $('#pillSms'); ps.textContent = sms ? 'SMS OK' : 'SMS QUIET'; ps.className = 'pill ' + (sms ? 'on' : 'off');
+  $('#pillTz').textContent = S.settings.tz;
   const pm = $('#pillMode'); pm.textContent = S.clock.live ? 'LIVE' : (S.clock.hold ? 'SIM · CALL RINGING' : (S.clock.speed === 0 ? 'SIM · PAUSED' : 'SIM')); pm.className = 'pill ' + (S.clock.live ? 'on' : 'warn');
   for (const el of document.querySelectorAll('[data-at]')) {
     const d = +el.dataset.at - t;
@@ -769,7 +781,13 @@ function renderDialer() {
       '<span class="acts"><button type="button" class="btn good small" data-act="answer" data-id="' + c.id + '">Connected</button><button type="button" class="btn small" data-act="noanswer" data-id="' + c.id + '">No answer</button></span></div>';
   }).join('');
 }
-function nextJob(lead) { return S.jobs.filter(j => j.leadId === lead.id && j.status === 'pending').sort((a, b) => a.at - b.at)[0]; }
+let nextMap = null;
+function nextJob(lead) {
+  if (nextMap) return nextMap.get(lead.id);
+  return S.jobs.filter(j => j.leadId === lead.id && j.status === 'pending').sort((a, b) => a.at - b.at)[0];
+}
+let query = '';
+const COL_CAP = 40;
 function median(a) { if (!a.length) return null; const s = a.slice().sort((x, y) => x - y), m = s.length >> 1; return s.length % 2 ? s[m] : (s[m - 1] + s[m]) / 2; }
 function renderPipeline() {
   const L = S.leads;
@@ -784,14 +802,27 @@ function renderPipeline() {
     ['Contact rate', L.length ? Math.round(contacted / L.length * 100) + '%' : '—', contacted + ' reached a human'],
     ['In cadence', count('persistence'), count('nurture') + ' in nurture'],
     ['Clients', count('won'), risk + ' at risk'],
+    ['Avg sentiment · 30d', avgSent30() || '—', 'from client check-ins'],
     ['Open tasks', S.tasks.filter(t => !t.done).length, S.tasks.filter(t => !t.done && t.priority === 'high').length + ' high priority'],
   ];
+  nextMap = new Map();
+  for (const j of S.jobs) if (j.status === 'pending') { const c = nextMap.get(j.leadId); if (!c || j.at < c.at) nextMap.set(j.leadId, j); }
+  const q = query.trim().toLowerCase();
+  const match = (l) => !q || [l.name, l.topic, l.product, l.phone, l.email, l.source].some(v => (v || '').toLowerCase().includes(q));
   $('#kpis').innerHTML = kp.map(k => '<div class="kpi"><span>' + esc(k[0]) + '</span><b>' + esc(k[1]) + '</b><small>' + esc(k[2]) + '</small></div>').join('');
   $('#board').innerHTML = STAGES.map(st => {
-    const items = L.filter(l => l.stage === st.id).sort((a, b) => b.createdAt - a.createdAt);
-    return '<div class="col" style="--c:' + st.color + '"><h2>' + esc(st.label) + '<span class="count">' + items.length + '</span></h2><div class="list">' +
-      (items.length ? items.map(card).join('') : '<div class="empty">' + emptyText(st.id) + '</div>') + '</div></div>';
+    const all = L.filter(l => l.stage === st.id && match(l)).sort((a, b) => (st.id === 'won' ? (b.atRisk - a.atRisk) || (b.wonAt - a.wonAt) : b.createdAt - a.createdAt));
+    const items = all.slice(0, COL_CAP);
+    return '<div class="col" style="--c:' + st.color + '"><h2>' + esc(st.label) + '<span class="count">' + all.length + '</span></h2><div class="list">' +
+      (items.length ? items.map(card).join('') + (all.length > COL_CAP ? '<div class="empty">+ ' + (all.length - COL_CAP) + ' more — use search to find them</div>' : '') : '<div class="empty">' + (q ? 'No matches.' : emptyText(st.id)) + '</div>') + '</div></div>';
   }).join('');
+  nextMap = null;
+  $('#qInfo').textContent = q ? L.filter(match).length + ' match' + (L.filter(match).length === 1 ? '' : 'es') : '';
+}
+function avgSent30() {
+  const since = now() - 30 * DAY, xs = [];
+  for (const l of S.leads) for (const x of l.sentiments) if (x.at >= since) xs.push(x.score);
+  return xs.length ? (xs.reduce((a, b) => a + b, 0) / xs.length).toFixed(1) + ' / 5' : null;
 }
 function emptyText(st) {
   return { first_touch: 'New leads land here and get touched in seconds. Add one with “+ New lead”.', persistence: 'Leads whose call didn’t connect.', engaged: 'Anyone who replied, answered or booked — automation is off.', won: 'Won deals in the 15-day check-in loop.', nurture: 'Cadence finished with no contact. Monthly email.', lost: '—' }[st];
@@ -895,7 +926,7 @@ window.addEventListener('resize', placeDrawer);
 function renderSettings() {
   const s = S.settings;
   const f = (k, label, v, type, extra) => '<div class="field"><label for="st_' + k + '">' + label + '</label><input id="st_' + k + '" name="' + k + '" type="' + (type || 'text') + '" value="' + esc(v) + '"' + (extra || '') + '></div>';
-  $('#settingsPanel').innerHTML = '<form id="settingsForm"><div class="settings">' +
+  $('#settingsPanel').innerHTML = '<form id="settingsForm" onsubmit="return false"><div class="settings">' +
     '<div class="panel"><h2>Business</h2>' + f('business', 'Business name', s.business) + f('rep', 'Rep / sender name', s.rep) + f('booking', 'Booking link', s.booking, 'url') +
       '<div class="field"><label for="st_tz">Time zone (client’s)</label><input id="st_tz" name="tz" list="tzList" value="' + esc(s.tz) + '"><datalist id="tzList">' + ['Asia/Kolkata', 'Europe/London', 'Europe/Dublin', 'Europe/Berlin', 'America/New_York', 'America/Chicago', 'America/Denver', 'America/Los_Angeles', 'America/Toronto', 'Australia/Sydney', 'Asia/Dubai', 'Asia/Singapore', 'UTC'].map(z => '<option value="' + z + '">').join('') + '</datalist></div></div>' +
     '<div class="panel"><h2>Hours</h2><div class="grid2">' + f('open', 'Business opens', s.open, 'time') + f('close', 'Business closes', s.close, 'time') + f('smsStart', 'SMS allowed from', s.smsStart, 'time') + f('smsEnd', 'SMS allowed until', s.smsEnd, 'time') + '</div>' +
@@ -912,8 +943,8 @@ function renderSettings() {
     '</div>' +
     '<div class="panel"><h2>Message templates</h2><p class="muted" style="margin-top:0">Variables: <code>{first} {name} {topic} {product} {booking} {rep} {business} {phone} {email}</code></p>' +
       Object.keys(DEFAULT_TPL).map(k => { const t = s.templates[k] || DEFAULT_TPL[k]; return '<div class="tpl"><b>' + esc(DEFAULT_TPL[k].label) + '</b>' + ('subject' in DEFAULT_TPL[k] ? '<div class="field"><label for="tp_s_' + k + '">Subject</label><input id="tp_s_' + k + '" name="tps_' + k + '" value="' + esc(t.subject || '') + '"></div>' : '') + '<div class="field"><label for="tp_b_' + k + '">Body</label><textarea id="tp_b_' + k + '" name="tpb_' + k + '" rows="3">' + esc(t.body) + '</textarea></div></div>'; }).join('') + '</div>' +
-    '<div class="panel acts" style="justify-content:space-between"><div class="acts"><button type="submit" class="btn primary">Save settings</button><button type="button" class="btn" data-act="resetTpl">Restore default templates</button></div>' +
-      '<div class="acts"><button type="button" class="btn" data-act="export">Export data</button><label class="btn" for="importFile">Import data</label><input type="file" id="importFile" accept="application/json" class="sr"><button type="button" class="btn bad" data-act="wipe">Erase everything</button></div></div>' +
+    '<div class="panel acts" style="justify-content:space-between"><div class="acts"><button type="button" class="btn primary" data-act="saveSettings">Save settings</button><button type="button" class="btn" data-act="resetTpl">Restore default templates</button></div>' +
+      '<div class="acts"><button type="button" class="btn" data-act="export">Export data</button><label class="btn" for="importFile">Import data</label><input type="file" id="importFile" accept="application/json" class="sr"><button type="button" class="btn" data-act="loadDemo">Load demo data</button><button type="button" class="btn bad" data-act="wipe">Erase everything</button></div></div>' +
     '</form>';
 }
 function saveSettings(form) {
@@ -959,6 +990,148 @@ function renderGuide() {
     '<div class="panel"><h2>Webhook payload</h2><pre>' + esc(sample) + '</pre></div></div>';
 }
 
+
+function demoPhone(r, india) {
+  const d = (n) => String(Math.floor(r() * Math.pow(10, n))).padStart(n, '0');
+  return india ? '+91 98' + d(3) + ' ' + d(5) : '+44 7700 9' + d(5);
+}
+const FEED_TOPICS = ['personal training', 'annual membership', 'physio for knee pain', 'nutrition coaching', 'small-group strength classes', 'weight-loss programme', 'sports massage', 'post-natal fitness'];
+const FEED_SOURCES = ['Meta lead ad', 'Meta lead ad', 'Google lead ad', 'Web form', 'Landing page', 'Chatbot'];
+const FEED_NAMES = ['Kabir Sethi', 'Lucy Hale', 'Ishaan Verma', 'Olivia Grant', 'Sana Mirza', 'George Pike', 'Tanvi Joshi', 'Maya Collins', 'Aditya Rao', 'Ellie Ward', 'Nikhil Bose', 'Zoe Parker', 'Farhan Ali', 'Imogen Lane', 'Siddharth Jain', 'Poppy Hayes'];
+function demoFeedTick() {
+  if (!S.demoFeed || S.calls.length || Date.now() < (S.nextDemoAt || 0)) return;
+  S.nextDemoAt = Date.now() + (100 + Math.random() * 80) * SEC;
+  const name = FEED_NAMES[Math.floor(Math.random() * FEED_NAMES.length)];
+  const lead = createLead({ name, phone: demoPhone(Math.random, /Kolkata|Calcutta/.test(S.settings.tz)), email: name.toLowerCase().replace(' ', '.') + '@example.com', topic: FEED_TOPICS[Math.floor(Math.random() * FEED_TOPICS.length)], source: FEED_SOURCES[Math.floor(Math.random() * FEED_SOURCES.length)] });
+  toast('New lead: ' + lead.name + ' (' + lead.source + ') — first touch firing.');
+}
+
+/* ───────────────────────── Demo data ─────────────────────────
+   Replays the real engine over the past 12 months with scripted lead
+   behaviour, so every record, message and escalation follows the rules. */
+function seedDemo() {
+  seeding = true;
+  const real = Date.now();
+  S = fresh();
+  Object.assign(S.settings, { business: 'Northlight Fitness Studio', rep: 'Sam', booking: 'https://book.northlight-fitness.example/intro', tz: browserTz(), days: [1, 2, 3, 4, 5, 6] });
+  const india = /Kolkata|Calcutta/.test(S.settings.tz);
+  for (const k in fmtCache) delete fmtCache[k];
+  let a = 20261008;
+  const rnd = () => { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; };
+  const pick = (xs) => xs[Math.floor(rnd() * xs.length)];
+  const wpick = (pairs) => { let r = rnd() * pairs.reduce((s, p) => s + p[1], 0); for (const p of pairs) { if ((r -= p[1]) <= 0) return p[0]; } return pairs[0][0]; };
+  const setT = (t) => { S.clock = { live: false, simAt: t, realAt: Date.now(), speed: 0, hold: false }; };
+  const FIRST = ['Priya', 'Daniel', 'Aisha', 'Tom', 'Meera', 'James', 'Sophie', 'Arjun', 'Chloe', 'Omar', 'Hannah', 'Rahul', 'Emily', 'Kwame', 'Grace', 'Liam', 'Fatima', 'Oliver', 'Zara', 'Ben', 'Neha', 'Jack', 'Amelia', 'Ravi', 'Isla', 'Marcus', 'Leah', 'Vikram', 'Ruby', 'Noah', 'Anika', 'Ethan', 'Mia', 'Samir', 'Ella', 'Lucas', 'Pooja', 'Harry', 'Nadia', 'Adam', 'Freya', 'Tariq', 'Lily', 'Kiran', 'Jessica', 'Dev', 'Holly', 'Yusuf', 'Charlotte', 'Rohan'];
+  const LAST = ['Shah', 'Okafor', 'Khan', 'Becker', 'Iyer', 'Walsh', 'Turner', 'Patel', 'Morgan', 'Haddad', 'Clarke', 'Mehta', 'Hughes', 'Mensah', 'Evans', 'Murphy', 'Rahman', 'Bennett', 'Malik', 'Foster', 'Kapoor', 'Reid', 'Ward', 'Nair', 'Campbell', 'Brooks', 'Hart', 'Singh', 'Doyle', 'Price', 'Rao', 'Fisher', 'Lewis', 'Qureshi', 'Ellis'];
+  const TOPICS = [['personal training', 'Personal training · 12 weeks'], ['annual membership', 'Annual membership'], ['physio for knee pain', 'Physio rehab plan'], ['nutrition coaching', 'Nutrition coaching · 3 months'], ['small-group strength classes', 'Small-group strength · monthly'], ['post-natal fitness', 'Post-natal programme'], ['weight-loss programme', 'Transform 90 programme'], ['sports massage', 'Recovery membership']];
+  const SOURCES = [['Meta lead ad', 40], ['Google lead ad', 18], ['Web form', 20], ['Landing page', 10], ['Chatbot', 6], ['CRM webhook', 6]];
+  const REPLIES = ['Yes please, can you call after 6?', 'Hi, is there a trial session?', 'What are your prices?', 'Sorry missed your call — free now', 'Can I come in on Saturday?', 'Interested, what times do you have?'];
+  const used = new Set();
+  const person = () => {
+    let n, g = 0;
+    do { n = pick(FIRST) + ' ' + pick(LAST); } while (used.has(n) && g++ < 50);
+    used.add(n);
+    const [f, l] = n.split(' ');
+    return { name: n, phone: demoPhone(rnd, india), email: (f + '.' + l).toLowerCase() + '@example.com' };
+  };
+  const arrival = (daysAgo) => {
+    const p = parts(real - daysAgo * DAY);
+    const busy = rnd() < 0.78;
+    const hh = busy ? 8 + Math.floor(rnd() * 13) : Math.floor(rnd() * 24);
+    let t = zoned(p.y, p.m, p.d, String(hh).padStart(2, '0') + ':' + String(Math.floor(rnd() * 60)).padStart(2, '0'));
+    while (t > real - 5 * MIN) t -= DAY;
+    return t;
+  };
+  const bizLater = (t, minD, maxD) => { const x = t + (minD + rnd() * (maxD - minD)) * DAY; return inBusiness(x) ? x : nextOpening(x) + Math.floor(rnd() * 5) * HR; };
+
+  const ev = [];
+  const push = (at, fn) => ev.push({ at, fn });
+  const fate = new Map();
+  let churned = 0;
+  const addLead = (at, f) => push(at, () => {
+    const p = person(), tp = pick(TOPICS);
+    const lead = createLead({ name: p.name, phone: p.phone, email: p.email, topic: tp[0], source: wpick(SOURCES) });
+    f.product = tp[1];
+    fate.set(lead.id, f);
+    if (f.reply) push(at + f.reply * HR, () => { if (AUTOMATED.includes(lead.stage)) { inbound(lead, pick(['whatsapp', 'whatsapp', 'sms', 'email']), pick(REPLIES)); afterContact(lead); } });
+    if (f.book) push(at + f.book * HR, () => { if (AUTOMATED.includes(lead.stage)) { booked(lead); afterContact(lead); } });
+  });
+  function afterContact(lead) {
+    const f = fate.get(lead.id);
+    if (f.win) push(bizLater(now(), 0.5, 9), () => {
+      if (lead.stage !== 'engaged') return;
+      markWon(lead, f.product);
+      lead.pref = wpick([['whatsapp', 55], ['sms', 20], ['email', 25]]);
+    });
+    if (f.lose) push(bizLater(now(), 1, 6), () => { if (lead.stage === 'engaged') markLost(lead); });
+  }
+  const sentimentFor = (mood) => mood === 'happy' ? wpick([[5, 55], [4, 38], [3, 7]]) : mood === 'meh' ? wpick([[4, 30], [3, 45], [2, 20], [5, 5]]) : wpick([[1, 30], [2, 40], [3, 30]]);
+  const maybeChurn = (lead) => {
+    const f = fate.get(lead.id);
+    if (f.mood === 'unhappy' && churned < 7 && rnd() < 0.4) { churned++; push(bizLater(now(), 6, 20), () => { if (lead.stage === 'won') markLost(lead); }); }
+  };
+  function after(job) {
+    const lead = leadById(job.leadId), f = lead && fate.get(lead.id);
+    if (!f) return;
+    if (job.type === 'call' && job.status === 'ringing') {
+      const c = S.calls.find(x => x.jobId === job.id);
+      const answer = f.answerAt === lead.attempts;
+      push(job.at + (answer ? 40 : 30) * SEC, () => {
+        if (!S.calls.some(x => x.id === c.id)) return;
+        callOutcome(c.id, answer, answer ? null : 'Rang out — no answer');
+        if (answer) afterContact(lead);
+      });
+    }
+    if (job.type === 'checkin' && lead.awaiting) {
+      if (rnd() < (f.mood === 'unhappy' ? 0.2 : 0.07)) return; // no reply → engine escalates on timeout
+      const score = sentimentFor(f.mood);
+      push(job.at + (1 + rnd() * 40) * HR, () => { if (lead.awaiting && lead.stage === 'won') { recordSentiment(lead, score); if (score <= 2) maybeChurn(lead); } });
+    }
+    if (job.type === 'sentiment_timeout' && lead.atRisk) maybeChurn(lead);
+  }
+
+  // 100 clients won over the past year
+  for (let i = 0; i < 104; i++) {
+    const d = 4 + Math.pow(rnd(), 0.85) * 360;
+    const viaReply = rnd() < 0.18;
+    addLead(arrival(d), { win: true, mood: wpick([['happy', 72], ['meh', 19], ['unhappy', 9]]), answerAt: viaReply ? null : wpick([[1, 58], [2, 24], [3, 10], [4, 8]]), reply: viaReply ? 3 + rnd() * 40 : null });
+  }
+  // the live funnel
+  for (let i = 0; i < 22; i++) addLead(arrival(rnd() * 6.6), { answerAt: null });                                   // working the cadence now
+  for (let i = 0; i < 16; i++) addLead(arrival(8 + rnd() * 70), { answerAt: null });                                // cadence exhausted → nurture
+  for (let i = 0; i < 7; i++) addLead(arrival(rnd() * 2.5), { answerAt: 1 });                                       // answered, being qualified
+  for (let i = 0; i < 4; i++) addLead(arrival(rnd() * 3), { answerAt: null, reply: 1 + rnd() * 20 });               // replied mid-cadence
+  for (let i = 0; i < 4; i++) addLead(arrival(rnd() * 3), { answerAt: null, book: 0.3 + rnd() * 8 });               // self-booked
+  for (let i = 0; i < 9; i++) addLead(arrival(6 + rnd() * 40), { answerAt: wpick([[1, 2], [2, 1]]), lose: true });  // lost
+  for (let i = 0; i < 6; i++) addLead(arrival(9 + rnd() * 30), { answerAt: 2, win: true, mood: 'happy' });          // recent wins in onboarding
+  addLead(real - 4 * MIN, { answerAt: null });
+  addLead(real - 25 * SEC, { answerAt: null });                                                                     // rings a few seconds after opening
+
+  let pending = S.jobs, archive = [];
+  for (let guard = 0; guard < 300000; guard++) {
+    if (guard % 400 === 0) { archive = archive.concat(S.jobs.filter(j => j.status !== 'pending')); S.jobs = S.jobs.filter(j => j.status === 'pending'); }
+    let job = null; for (const j of S.jobs) if (j.status === 'pending' && j.at <= real && (!job || j.at < job.at)) job = j;
+    let e = null, ei = -1; for (let i = 0; i < ev.length; i++) if (ev[i].at <= real && (!e || ev[i].at < e.at)) { e = ev[i]; ei = i; }
+    if (!job && !e) break;
+    if (e && (!job || e.at <= job.at)) { ev.splice(ei, 1); setT(e.at); e.fn(); }
+    else { setT(job.at); run(job); after(job); }
+  }
+  setT(real);
+  // tidy: a working team has cleared older tasks; keep history light enough for browser storage
+  const keepFrom = real - 45 * DAY;
+  S.jobs = archive.filter(j => j.at >= real - 30 * DAY).concat(S.jobs);
+  for (const t of S.tasks) if (t.at < real - 2 * DAY) t.done = true;
+  S.tasks = S.tasks.filter(t => !t.done || t.at >= real - 14 * DAY);
+  S.messages = S.messages.filter(m => m.at >= keepFrom);
+  S.log = S.log.filter(l => l.at >= keepFrom);
+  for (const l of S.leads) for (const e of l.tl) if (e.at < keepFrom && e.kind !== 'alert') e.text = '';
+  for (const c of S.calls) c.startedReal = Date.now();
+  S.demo = true; S.demoFeed = true; S.nextDemoAt = Date.now() + 75 * SEC;
+  S.clock = { live: true, simAt: Date.now(), realAt: Date.now(), speed: 1, hold: false };
+  seeding = false;
+  touch(); persist();
+}
+
 /* ───────────────────────── UI wiring ───────────────────────── */
 function setTab(t) {
   tab = t;
@@ -969,6 +1142,7 @@ function setTab(t) {
   dirty = true;
 }
 function toast(text, kind) {
+  if (seeding) return;
   const el = document.createElement('div');
   el.className = 'toast' + (kind ? ' ' + kind : '');
   el.textContent = text;
@@ -991,8 +1165,12 @@ document.addEventListener('click', (e) => {
   if (el.dataset.speed) return setSpeed(el.dataset.speed);
   const act = el.dataset.act, lead = openId && leadById(openId);
   switch (act) {
-    case 'newLead': $('#leadForm').reset(); $('#leadDialog').showModal(); $('#lfName').focus(); break;
-    case 'closeDialog': $('#leadDialog').close(); break;
+    case 'newLead': openLeadDialog(); break;
+    case 'closeDialog': closeLeadDialog(); break;
+    case 'saveLead': saveLead(); break;
+    case 'feed': S.demoFeed = !S.demoFeed; if (S.demoFeed) S.nextDemoAt = Date.now() + 5 * SEC; touch(); toast(S.demoFeed ? 'Demo feed on — a new sample lead every few minutes.' : 'Demo feed off.'); break;
+    case 'saveSettings': saveSettings($('#settingsForm')); break;
+    case 'loadDemo': seedDemo(); openId = null; tab === 'settings' ? renderSettings() : 0; toast('Demo data loaded — ' + S.leads.length + ' records.', 'good'); break;
     case 'fillSample': { const s = SAMPLES[sampleIx++ % SAMPLES.length]; $('#lfName').value = s[0]; $('#lfPhone').value = s[1]; $('#lfEmail').value = s[2]; $('#lfTopic').value = s[3]; $('#lfSource').value = s[4]; break; }
     case 'skip': skipToNext(); break;
     case 'answer': callOutcome(el.dataset.id, true); break;
@@ -1025,9 +1203,12 @@ document.addEventListener('click', (e) => {
       const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'lead-engine-' + new Date().toISOString().slice(0, 10) + '.json'; a.click();
       setTimeout(() => URL.revokeObjectURL(a.href), 2000); break;
     }
-    case 'wipe': if (confirm('Erase all leads, tasks, messages and settings in this browser?')) { S = fresh(); openId = null; touch(); persist(); renderSettings(); toast('Everything erased.'); } break;
+    case 'wipe':
+      if (el.dataset.armed !== '1') { el.dataset.armed = '1'; el.textContent = 'Click again to erase'; setTimeout(() => { el.dataset.armed = ''; el.textContent = 'Erase everything'; }, 4000); break; }
+      S = fresh(); openId = null; touch(); persist(); renderSettings(); // fresh() has no demo flag, so the feed stops toast('Everything erased — start capturing real leads.'); break;
   }
 });
+document.addEventListener('input', (e) => { if (e.target.id === 'q') { query = e.target.value; touch(); } });
 document.addEventListener('change', (e) => {
   if (e.target.id === 'outF') { outFilter = e.target.value; touch(); }
   if (e.target.id === 'importFile' && e.target.files[0]) {
@@ -1038,22 +1219,32 @@ document.addEventListener('change', (e) => {
     }).catch(err => toast('Import failed: ' + err.message, 'alert'));
   }
 });
-document.addEventListener('submit', (e) => {
-  if (e.target.id === 'leadForm') {
-    e.preventDefault();
-    const fd = new FormData(e.target);
-    const lead = createLead(Object.fromEntries(fd.entries()));
-    $('#leadDialog').close();
-    toast(lead.name + ' captured — first touch firing.');
-    touch(); tick();
-  }
-  if (e.target.id === 'settingsForm') { e.preventDefault(); saveSettings(e.target); }
-});
+function saveLead() {
+  const f = $('#leadForm');
+  const d = Object.fromEntries(new FormData(f).entries());
+  if (!(d.name || '').trim()) { $('#lfErr').hidden = false; $('#lfName').focus(); return; }
+  const lead = createLead(d);
+  closeLeadDialog();
+  toast(lead.name + ' captured — first touch firing.');
+  openId = lead.id;
+  touch(); tick();
+}
+function openLeadDialog() {
+  const dlg = $('#leadDialog');
+  $('#leadForm').reset(); $('#lfErr').hidden = true;
+  if (typeof dlg.showModal === 'function') { try { dlg.showModal(); } catch (e) { dlg.setAttribute('open', ''); } } else dlg.setAttribute('open', '');
+  $('#lfName').focus();
+}
+function closeLeadDialog() { const dlg = $('#leadDialog'); if (typeof dlg.close === 'function') dlg.close(); else dlg.removeAttribute('open'); }
+document.addEventListener('submit', (e) => { e.preventDefault(); });
 document.addEventListener('keydown', (e) => {
   if (e.key === 'Escape' && openId && !$('#leadDialog').open) { openId = null; touch(); }
   if (e.key === 'Enter' && e.target.id === 'rTx') { e.preventDefault(); $('[data-act="reply"]').click(); }
+  if (e.key === 'Enter' && e.target.closest && e.target.closest('#leadForm') && e.target.tagName === 'INPUT') { e.preventDefault(); saveLead(); }
 });
 window.addEventListener('beforeunload', persist);
+
+if (needsDemo) seedDemo();
 
 /* Capture a lead from URL parameters (form redirect / capture link) */
 (function captureFromUrl() {
