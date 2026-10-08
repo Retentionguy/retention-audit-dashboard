@@ -1,0 +1,1073 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lead Lifecycle Engine</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; }
+  :root {
+    --bg: #F2F4F7; --card: #FFFFFF; --ink: #0E1726; --muted: #4A5568; --line: #D5DAE1; --soft: #EEF1F5;
+    --s1: #1D4ED8; --s1t: #E8EEFC; --s2: #B45309; --s2t: #FBF0E2; --s3: #0F766E; --s3t: #E3F2EF;
+    --bad: #B91C1C; --badt: #FDECEC; --gray: #64748B; --warn: #FCD34D;
+    --mono: 'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+    --sans: 'IBM Plex Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
+    --r: 12px;
+  }
+  body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--sans); font-size: 14px; line-height: 1.45; }
+  button, input, select, textarea { font: inherit; color: inherit; }
+  a { color: var(--s1); }
+  .mono { font-family: var(--mono); }
+  .muted { color: var(--muted); }
+  .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+  /* Top bar */
+  .top { background: var(--ink); color: #fff; padding: 14px 24px; display: flex; flex-wrap: wrap; align-items: center; gap: 16px 28px; }
+  .brand { display: flex; flex-direction: column; gap: 2px; margin-right: auto; }
+  .brand b { font-size: 18px; letter-spacing: -0.01em; }
+  .brand span { font-family: var(--mono); font-size: 11px; letter-spacing: 0.12em; color: #A9B6CC; text-transform: uppercase; }
+  .clock { display: flex; flex-direction: column; gap: 4px; }
+  .clock .time { font-family: var(--mono); font-size: 24px; font-weight: 600; line-height: 1; }
+  .clock .meta { display: flex; gap: 6px; flex-wrap: wrap; }
+  .pill { font-family: var(--mono); font-size: 11px; font-weight: 600; letter-spacing: 0.06em; padding: 3px 8px; border-radius: 999px; white-space: nowrap; }
+  .pill.on { background: #DCFCE7; color: #14532D; }
+  .pill.off { background: #334155; color: #E2E8F0; }
+  .pill.warn { background: var(--warn); color: #422006; }
+  .seg { display: flex; border: 1px solid #334155; border-radius: 8px; overflow: hidden; }
+  .seg button { background: transparent; border: 0; color: #CBD5E1; padding: 8px 10px; min-height: 36px; cursor: pointer; font-family: var(--mono); font-size: 12px; }
+  .seg button + button { border-left: 1px solid #334155; }
+  .seg button[aria-pressed="true"] { background: #fff; color: var(--ink); font-weight: 600; }
+  .top .actions { display: flex; gap: 8px; flex-wrap: wrap; }
+
+  .btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-height: 36px; padding: 7px 14px; border-radius: 8px; border: 1px solid var(--line); background: var(--card); cursor: pointer; font-weight: 500; text-decoration: none; color: var(--ink); }
+  .btn:hover { border-color: #9AA5B4; }
+  .btn.primary { background: var(--s1); border-color: var(--s1); color: #fff; }
+  .btn.primary:hover { background: #1E40AF; }
+  .btn.dark { background: #1E293B; border-color: #334155; color: #fff; }
+  .btn.good { background: var(--s3); border-color: var(--s3); color: #fff; }
+  .btn.bad { background: var(--card); border-color: var(--bad); color: var(--bad); }
+  .btn.small { min-height: 30px; padding: 4px 10px; font-size: 13px; }
+  .btn:disabled { opacity: .5; cursor: not-allowed; }
+
+  /* Dialer */
+  .dialer { background: #FFF7E6; border-bottom: 1px solid #F3D9A4; padding: 10px 24px; display: flex; flex-direction: column; gap: 8px; }
+  .dialer:empty { display: none; }
+  .ring { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 16px; }
+  .ring .dot { width: 10px; height: 10px; border-radius: 50%; background: var(--s2); animation: pulse 1s infinite; }
+  @keyframes pulse { 50% { opacity: .25; } }
+  .ring b { font-size: 15px; }
+  [data-ring] { display: inline-block; min-width: 3ch; text-align: right; }
+
+  /* Tabs */
+  .tabs { display: flex; gap: 4px; padding: 0 24px; background: var(--card); border-bottom: 1px solid var(--line); overflow-x: auto; }
+  .tabs button { background: none; border: 0; border-bottom: 3px solid transparent; padding: 12px 14px; min-height: 44px; cursor: pointer; font-weight: 500; color: var(--muted); white-space: nowrap; }
+  .tabs button[aria-selected="true"] { color: var(--ink); border-bottom-color: var(--ink); }
+  .count { font-family: var(--mono); font-size: 11px; background: var(--soft); border-radius: 999px; padding: 1px 7px; margin-left: 4px; }
+  .count.hot { background: var(--bad); color: #fff; }
+
+  main { padding: 20px 24px 60px; max-width: 1680px; margin: 0 auto; }
+  section[hidden] { display: none; }
+
+  .kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin-bottom: 20px; }
+  .kpi { background: var(--card); border: 1px solid var(--line); border-radius: var(--r); padding: 14px 16px; display: flex; flex-direction: column; gap: 4px; }
+  .kpi span { font-family: var(--mono); font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+  .kpi b { font-size: 26px; font-weight: 600; letter-spacing: -0.01em; }
+  .kpi small { color: var(--muted); font-size: 12px; }
+
+  .board { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(260px, 1fr); gap: 14px; overflow-x: auto; padding-bottom: 8px; align-items: start; }
+  .col { background: var(--soft); border-radius: var(--r); display: flex; flex-direction: column; min-height: 200px; }
+  .col h2 { margin: 0; font-size: 14px; padding: 12px 14px; display: flex; justify-content: space-between; align-items: center; border-top: 4px solid var(--c); border-radius: var(--r) var(--r) 0 0; background: var(--card); border-bottom: 1px solid var(--line); }
+  .col .list { padding: 10px; display: flex; flex-direction: column; gap: 8px; }
+  .col .empty { color: var(--muted); font-size: 13px; padding: 8px 4px; }
+  .lead { text-align: left; background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; cursor: pointer; display: flex; flex-direction: column; gap: 6px; width: 100%; }
+  .lead:hover { border-color: #9AA5B4; }
+  .lead .row { display: flex; justify-content: space-between; gap: 8px; align-items: baseline; }
+  .lead b { font-size: 14px; }
+  .lead .topic { font-size: 13px; color: var(--muted); }
+  .lead .next { font-family: var(--mono); font-size: 12px; color: var(--ink); background: var(--soft); border-radius: 6px; padding: 4px 8px; }
+  .tag { font-family: var(--mono); font-size: 10.5px; font-weight: 600; letter-spacing: 0.04em; padding: 2px 6px; border-radius: 4px; background: var(--soft); color: var(--muted); white-space: nowrap; }
+  .tag.blue { background: var(--s1t); color: var(--s1); }
+  .tag.amber { background: var(--s2t); color: #8A3F07; }
+  .tag.teal { background: var(--s3t); color: var(--s3); }
+  .tag.red { background: var(--badt); color: var(--bad); }
+
+  .panel { background: var(--card); border: 1px solid var(--line); border-radius: var(--r); padding: 18px 20px; margin-bottom: 16px; }
+  .panel h2 { margin: 0 0 12px; font-size: 17px; }
+  .panel h3 { margin: 18px 0 8px; font-size: 14px; }
+  .scroll { overflow-x: auto; }
+  table { border-collapse: collapse; width: 100%; font-size: 13px; }
+  th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { font-family: var(--mono); font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+  td.body { max-width: 520px; white-space: pre-wrap; }
+  .toolbar { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-bottom: 12px; }
+
+  .task { display: flex; gap: 12px; align-items: flex-start; padding: 12px 0; border-bottom: 1px solid var(--line); }
+  .task input { width: 20px; height: 20px; margin-top: 2px; }
+  .task .t { flex: 1; display: flex; flex-direction: column; gap: 2px; }
+  .task.done .t b { text-decoration: line-through; color: var(--muted); }
+
+  /* Drawer */
+  .drawer { position: fixed; top: 0; right: 0; bottom: 0; width: min(580px, 100%); background: var(--card); z-index: 21; display: flex; flex-direction: column; box-shadow: -10px 0 30px rgba(0,0,0,.15); border-left: 1px solid var(--line); }
+  .drawer header { padding: 18px 20px; border-bottom: 1px solid var(--line); display: flex; justify-content: space-between; gap: 12px; align-items: flex-start; }
+  .drawer header h2 { margin: 0; font-size: 20px; }
+  .drawer .body { overflow-y: auto; padding: 16px 20px 40px; display: flex; flex-direction: column; gap: 18px; }
+  .drawer h3 { margin: 0 0 8px; font-family: var(--mono); font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); }
+  .facts { display: grid; grid-template-columns: 120px minmax(0, 1fr); gap: 4px 12px; font-size: 13px; }
+  .facts dt { color: var(--muted); }
+  .facts dd { margin: 0; word-break: break-word; }
+  .acts { display: flex; flex-wrap: wrap; gap: 8px; align-items: flex-end; }
+  .field { display: flex; flex-direction: column; gap: 4px; }
+  .field label { font-size: 12px; font-weight: 600; color: var(--muted); }
+  .field input, .field select, .field textarea { border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; min-height: 38px; background: var(--card); }
+  .field textarea { min-height: 70px; resize: vertical; }
+  .sched { display: flex; flex-direction: column; gap: 6px; }
+  .sched div { display: grid; grid-template-columns: 150px minmax(0, 1fr); gap: 10px; font-size: 13px; padding: 6px 10px; background: var(--soft); border-radius: 6px; }
+  .tl { display: flex; flex-direction: column; gap: 8px; }
+  .ev { border-left: 3px solid var(--line); padding: 4px 0 4px 12px; font-size: 13px; }
+  .ev.out { border-color: var(--s1); }
+  .ev.in { border-color: var(--s3); }
+  .ev.call { border-color: var(--s2); }
+  .ev.alert { border-color: var(--bad); }
+  .ev .h { display: flex; gap: 8px; align-items: baseline; flex-wrap: wrap; }
+  .ev .h time { font-family: var(--mono); font-size: 11px; color: var(--muted); }
+  .ev p { margin: 4px 0 0; white-space: pre-wrap; color: #2D3748; }
+  .scores { display: flex; gap: 6px; }
+  .scores button { width: 44px; height: 44px; border-radius: 8px; border: 1px solid var(--line); background: var(--card); font-family: var(--mono); font-weight: 600; cursor: pointer; }
+  .scores button:hover { border-color: var(--s3); color: var(--s3); }
+
+  /* Modal */
+  dialog { border: 0; border-radius: 14px; padding: 0; width: min(520px, calc(100% - 32px)); }
+  dialog::backdrop { background: rgba(14, 23, 38, .45); }
+  dialog form { padding: 22px; display: flex; flex-direction: column; gap: 12px; }
+  dialog h2 { margin: 0; }
+  .grid2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+  @media (max-width: 560px) { .grid2 { grid-template-columns: 1fr; } .top { padding: 12px 16px; } main { padding: 16px; } .tabs { padding: 0 8px; } }
+
+  .settings { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px; }
+  .days { display: flex; flex-wrap: wrap; gap: 6px; }
+  .days label { display: inline-flex; align-items: center; gap: 4px; border: 1px solid var(--line); border-radius: 6px; padding: 6px 8px; font-size: 13px; }
+  .tpl { border-top: 1px solid var(--line); padding-top: 12px; margin-top: 12px; display: flex; flex-direction: column; gap: 6px; }
+  .tpl textarea { width: 100%; }
+  code, pre { font-family: var(--mono); font-size: 12.5px; }
+  pre { background: var(--soft); padding: 12px; border-radius: 8px; overflow-x: auto; }
+
+  .toasts { position: fixed; bottom: 16px; left: 16px; display: flex; flex-direction: column; gap: 8px; z-index: 40; max-width: min(420px, calc(100% - 32px)); }
+  .toast { background: var(--ink); color: #fff; padding: 12px 14px; border-radius: 10px; font-size: 13px; box-shadow: 0 8px 24px rgba(0,0,0,.2); }
+  .toast.alert { background: var(--bad); }
+  .toast.good { background: var(--s3); }
+</style>
+</head>
+<body>
+
+<div class="top">
+  <div class="brand"><span id="bizName">Lead lifecycle engine</span><b>Speed · Persistence · Retention</b></div>
+  <div class="clock" aria-live="off">
+    <div class="time" id="clockTime">--:--</div>
+    <div class="meta"><span id="pillBiz" class="pill off">CLOSED</span><span id="pillSms" class="pill off">SMS QUIET</span><span id="pillMode" class="pill warn">SIM</span></div>
+  </div>
+  <div class="seg" role="group" aria-label="Clock speed" id="speedSeg">
+    <button type="button" data-speed="live">Live</button>
+    <button type="button" data-speed="60">1 min/s</button>
+    <button type="button" data-speed="3600">1 hr/s</button>
+    <button type="button" data-speed="86400">1 day/s</button>
+    <button type="button" data-speed="0">Pause</button>
+  </div>
+  <div class="actions">
+    <button type="button" class="btn dark" data-act="skip">Skip to next action</button>
+    <button type="button" class="btn primary" data-act="newLead">+ New lead</button>
+  </div>
+</div>
+
+<div class="dialer" id="dialer" aria-live="polite"></div>
+
+<nav class="tabs" role="tablist" aria-label="Sections">
+  <button role="tab" type="button" data-tab="pipeline" aria-selected="true">Pipeline</button>
+  <button role="tab" type="button" data-tab="tasks" aria-selected="false">Tasks <span class="count" id="taskCount">0</span></button>
+  <button role="tab" type="button" data-tab="outbox" aria-selected="false">Outbox</button>
+  <button role="tab" type="button" data-tab="activity" aria-selected="false">Activity</button>
+  <button role="tab" type="button" data-tab="settings" aria-selected="false">Settings</button>
+  <button role="tab" type="button" data-tab="guide" aria-selected="false">How it works</button>
+</nav>
+
+<main>
+  <section id="tab-pipeline">
+    <div class="kpis" id="kpis"></div>
+    <div class="board" id="board"></div>
+  </section>
+  <section id="tab-tasks" hidden><div class="panel" id="tasksPanel"></div></section>
+  <section id="tab-outbox" hidden><div class="panel" id="outboxPanel"></div></section>
+  <section id="tab-activity" hidden><div class="panel" id="activityPanel"></div></section>
+  <section id="tab-settings" hidden><div id="settingsPanel"></div></section>
+  <section id="tab-guide" hidden><div id="guidePanel"></div></section>
+</main>
+
+<div id="drawerRoot"></div>
+
+<dialog id="leadDialog" aria-labelledby="leadDlgTitle">
+  <form method="dialog" id="leadForm">
+    <h2 id="leadDlgTitle">New lead</h2>
+    <p class="muted" style="margin:0">The first touch fires the moment you save — same as a form, lead ad or webhook hitting the system.</p>
+    <div class="grid2">
+      <div class="field"><label for="lfName">Name *</label><input id="lfName" name="name" required autocomplete="off"></div>
+      <div class="field"><label for="lfTopic">Enquiry about</label><input id="lfTopic" name="topic" placeholder="e.g. kitchen renovation"></div>
+      <div class="field"><label for="lfPhone">Phone</label><input id="lfPhone" name="phone" type="tel"></div>
+      <div class="field"><label for="lfEmail">Email</label><input id="lfEmail" name="email" type="email"></div>
+    </div>
+    <div class="field"><label for="lfSource">Source</label>
+      <select id="lfSource" name="source"><option>Web form</option><option>Meta lead ad</option><option>Google lead ad</option><option>Landing page</option><option>Chatbot</option><option>CRM webhook</option></select>
+    </div>
+    <div class="acts" style="justify-content: space-between">
+      <button type="button" class="btn" data-act="fillSample">Fill sample data</button>
+      <div class="acts"><button type="button" class="btn" data-act="closeDialog">Cancel</button><button type="submit" class="btn primary" value="save">Capture lead</button></div>
+    </div>
+  </form>
+</dialog>
+
+<div class="toasts" id="toasts" aria-live="polite"></div>
+
+<script>
+(() => {
+'use strict';
+
+/* ───────────────────────── Constants ───────────────────────── */
+const SEC = 1e3, MIN = 60e3, HR = 36e5, DAY = 864e5;
+const STORE = 'lead-lifecycle-engine-v1';
+const CH = { sms: 'SMS', email: 'Email', whatsapp: 'WhatsApp', call: 'Call', voicemail: 'Voicemail' };
+const DAY_NAMES = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+const STAGES = [
+  { id: 'first_touch', label: 'First touch', color: 'var(--s1)' },
+  { id: 'persistence', label: 'Persistence cadence', color: 'var(--s2)' },
+  { id: 'engaged', label: 'Engaged — with a human', color: 'var(--ink)' },
+  { id: 'won', label: 'Clients — retention loop', color: 'var(--s3)' },
+  { id: 'nurture', label: 'Long-term nurture', color: 'var(--gray)' },
+  { id: 'lost', label: 'Lost / churned', color: '#94A3B8' },
+];
+const AUTOMATED = ['first_touch', 'persistence', 'nurture'];
+
+const DEFAULT_TPL = {
+  ft_sms:      { label: 'Stage 1 · SMS (in hours)', body: 'Hi {first}, got your enquiry about {topic} — calling you in 2 minutes. Prefer to pick a time? {booking}' },
+  ft_email:    { label: 'Stage 1 · Email (in hours)', subject: 'Your enquiry about {topic}', body: 'Hi {first},\n\nThanks for getting in touch about {topic}. {rep} from {business} is calling you in the next couple of minutes.\n\nIf now isn\'t good, pick a time that suits you: {booking}\n\n{rep}\n{business}' },
+  ft_wa:       { label: 'Stage 1 · WhatsApp (in hours)', body: 'Hi {first}, {rep} from {business} here about your enquiry on {topic}. If it\'s easier, grab a time here: {booking} — or just reply on WhatsApp.' },
+  ooh_email:   { label: 'Stage 1 · Email (out of hours)', subject: 'We got your enquiry — {business}', body: 'Hi {first},\n\nThanks for your enquiry about {topic}. We\'re closed right now, so {rep} will call you as soon as we open.\n\nWant to skip the wait? Book a time that suits you: {booking}\n\n{business}' },
+  ooh_wa:      { label: 'Stage 1 · WhatsApp auto-reply (out of hours)', body: 'Hi {first}, thanks for your enquiry about {topic}. We\'re closed right now — {rep} will call you when we open. Want to pick your own time? {booking}' },
+  ooh_sms:     { label: 'Stage 1 · SMS (out of hours, held in quiet hours)', body: 'Hi {first}, got your enquiry about {topic}. We\'ll call you when we open — or book a time now: {booking}' },
+  p_voicemail: { label: 'Stage 2 · Voicemail drop script', body: 'Hi {first}, it\'s {rep} from {business} about your enquiry on {topic}. Sorry I missed you — I\'ll text you a link so you can book a time that suits you.' },
+  p_missed:    { label: 'Stage 2 · Missed-call SMS', body: 'Hi {first}, just missed you — book a time here: {booking}' },
+  p_d1_wa:     { label: 'Stage 2 · Day 1 WhatsApp', body: 'Hi {first}, {rep} here from {business}. Tried you again about {topic} — what time\'s best for a quick call? Or book here: {booking}' },
+  p_d2_email:  { label: 'Stage 2 · Day 2 value email', subject: 'Re: {topic}', body: 'Hi {first},\n\nYou asked about {topic}, so here\'s something useful: [ADD CASE STUDY OR ANSWER TO THEIR QUESTION].\n\nHappy to talk it through — pick a time: {booking}\n\n{rep}' },
+  p_d2_sms:    { label: 'Stage 2 · Day 2 SMS', body: 'Hi {first}, I\'ve emailed you something useful on {topic}. Book a quick chat whenever you\'re ready: {booking}' },
+  p_d4_wa:     { label: 'Stage 2 · Day 4 WhatsApp', body: 'Hi {first}, still keen to help with {topic}. Is there a better time to reach you?' },
+  p_d7_sms:    { label: 'Stage 2 · Day 7 last chance (SMS)', body: 'Hi {first}, should I close your file on {topic}? Reply to keep it open, or book here: {booking}' },
+  p_d7_email:  { label: 'Stage 2 · Day 7 last chance (email)', subject: 'Should I close your file?', body: 'Hi {first},\n\nI\'ve tried to reach you a few times about {topic} and don\'t want to keep chasing if the timing\'s wrong.\n\nShould I close your file? If you\'d still like help, just reply or book here: {booking}\n\n{rep}' },
+  p_d7_wa:     { label: 'Stage 2 · Day 7 last chance (WhatsApp)', body: 'Hi {first}, last one from me — should I close your file on {topic}? A quick yes/no is perfect.' },
+  nurture:     { label: 'Nurture · Monthly email', subject: '{business} — this month', body: 'Hi {first},\n\n[MONTHLY VALUE CONTENT]\n\nWhenever you\'re ready to talk about {topic}: {booking}\n\n{business}' },
+  r_checkin:   { label: 'Stage 3 · Check-in + sentiment', subject: 'How\'s it going with {product}?', body: 'Hi {first}, how\'s everything going with {product}? Anything you need?\n\nQuick one: reply 1–5 (5 = great).' },
+  r_review:    { label: 'Stage 3 · Review / referral ask (positive)', subject: 'Glad it\'s going well', body: 'Really glad it\'s going well, {first}! Would you mind leaving us a quick review? [REVIEW LINK]\n\nAnd if you know anyone who\'d benefit from {product}, we\'d love an intro.' },
+  r_onb1:      { label: 'Stage 3 · Onboarding day 1', subject: 'Welcome to {business}', body: 'Welcome aboard, {first}! Here\'s how to get the most from {product} this week: [ONBOARDING STEPS]. Any questions, just reply.' },
+  r_onb7:      { label: 'Stage 3 · Onboarding day 7', subject: 'One week in', body: 'Hi {first}, one week in with {product} — anything we can make easier?' },
+  r_onb30:     { label: 'Stage 3 · Onboarding day 30', subject: 'Your first month', body: 'Hi {first}, it\'s been a month with {product}. Here\'s what most clients do next: [NEXT STEP].' },
+  r_renewal:   { label: 'Stage 3 · Renewal reminder', subject: 'Your renewal is coming up', body: 'Hi {first}, your {product} renewal is coming up in 30 days. Want to go over anything before then? {booking}' },
+};
+
+function browserTz() { try { return Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC'; } catch (e) { return 'UTC'; } }
+function defaultSettings() {
+  return {
+    business: 'Your Business', rep: 'Sam', booking: 'https://your-booking-link.example',
+    tz: browserTz(), days: [1, 2, 3, 4, 5, 6], open: '09:00', close: '19:00',
+    smsStart: '09:00', smsEnd: '21:00',
+    slots: { morning: '10:00', afternoon: '14:30', evening: '18:00' },
+    callDelaySec: 45, waDelaySec: 120, ringTimeout: 25,
+    interval: 15, taper: true, taperAfter: 90, termMonths: 12, sentimentWaitDays: 3,
+    retentionChannel: 'whatsapp', webhook: '', webhookMode: 'simple',
+    templates: JSON.parse(JSON.stringify(DEFAULT_TPL)),
+  };
+}
+function fresh() {
+  return { v: 1, settings: defaultSettings(), clock: { live: true, simAt: Date.now(), realAt: Date.now(), speed: 1, hold: false }, leads: [], jobs: [], calls: [], tasks: [], messages: [], log: [], seq: 1 };
+}
+
+/* ───────────────────────── State ───────────────────────── */
+let S = load();
+let dirty = true, saveDue = false, tab = 'pipeline', openId = null, outFilter = 'all';
+
+function load() {
+  try {
+    const raw = localStorage.getItem(STORE);
+    if (raw) {
+      const s = JSON.parse(raw);
+      const d = defaultSettings();
+      s.settings = Object.assign(d, s.settings || {});
+      s.settings.templates = Object.assign(JSON.parse(JSON.stringify(DEFAULT_TPL)), s.settings.templates || {});
+      s.calls = []; // a ring can't survive a reload
+      for (const j of s.jobs) if (j.status === 'ringing') { j.status = 'done'; j.result = 'interrupted'; }
+      if (!s.clock.live) { s.clock.realAt = Date.now(); s.clock.hold = false; }
+      return s;
+    }
+  } catch (e) { /* storage unavailable or corrupt: start fresh */ }
+  return fresh();
+}
+function persist() {
+  try {
+    const c = S.clock;
+    if (!c.live) { c.simAt = now(); c.realAt = Date.now(); }
+    localStorage.setItem(STORE, JSON.stringify(S));
+  } catch (e) { /* ignore */ }
+}
+function touch() { dirty = true; saveDue = true; }
+const id = (p) => p + (S.seq++).toString(36);
+
+/* ───────────────────────── Clock ───────────────────────── */
+function now() {
+  const c = S.clock;
+  if (c.live) return Date.now();
+  const rate = c.hold ? 1 : c.speed;
+  return c.simAt + (Date.now() - c.realAt) * rate;
+}
+function rebase(patch) { const t = now(); S.clock = Object.assign({}, S.clock, { simAt: t, realAt: Date.now() }, patch); }
+function setSpeed(v) {
+  if (v === 'live') S.clock = { live: true, simAt: Date.now(), realAt: Date.now(), speed: 1, hold: false };
+  else rebase({ live: false, speed: Number(v), hold: S.calls.length > 0 });
+  touch();
+}
+function skipToNext() {
+  const next = S.jobs.filter(j => j.status === 'pending').sort((a, b) => a.at - b.at)[0];
+  if (!next) { toast('Nothing scheduled.'); return; }
+  if (S.calls.length) { toast('Resolve the ringing call first.'); return; }
+  const wasLive = S.clock.live;
+  S.clock = { live: false, simAt: Math.max(now(), next.at), realAt: Date.now(), speed: wasLive ? 1 : S.clock.speed, hold: false };
+  touch();
+}
+
+/* ───────────────────────── Time-zone maths ───────────────────────── */
+const fmtCache = {};
+function dtf(tz, opts, key) {
+  const k = tz + key;
+  if (!fmtCache[k]) fmtCache[k] = new Intl.DateTimeFormat(key === 'parts' ? 'en-US' : 'en-GB', Object.assign({ timeZone: tz }, opts));
+  return fmtCache[k];
+}
+function parts(t) {
+  const tz = S.settings.tz;
+  const f = dtf(tz, { hourCycle: 'h23', year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit', weekday: 'short' }, 'parts');
+  const o = {};
+  for (const p of f.formatToParts(new Date(t))) o[p.type] = p.value;
+  return { y: +o.year, m: +o.month, d: +o.day, h: (+o.hour) % 24, mi: +o.minute, s: +o.second, wd: DAY_NAMES.indexOf(o.weekday) };
+}
+function tzOffset(t) { const p = parts(t); return Date.UTC(p.y, p.m - 1, p.d, p.h, p.mi, p.s) - Math.floor(t / 1000) * 1000; }
+function zoned(y, m, d, hhmm) { // local wall time in settings.tz → epoch ms
+  const [h, mi] = hhmm.split(':').map(Number);
+  const guess = Date.UTC(y, m - 1, d, h, mi);
+  let t = guess - tzOffset(guess);
+  t = guess - tzOffset(t);
+  return t;
+}
+const toMin = (hhmm) => { const [h, m] = hhmm.split(':').map(Number); return h * 60 + m; };
+function inBusiness(t) {
+  const p = parts(t), m = p.h * 60 + p.mi, s = S.settings;
+  return s.days.includes(p.wd) && m >= toMin(s.open) && m < toMin(s.close);
+}
+function smsAllowed(t) { const p = parts(t), m = p.h * 60 + p.mi; return m >= toMin(S.settings.smsStart) && m < toMin(S.settings.smsEnd); }
+function nextOpening(t) {
+  if (inBusiness(t)) return t;
+  const p = parts(t);
+  for (let i = 0; i < 9; i++) {
+    const c = zoned(p.y, p.m, p.d + i, S.settings.open);
+    if (c > t && S.settings.days.includes(parts(c).wd)) return c;
+  }
+  return t + DAY; // no business days configured
+}
+function nextSmsWindow(t) {
+  if (smsAllowed(t)) return t;
+  const p = parts(t);
+  for (let i = 0; i < 3; i++) { const c = zoned(p.y, p.m, p.d + i, S.settings.smsStart); if (c > t) return c; }
+  return t + HR;
+}
+function slotOf(t) { const p = parts(t), m = p.h * 60 + p.mi; return m < 12 * 60 ? 'morning' : m < 16 * 60 ? 'afternoon' : 'evening'; }
+function slotTime(base, dayOffset, slot) {
+  const p = parts(base);
+  return zoned(p.y, p.m, p.d + dayOffset, S.settings.slots[slot]);
+}
+
+/* ───────────────────────── Formatting ───────────────────────── */
+function fmtTime(t) { return dtf(S.settings.tz, { weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit', hourCycle: 'h23' }, 'full').format(new Date(t)); }
+function fmtClock(t) { return dtf(S.settings.tz, { hour: '2-digit', minute: '2-digit', second: '2-digit', hourCycle: 'h23' }, 'clock').format(new Date(t)); }
+function fmtDay(t) { return dtf(S.settings.tz, { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' }, 'day').format(new Date(t)); }
+function fmtDur(ms) {
+  ms = Math.max(0, ms);
+  const s = Math.round(ms / SEC);
+  if (s < 60) return s + 's';
+  const m = Math.floor(s / 60);
+  if (m < 60) return m + 'm ' + (s % 60) + 's';
+  const h = Math.floor(m / 60);
+  if (h < 24) return h + 'h ' + (m % 60) + 'm';
+  return Math.floor(h / 24) + 'd ' + (h % 24) + 'h';
+}
+function esc(v) { return String(v == null ? '' : v).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); }
+function render(str, lead) {
+  const s = S.settings;
+  const vars = { first: lead.first, name: lead.name, topic: lead.topic || 'your enquiry', product: lead.product || 'your service', booking: s.booking, rep: s.rep, business: s.business, phone: lead.phone || '', email: lead.email || '' };
+  return String(str || '').replace(/\{(\w+)\}/g, (m, k) => (k in vars ? vars[k] : m));
+}
+
+/* ───────────────────────── Engine: helpers ───────────────────────── */
+const leadById = (lid) => S.leads.find(l => l.id === lid);
+function addJob(leadId, at, type, o) { const j = Object.assign({ id: id('j'), leadId, at, type, status: 'pending' }, o || {}); S.jobs.push(j); touch(); return j; }
+function pendingFor(lid) { return S.jobs.filter(j => j.leadId === lid && (j.status === 'pending' || j.status === 'ringing')).sort((a, b) => a.at - b.at); }
+function tl(lead, at, kind, title, text, extra) { lead.tl.push(Object.assign({ at, kind, title, text: text || '' }, extra || {})); touch(); }
+function logEv(at, lead, text, kind) {
+  S.log.push({ at, leadId: lead ? lead.id : null, name: lead ? lead.name : '', text, kind: kind || 'sys' });
+  if (S.log.length > 1500) S.log.splice(0, S.log.length - 1500);
+  touch();
+}
+function addTask(lead, title, priority, owner) {
+  S.tasks.push({ id: id('t'), leadId: lead.id, name: lead.name, title, priority: priority || 'normal', owner: owner || S.settings.rep, at: now(), done: false });
+  touch();
+}
+function setStage(lead, stage, at) {
+  if (lead.stage === stage) return;
+  const from = lead.stage;
+  lead.stage = stage;
+  tl(lead, at, 'sys', 'Stage → ' + (STAGES.find(s => s.id === stage) || {}).label);
+  dispatch('lead.stage_changed', lead, { from, to: stage });
+}
+function halt(lead, reason, at) {
+  let n = 0;
+  for (const j of S.jobs) if (j.leadId === lead.id && (j.status === 'pending' || j.status === 'ringing')) { j.status = 'cancelled'; j.note = reason; n++; }
+  const had = S.calls.length;
+  S.calls = S.calls.filter(c => c.leadId !== lead.id);
+  if (had && !S.calls.length) releaseHold();
+  lead.awaiting = null;
+  if (n) {
+    tl(lead, at, 'alert', 'Automation halted', reason + ' — ' + n + ' scheduled touch' + (n === 1 ? '' : 'es') + ' cancelled.');
+    logEv(at, lead, 'Automation halted (' + reason + '), ' + n + ' cancelled', 'alert');
+    dispatch('automation.halted', lead, { reason, cancelled: n });
+  }
+}
+function resolveCh(ch, lead) { return ch === 'pref' ? (lead.pref || S.settings.retentionChannel) : ch; }
+
+/* ───────────────────────── Webhook ───────────────────────── */
+function dispatch(event, lead, data, msg) {
+  const url = (S.settings.webhook || '').trim();
+  if (!url) { if (msg) msg.wh = 'not configured'; return; }
+  const payload = { event, at: new Date(now()).toISOString(), business: S.settings.business, lead: lead ? { id: lead.id, name: lead.name, phone: lead.phone, email: lead.email, topic: lead.topic, source: lead.source, stage: lead.stage, product: lead.product || null, preferredChannel: lead.pref || null } : null, data: data || {} };
+  const json = S.settings.webhookMode === 'json';
+  if (msg) msg.wh = 'sending…';
+  fetch(url, json
+    ? { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) }
+    : { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain;charset=UTF-8' }, body: JSON.stringify(payload) })
+    .then(r => { if (msg) msg.wh = json ? ('HTTP ' + r.status) : 'sent'; touch(); })
+    .catch(e => { if (msg) msg.wh = 'failed'; logEv(now(), lead, 'Webhook failed for ' + event + ': ' + e.message, 'alert'); });
+}
+
+function send(lead, ch, tplKey, at, why) {
+  const t = S.settings.templates[tplKey] || { body: '' };
+  const msg = { id: id('m'), at, leadId: lead.id, name: lead.name, ch, tpl: tplKey, label: t.label || tplKey, subject: t.subject ? render(t.subject, lead) : '', body: render(t.body, lead), to: ch === 'email' ? lead.email : lead.phone, wh: '' };
+  S.messages.push(msg);
+  if (S.messages.length > 2000) S.messages.splice(0, S.messages.length - 2000);
+  if (!lead.firstTouchAt) lead.firstTouchAt = at;
+  tl(lead, at, ch === 'voicemail' ? 'call' : 'out', CH[ch] + (why ? ' · ' + why : ''), (msg.subject ? msg.subject + '\n\n' : '') + msg.body);
+  dispatch('message.send', lead, { channel: ch, to: msg.to, template: tplKey, subject: msg.subject, body: msg.body }, msg);
+}
+
+/* ───────────────────────── Stage 1: capture + first touch ───────────────────────── */
+function createLead(d) {
+  const at = now();
+  const name = (d.name || '').trim() || 'Unnamed lead';
+  const lead = { id: id('L'), name, first: name.split(/\s+/)[0], phone: (d.phone || '').trim(), email: (d.email || '').trim(), topic: (d.topic || '').trim(), source: d.source || 'Web form', createdAt: at, stage: 'first_touch', pref: null, attempts: 0, tl: [], sentiments: [], atRisk: false };
+  S.leads.push(lead);
+  const s = S.settings;
+  tl(lead, at, 'sys', 'Lead captured', 'Source: ' + lead.source);
+  dispatch('lead.created', lead);
+  if (inBusiness(at)) {
+    lead.mode = 'in_hours';
+    addJob(lead.id, at, 'msg', { ch: 'sms', tpl: 'ft_sms', why: 'first touch' });
+    addJob(lead.id, at, 'msg', { ch: 'email', tpl: 'ft_email', why: 'first touch' });
+    addJob(lead.id, at + s.callDelaySec * SEC, 'call', { purpose: 'first' });
+    addJob(lead.id, at + s.waDelaySec * SEC, 'msg', { ch: 'whatsapp', tpl: 'ft_wa', why: 'first touch' });
+    logEv(at, lead, 'New lead in business hours — SMS + email now, call in ' + s.callDelaySec + 's, WhatsApp in ' + Math.round(s.waDelaySec / 60) + 'm');
+  } else {
+    lead.mode = 'out_of_hours';
+    addJob(lead.id, at, 'msg', { ch: 'email', tpl: 'ooh_email', why: 'out of hours' });
+    addJob(lead.id, at, 'msg', { ch: 'whatsapp', tpl: 'ooh_wa', why: 'out-of-hours auto-reply' });
+    addJob(lead.id, at, 'msg', { ch: 'sms', tpl: 'ooh_sms', why: 'out of hours' });
+    const open = nextOpening(at);
+    addJob(lead.id, open, 'call', { purpose: 'first' });
+    logEv(at, lead, 'New lead out of hours — email + WhatsApp now, SMS respects quiet hours, call queued for ' + fmtTime(open));
+  }
+  return lead;
+}
+
+/* ───────────────────────── Calls ───────────────────────── */
+function startCall(job, lead, at) {
+  if (!inBusiness(at)) {
+    job.at = nextOpening(at); job.held = (job.held || 0) + 1; job.note = 'outside business hours';
+    tl(lead, at, 'sys', 'Call held', 'Outside business hours — moved to ' + fmtTime(job.at));
+    touch(); return;
+  }
+  lead.attempts++;
+  if (!lead.firstDialAt) lead.firstDialAt = at;
+  job.status = 'ringing';
+  S.calls.push({ id: id('c'), leadId: lead.id, jobId: job.id, attempt: lead.attempts, startedReal: Date.now(), startedAt: at });
+  if (!S.clock.live && !S.clock.hold) { S.clock = { live: false, simAt: at, realAt: Date.now(), speed: S.clock.speed, hold: true }; }
+  tl(lead, at, 'call', 'Calling — attempt ' + lead.attempts, lead.phone ? 'Dialling ' + lead.phone : '');
+  logEv(at, lead, 'Dialling (attempt ' + lead.attempts + ')', 'call');
+  dispatch('call.start', lead, { attempt: lead.attempts, phone: lead.phone });
+  toast('Ringing ' + lead.name + ' — answer in the dialer bar');
+}
+function releaseHold() { if (!S.clock.live && S.clock.hold) rebase({ hold: false }); }
+function callOutcome(callId, answered, note) {
+  const c = S.calls.find(x => x.id === callId);
+  if (!c) return;
+  const at = now();
+  S.calls = S.calls.filter(x => x.id !== callId);
+  if (!S.calls.length) releaseHold();
+  const job = S.jobs.find(j => j.id === c.jobId);
+  const lead = leadById(c.leadId);
+  if (job) { job.status = 'done'; job.result = answered ? 'answered' : 'no answer'; }
+  if (!lead) return;
+  dispatch('call.result', lead, { attempt: c.attempt, answered });
+  if (answered) {
+    lead.contactedAt = lead.contactedAt || at;
+    tl(lead, at, 'call', 'Call connected', 'Attempt ' + c.attempt);
+    logEv(at, lead, 'Call connected on attempt ' + c.attempt, 'good');
+    halt(lead, 'Call answered', at);
+    setStage(lead, 'engaged', at);
+    addTask(lead, 'Qualify ' + lead.name + ' — call connected, log the outcome', 'high');
+    toast(lead.name + ' connected — automation stopped, over to you.', 'good');
+  } else {
+    tl(lead, at, 'call', 'No answer', note || 'Attempt ' + c.attempt);
+    logEv(at, lead, 'No answer (attempt ' + c.attempt + ')', 'call');
+    if (lead.stage === 'first_touch') startCadence(lead, at);
+  }
+  touch();
+}
+
+/* ───────────────────────── Stage 2: persistence ───────────────────────── */
+function startCadence(lead, base) {
+  setStage(lead, 'persistence', base);
+  lead.cadenceStart = base;
+  const first = slotOf(base);
+  const rot = ['morning', 'afternoon', 'evening'].filter(s => s !== first);
+  const [slotA, slotB] = rot;
+  addJob(lead.id, base, 'voicemail', { tpl: 'p_voicemail', why: 'no answer' });
+  addJob(lead.id, base, 'msg', { ch: 'sms', tpl: 'p_missed', why: 'missed call' });
+  addJob(lead.id, base + 2 * HR, 'call', { purpose: '+2h' });
+  const d1 = slotTime(base, 1, slotA);
+  addJob(lead.id, d1, 'call', { purpose: 'day 1 · ' + slotA });
+  addJob(lead.id, d1, 'msg', { ch: 'whatsapp', tpl: 'p_d1_wa', why: 'day 1' });
+  const d2 = slotTime(base, 2, 'morning');
+  addJob(lead.id, d2, 'msg', { ch: 'email', tpl: 'p_d2_email', why: 'day 2 value' });
+  addJob(lead.id, d2, 'msg', { ch: 'sms', tpl: 'p_d2_sms', why: 'day 2' });
+  const d4 = slotTime(base, 4, slotB);
+  addJob(lead.id, d4, 'call', { purpose: 'day 4 · ' + slotB });
+  addJob(lead.id, d4, 'msg', { ch: 'whatsapp', tpl: 'p_d4_wa', why: 'day 4' });
+  const d7 = slotTime(base, 7, 'morning');
+  addJob(lead.id, d7, 'msg', { ch: 'sms', tpl: 'p_d7_sms', why: 'day 7 last chance' });
+  addJob(lead.id, d7, 'msg', { ch: 'email', tpl: 'p_d7_email', why: 'day 7 last chance' });
+  addJob(lead.id, d7, 'msg', { ch: 'whatsapp', tpl: 'p_d7_wa', why: 'day 7 last chance' });
+  addJob(lead.id, d7 + DAY, 'to_nurture');
+  logEv(base, lead, 'Persistence cadence started (call slots: ' + first + ' → ' + slotA + ' → ' + slotB + ')');
+}
+
+/* ───────────────────────── Stage 3: retention ───────────────────────── */
+function markWon(lead, product) {
+  const at = now();
+  halt(lead, 'Deal won', at);
+  lead.product = (product || '').trim() || lead.topic || 'your service';
+  lead.wonAt = at;
+  lead.contactedAt = lead.contactedAt || at;
+  lead.checkins = 0;
+  setStage(lead, 'won', at);
+  const s = S.settings;
+  addJob(lead.id, at + DAY, 'msg', { ch: 'pref', tpl: 'r_onb1', why: 'onboarding day 1' });
+  addJob(lead.id, at + 7 * DAY, 'msg', { ch: 'pref', tpl: 'r_onb7', why: 'onboarding day 7' });
+  addJob(lead.id, at + 30 * DAY, 'msg', { ch: 'pref', tpl: 'r_onb30', why: 'onboarding day 30' });
+  addJob(lead.id, at + s.interval * DAY, 'checkin', { n: 1 });
+  const renewal = at + Math.round(s.termMonths * 30.44 - 30) * DAY;
+  if (renewal > at + DAY) addJob(lead.id, renewal, 'msg', { ch: 'email', tpl: 'r_renewal', why: 'renewal −30 days' });
+  logEv(at, lead, 'Deal won (' + lead.product + ') — retention loop started', 'good');
+  dispatch('deal.won', lead, { product: lead.product });
+  toast(lead.name + ' won — retention loop running.', 'good');
+}
+function runCheckin(job, lead, at) {
+  const s = S.settings;
+  lead.checkins = (lead.checkins || 0) + 1;
+  send(lead, resolveCh('pref', lead), 'r_checkin', at, 'check-in #' + job.n);
+  lead.awaiting = { n: job.n, at };
+  addJob(lead.id, at + s.sentimentWaitDays * DAY, 'sentiment_timeout', { n: job.n });
+  const age = (at - lead.wonAt) / DAY;
+  const step = (s.taper && age >= s.taperAfter - 0.5) ? 30 : s.interval;
+  if (age + step <= 730) addJob(lead.id, at + step * DAY, 'checkin', { n: job.n + 1 });
+}
+function recordSentiment(lead, score) {
+  const at = now();
+  const n = lead.awaiting ? lead.awaiting.n : null;
+  for (const j of S.jobs) if (j.leadId === lead.id && j.type === 'sentiment_timeout' && j.status === 'pending') { j.status = 'cancelled'; j.note = 'answered'; }
+  lead.awaiting = null;
+  lead.sentiments.push({ at, score, n });
+  tl(lead, at, 'in', 'Sentiment: ' + score + '/5', n ? 'Reply to check-in #' + n : '');
+  dispatch('sentiment.received', lead, { score, checkin: n });
+  if (score >= 4) {
+    lead.atRisk = false;
+    addJob(lead.id, at + MIN, 'msg', { ch: 'pref', tpl: 'r_review', why: 'happy client → review/referral' });
+    logEv(at, lead, 'Positive sentiment (' + score + ') — review/referral ask queued', 'good');
+  } else if (score <= 2) {
+    escalate(lead, 'scored ' + score + '/5 on check-in' + (n ? ' #' + n : ''), at);
+  } else {
+    logEv(at, lead, 'Neutral sentiment (3)');
+  }
+  touch();
+}
+function escalate(lead, why, at) {
+  lead.atRisk = true;
+  addTask(lead, 'At-risk client: ' + lead.name + ' ' + why + ' — call them', 'high', 'Account manager');
+  tl(lead, at, 'alert', 'Escalated to account manager', why);
+  logEv(at, lead, 'ESCALATION — ' + why, 'alert');
+  dispatch('client.escalation', lead, { reason: why });
+  toast('Alert: ' + lead.name + ' ' + why, 'alert');
+}
+
+/* ───────────────────────── Inbound + manual actions ───────────────────────── */
+function inbound(lead, ch, text) {
+  const at = now();
+  if (ch !== 'call') lead.pref = ch;
+  lead.contactedAt = lead.contactedAt || at;
+  tl(lead, at, 'in', 'Reply via ' + CH[ch], text || '');
+  logEv(at, lead, 'Inbound ' + CH[ch] + ' reply', 'good');
+  dispatch('message.inbound', lead, { channel: ch, text });
+  if (AUTOMATED.includes(lead.stage)) {
+    halt(lead, 'Lead replied via ' + CH[ch], at);
+    setStage(lead, 'engaged', at);
+    addTask(lead, 'Reply to ' + lead.name + ' on ' + CH[ch] + ' now', 'high');
+    toast(lead.name + ' replied — all automation stopped, handed to ' + S.settings.rep + '.', 'good');
+  } else if (lead.stage === 'won') {
+    const m = /^\s*([1-5])\s*$/.exec(text || '');
+    if (m && lead.awaiting) { recordSentiment(lead, +m[1]); return; }
+    addTask(lead, 'Client message from ' + lead.name + ' on ' + CH[ch], 'normal', 'Account manager');
+  }
+  touch();
+}
+function booked(lead) {
+  const at = now();
+  halt(lead, 'Booked via self-booking link', at);
+  lead.booked = true;
+  lead.contactedAt = lead.contactedAt || at;
+  setStage(lead, 'engaged', at);
+  addTask(lead, 'Prep for booked call with ' + lead.name, 'normal');
+  dispatch('lead.booked', lead);
+  toast(lead.name + ' booked a slot — automation stopped.', 'good');
+}
+function markLost(lead) { const at = now(); halt(lead, 'Marked lost', at); setStage(lead, 'lost', at); }
+function reopen(lead) { const at = now(); setStage(lead, 'engaged', at); addTask(lead, 'Re-engage ' + lead.name, 'normal'); }
+function callNow(lead) { addJob(lead.id, now(), 'call', { purpose: 'manual' }); }
+function checkinNow(lead) { addJob(lead.id, now(), 'checkin', { n: (lead.checkins || 0) + 1, manual: true }); }
+
+/* ───────────────────────── Job runner ───────────────────────── */
+function run(job) {
+  const lead = leadById(job.leadId);
+  if (!lead) { job.status = 'cancelled'; return; }
+  const at = job.at;
+  switch (job.type) {
+    case 'msg': {
+      const ch = resolveCh(job.ch, lead);
+      if (ch === 'sms' && !smsAllowed(at)) {
+        job.at = nextSmsWindow(at); job.held = (job.held || 0) + 1; job.note = 'SMS quiet hours';
+        tl(lead, at, 'sys', 'SMS held', 'Quiet hours — releases ' + fmtTime(job.at));
+        return touch();
+      }
+      send(lead, ch, job.tpl, at, job.why);
+      job.status = 'done';
+      break;
+    }
+    case 'voicemail': send(lead, 'voicemail', job.tpl, at, job.why); job.status = 'done'; break;
+    case 'call': startCall(job, lead, at); break;
+    case 'to_nurture': {
+      job.status = 'done';
+      setStage(lead, 'nurture', at);
+      logEv(at, lead, 'Cadence exhausted with no contact — moved to monthly nurture');
+      addJob(lead.id, at + DAY, 'nurture');
+      break;
+    }
+    case 'nurture': send(lead, 'email', 'nurture', at, 'monthly nurture'); job.status = 'done'; addJob(lead.id, at + 30 * DAY, 'nurture'); break;
+    case 'checkin': job.status = 'done'; runCheckin(job, lead, at); break;
+    case 'sentiment_timeout':
+      job.status = 'done';
+      if (lead.awaiting && lead.awaiting.n === job.n) { lead.awaiting = null; escalate(lead, 'did not respond to check-in #' + job.n, at); }
+      break;
+    default: job.status = 'cancelled';
+  }
+  touch();
+}
+function jobLabel(j, lead) {
+  switch (j.type) {
+    case 'msg': return CH[resolveCh(j.ch, lead)] + ' · ' + ((S.settings.templates[j.tpl] || {}).label || j.tpl).replace(/^Stage \d · |^Nurture · /, '');
+    case 'voicemail': return 'Voicemail drop';
+    case 'call': return 'Call' + (j.purpose && j.purpose !== 'first' ? ' (' + j.purpose + ')' : ' (first attempt)');
+    case 'to_nurture': return 'Move to long-term nurture';
+    case 'nurture': return 'Email · monthly nurture';
+    case 'checkin': return 'Check-in #' + j.n + ' + sentiment ask';
+    case 'sentiment_timeout': return 'Escalate if no reply to check-in #' + j.n;
+    default: return j.type;
+  }
+}
+
+/* ───────────────────────── Tick ───────────────────────── */
+let lastSave = 0;
+function tick() {
+  for (const c of S.calls.slice()) {
+    if (Date.now() - c.startedReal > S.settings.ringTimeout * SEC) callOutcome(c.id, false, 'Rang out — no answer');
+  }
+  for (let n = 0; n < 400; n++) {
+    const t = now();
+    let due = null;
+    for (const j of S.jobs) if (j.status === 'pending' && j.at <= t && (!due || j.at < due.at)) due = j;
+    if (!due) break;
+    run(due);
+  }
+  if (S.jobs.length > 4000) S.jobs = S.jobs.filter(j => j.status === 'pending' || j.status === 'ringing' || j.at > now() - 60 * DAY);
+  if (dirty) { renderAll(); dirty = false; } else renderLive();
+  if (saveDue && Date.now() - lastSave > 1000) { persist(); saveDue = false; lastSave = Date.now(); }
+}
+
+/* ───────────────────────── Rendering ───────────────────────── */
+const $ = (sel) => document.querySelector(sel);
+function renderAll() {
+  $('#bizName').textContent = S.settings.business + ' · lead lifecycle engine';
+  renderSpeed(); renderDialer(); renderLive(); placeDrawer();
+  const open = S.tasks.filter(t => !t.done);
+  const tc = $('#taskCount'); tc.textContent = open.length; tc.className = 'count' + (open.some(t => t.priority === 'high') ? ' hot' : '');
+  if (tab === 'pipeline') renderPipeline();
+  if (tab === 'tasks') renderTasks();
+  if (tab === 'outbox') renderOutbox();
+  if (tab === 'activity') renderActivity();
+  renderDrawer();
+}
+function renderLive() {
+  const t = now();
+  $('#clockTime').textContent = fmtClock(t);
+  $('#clockTime').title = fmtDay(t) + ' · ' + S.settings.tz;
+  const biz = inBusiness(t), sms = smsAllowed(t);
+  const pb = $('#pillBiz'); pb.textContent = biz ? 'OPEN' : 'CLOSED'; pb.className = 'pill ' + (biz ? 'on' : 'off');
+  const ps = $('#pillSms'); ps.textContent = sms ? 'SMS OK' : 'SMS QUIET'; ps.className = 'pill ' + (sms ? 'on' : 'off');
+  const pm = $('#pillMode'); pm.textContent = S.clock.live ? 'LIVE' : (S.clock.hold ? 'SIM · CALL RINGING' : (S.clock.speed === 0 ? 'SIM · PAUSED' : 'SIM')); pm.className = 'pill ' + (S.clock.live ? 'on' : 'warn');
+  for (const el of document.querySelectorAll('[data-at]')) {
+    const d = +el.dataset.at - t;
+    el.textContent = d <= 0 ? 'due now' : 'in ' + fmtDur(d);
+  }
+  for (const el of document.querySelectorAll('[data-ring]')) el.textContent = Math.max(0, S.settings.ringTimeout - Math.floor((Date.now() - +el.dataset.ring) / 1000)) + 's';
+}
+function renderSpeed() {
+  const cur = S.clock.live ? 'live' : String(S.clock.speed);
+  for (const b of document.querySelectorAll('#speedSeg button')) b.setAttribute('aria-pressed', String(b.dataset.speed === cur));
+}
+function renderDialer() {
+  const el = $('#dialer');
+  el.innerHTML = S.calls.map(c => {
+    const l = leadById(c.leadId) || {};
+    return '<div class="ring"><span class="dot" aria-hidden="true"></span><b>Ringing ' + esc(l.name) + '</b><span class="mono">' + esc(l.phone || 'no phone') + '</span><span class="muted">attempt ' + c.attempt + ' · rings out in <span class="mono" data-ring="' + c.startedReal + '"></span></span>' +
+      '<span class="acts"><button type="button" class="btn good small" data-act="answer" data-id="' + c.id + '">Connected</button><button type="button" class="btn small" data-act="noanswer" data-id="' + c.id + '">No answer</button></span></div>';
+  }).join('');
+}
+function nextJob(lead) { return S.jobs.filter(j => j.leadId === lead.id && j.status === 'pending').sort((a, b) => a.at - b.at)[0]; }
+function median(a) { if (!a.length) return null; const s = a.slice().sort((x, y) => x - y), m = s.length >> 1; return s.length % 2 ? s[m] : (s[m - 1] + s[m]) / 2; }
+function renderPipeline() {
+  const L = S.leads;
+  const dial = median(L.filter(l => l.firstDialAt).map(l => l.firstDialAt - l.createdAt));
+  const dialIn = median(L.filter(l => l.firstDialAt && l.mode === 'in_hours').map(l => l.firstDialAt - l.createdAt));
+  const contacted = L.filter(l => l.contactedAt).length;
+  const count = (st) => L.filter(l => l.stage === st).length;
+  const risk = L.filter(l => l.stage === 'won' && l.atRisk).length;
+  const kp = [
+    ['Leads', L.length, L.filter(l => l.mode === 'out_of_hours').length + ' arrived out of hours'],
+    ['Time to first call', dial == null ? '—' : fmtDur(dial), dialIn == null ? 'median, all leads' : 'in hours: ' + fmtDur(dialIn)],
+    ['Contact rate', L.length ? Math.round(contacted / L.length * 100) + '%' : '—', contacted + ' reached a human'],
+    ['In cadence', count('persistence'), count('nurture') + ' in nurture'],
+    ['Clients', count('won'), risk + ' at risk'],
+    ['Open tasks', S.tasks.filter(t => !t.done).length, S.tasks.filter(t => !t.done && t.priority === 'high').length + ' high priority'],
+  ];
+  $('#kpis').innerHTML = kp.map(k => '<div class="kpi"><span>' + esc(k[0]) + '</span><b>' + esc(k[1]) + '</b><small>' + esc(k[2]) + '</small></div>').join('');
+  $('#board').innerHTML = STAGES.map(st => {
+    const items = L.filter(l => l.stage === st.id).sort((a, b) => b.createdAt - a.createdAt);
+    return '<div class="col" style="--c:' + st.color + '"><h2>' + esc(st.label) + '<span class="count">' + items.length + '</span></h2><div class="list">' +
+      (items.length ? items.map(card).join('') : '<div class="empty">' + emptyText(st.id) + '</div>') + '</div></div>';
+  }).join('');
+}
+function emptyText(st) {
+  return { first_touch: 'New leads land here and get touched in seconds. Add one with “+ New lead”.', persistence: 'Leads whose call didn’t connect.', engaged: 'Anyone who replied, answered or booked — automation is off.', won: 'Won deals in the 15-day check-in loop.', nurture: 'Cadence finished with no contact. Monthly email.', lost: '—' }[st];
+}
+function card(l) {
+  const n = nextJob(l);
+  const tags = [];
+  if (l.mode === 'out_of_hours' && l.stage === 'first_touch') tags.push('<span class="tag">OUT OF HOURS</span>');
+  if (S.calls.some(c => c.leadId === l.id)) tags.push('<span class="tag amber">RINGING</span>');
+  if (l.booked) tags.push('<span class="tag blue">BOOKED</span>');
+  if (l.atRisk) tags.push('<span class="tag red">AT RISK</span>');
+  if (l.awaiting) tags.push('<span class="tag teal">AWAITING SENTIMENT</span>');
+  const last = l.sentiments[l.sentiments.length - 1];
+  if (l.stage === 'won' && last) tags.push('<span class="tag ' + (last.score >= 4 ? 'teal' : last.score <= 2 ? 'red' : '') + '">' + last.score + '/5</span>');
+  return '<button type="button" class="lead" data-act="open" data-id="' + l.id + '"><span class="row"><b>' + esc(l.name) + '</b><span class="tag">' + esc(l.source) + '</span></span>' +
+    '<span class="topic">' + esc(l.stage === 'won' ? (l.product || '') : (l.topic || 'No topic')) + '</span>' +
+    (tags.length ? '<span class="row" style="justify-content:flex-start;flex-wrap:wrap">' + tags.join('') + '</span>' : '') +
+    (n ? '<span class="next">Next: ' + esc(jobLabel(n, l)) + ' · <span data-at="' + n.at + '"></span></span>' : '') + '</button>';
+}
+function renderTasks() {
+  const list = S.tasks.slice().sort((a, b) => (a.done - b.done) || ((b.priority === 'high') - (a.priority === 'high')) || b.at - a.at);
+  $('#tasksPanel').innerHTML = '<div class="toolbar" style="justify-content:space-between"><h2 style="margin:0">Tasks</h2>' +
+    (S.tasks.some(t => t.done) ? '<button type="button" class="btn small" data-act="clearDone">Clear completed</button>' : '') + '</div>' +
+    (list.length ? list.map(t => '<div class="task' + (t.done ? ' done' : '') + '"><input type="checkbox" id="tk' + t.id + '" data-act="toggleTask" data-id="' + t.id + '"' + (t.done ? ' checked' : '') + '>' +
+      '<div class="t"><label for="tk' + t.id + '"><b>' + esc(t.title) + '</b></label><span class="muted">' + esc(t.owner) + ' · ' + esc(fmtTime(t.at)) + ' ' + (t.priority === 'high' ? '<span class="tag red">HIGH</span>' : '') + '</span></div>' +
+      '<button type="button" class="btn small" data-act="open" data-id="' + t.leadId + '">Open lead</button></div>').join('')
+      : '<p class="muted">No tasks. Replies, connected calls, bookings and at-risk clients create tasks here.</p>');
+}
+function renderOutbox() {
+  const rows = S.messages.filter(m => outFilter === 'all' || m.ch === outFilter).slice(-300).reverse();
+  const opts = ['all', 'sms', 'email', 'whatsapp', 'voicemail'];
+  $('#outboxPanel').innerHTML = '<div class="toolbar"><h2 style="margin:0;margin-right:auto">Outbox</h2><label for="outF" class="muted">Channel</label><select id="outF" class="btn small" data-act="outFilter">' +
+    opts.map(o => '<option value="' + o + '"' + (o === outFilter ? ' selected' : '') + '>' + (o === 'all' ? 'All' : CH[o]) + '</option>').join('') + '</select></div>' +
+    '<p class="muted" style="margin-top:0">Every message the engine sends. With a webhook set in Settings, each is POSTed to your sender (GHL, n8n, Make, Twilio…) for real delivery.</p>' +
+    '<div class="scroll"><table><thead><tr><th>When</th><th>Lead</th><th>Channel</th><th>Template</th><th>Message</th><th>Webhook</th></tr></thead><tbody>' +
+    (rows.length ? rows.map(m => '<tr><td class="mono">' + esc(fmtTime(m.at)) + '</td><td><button type="button" class="btn small" data-act="open" data-id="' + m.leadId + '">' + esc(m.name) + '</button></td><td>' + esc(CH[m.ch]) + '</td><td>' + esc(m.label) + '</td><td class="body">' + (m.subject ? '<b>' + esc(m.subject) + '</b>\n' : '') + esc(m.body) + '</td><td class="mono">' + esc(m.wh || '—') + '</td></tr>').join('')
+      : '<tr><td colspan="6" class="muted">Nothing sent yet.</td></tr>') + '</tbody></table></div>';
+}
+function renderActivity() {
+  const rows = S.log.slice(-400).reverse();
+  $('#activityPanel').innerHTML = '<h2>Activity</h2><div class="scroll"><table><thead><tr><th>When</th><th>Lead</th><th>Event</th></tr></thead><tbody>' +
+    (rows.length ? rows.map(r => '<tr><td class="mono">' + esc(fmtTime(r.at)) + '</td><td>' + esc(r.name) + '</td><td>' + (r.kind === 'alert' ? '<span class="tag red">ALERT</span> ' : r.kind === 'good' ? '<span class="tag teal">OK</span> ' : '') + esc(r.text) + '</td></tr>').join('')
+      : '<tr><td colspan="3" class="muted">No activity yet.</td></tr>') + '</tbody></table></div>';
+}
+
+function renderDrawer() {
+  const root = $('#drawerRoot');
+  const lead = openId && leadById(openId);
+  if (!lead) { root.innerHTML = ''; return; }
+  const keep = {};
+  for (const el of root.querySelectorAll('[data-keep]')) keep[el.dataset.keep] = el.value;
+  const focusKey = document.activeElement && document.activeElement.dataset ? document.activeElement.dataset.keep : null;
+  const prevBody = root.querySelector('.drawer .body'), scrollTop = prevBody ? prevBody.scrollTop : 0;
+  const st = STAGES.find(s => s.id === lead.stage);
+  const pend = pendingFor(lead.id);
+  let acts = '';
+  if (AUTOMATED.includes(lead.stage) || lead.stage === 'engaged' || lead.stage === 'won') {
+    acts += '<div class="field"><label for="rCh">Inbound reply channel</label><select id="rCh" data-keep="rch"><option value="sms">SMS</option><option value="whatsapp">WhatsApp</option><option value="email">Email</option></select></div>' +
+      '<div class="field" style="flex:1;min-width:180px"><label for="rTx">Their message</label><input id="rTx" data-keep="rtx" placeholder="' + (lead.stage === 'won' ? 'e.g. 4, or a question' : 'e.g. Yes, call me after 3') + '"></div>' +
+      '<button type="button" class="btn" data-act="reply">Log reply</button>';
+  }
+  let acts2 = '';
+  if (AUTOMATED.includes(lead.stage)) acts2 += '<button type="button" class="btn" data-act="booked">Booked via link</button><button type="button" class="btn" data-act="callNow">Call now</button>';
+  if (lead.stage === 'engaged' || AUTOMATED.includes(lead.stage)) acts2 += '<span class="field"><label for="wProd">Product / package</label><input id="wProd" data-keep="prod" placeholder="' + esc(lead.topic || 'e.g. Growth plan') + '"></span><button type="button" class="btn good" data-act="won">Mark won</button>';
+  if (lead.stage === 'won') acts2 += '<button type="button" class="btn" data-act="checkinNow">Send check-in now</button>';
+  if (lead.stage !== 'lost') acts2 += '<button type="button" class="btn bad" data-act="lost">' + (lead.stage === 'won' ? 'Mark churned' : 'Mark lost') + '</button>';
+  else acts2 += '<button type="button" class="btn" data-act="reopen">Reopen</button>';
+  const scores = lead.stage === 'won' ? '<div><h3>Sentiment ' + (lead.awaiting ? '— awaiting reply to check-in #' + lead.awaiting.n : '') + '</h3><div class="scores" role="group" aria-label="Record sentiment score">' +
+    [1, 2, 3, 4, 5].map(n => '<button type="button" data-act="score" data-n="' + n + '" aria-label="Score ' + n + '">' + n + '</button>').join('') + '</div><p class="muted" style="margin:6px 0 0">4–5 queues a review/referral ask · 1–2 escalates to the account manager · no reply in ' + S.settings.sentimentWaitDays + ' days escalates too.</p></div>' : '';
+  root.innerHTML = '<aside class="drawer" aria-labelledby="dwT">' +
+    '<header><div><h2 id="dwT">' + esc(lead.name) + '</h2><div class="acts" style="margin-top:6px"><span class="tag" style="background:' + st.color + ';color:#fff">' + esc(st.label.toUpperCase()) + '</span>' + (lead.atRisk ? '<span class="tag red">AT RISK</span>' : '') + (lead.booked ? '<span class="tag blue">BOOKED</span>' : '') + '</div></div>' +
+    '<button type="button" class="btn small" data-act="close" aria-label="Close">Close</button></header><div class="body">' +
+    '<dl class="facts"><dt>Enquiry</dt><dd>' + esc(lead.topic || '—') + '</dd><dt>Phone</dt><dd>' + esc(lead.phone || '—') + '</dd><dt>Email</dt><dd>' + esc(lead.email || '—') + '</dd><dt>Source</dt><dd>' + esc(lead.source) + '</dd>' +
+    '<dt>Captured</dt><dd>' + esc(fmtTime(lead.createdAt)) + (lead.mode === 'out_of_hours' ? ' (out of hours)' : '') + '</dd>' +
+    '<dt>First call</dt><dd>' + (lead.firstDialAt ? fmtDur(lead.firstDialAt - lead.createdAt) + ' after capture' : '—') + '</dd>' +
+    '<dt>Call attempts</dt><dd>' + lead.attempts + '</dd><dt>Prefers</dt><dd>' + esc(lead.pref ? CH[lead.pref] : '—') + '</dd>' +
+    (lead.product ? '<dt>Product</dt><dd>' + esc(lead.product) + '</dd><dt>Won</dt><dd>' + esc(fmtTime(lead.wonAt)) + '</dd>' : '') + '</dl>' +
+    (acts ? '<div><h3>Inbound</h3><div class="acts">' + acts + '</div></div>' : '') +
+    scores +
+    '<div><h3>Actions</h3><div class="acts">' + acts2 + '</div></div>' +
+    '<div><h3>Scheduled (' + pend.length + ')</h3><div class="sched">' + (pend.length ? pend.slice(0, 30).map(j => '<div><span class="mono">' + esc(fmtTime(j.at)) + '</span><span>' + esc(jobLabel(j, lead)) + (j.status === 'ringing' ? ' — <b>ringing</b>' : ' · <span class="muted" data-at="' + j.at + '"></span>') + (j.held ? ' <span class="tag amber">HELD: ' + esc(j.note) + '</span>' : '') + '</span></div>').join('') : '<span class="muted">Nothing scheduled — a human owns this lead.</span>') + '</div></div>' +
+    '<div><h3>Timeline</h3><div class="tl">' + lead.tl.slice().reverse().map(e => '<div class="ev ' + e.kind + '"><div class="h"><b>' + esc(e.title) + '</b><time>' + esc(fmtTime(e.at)) + '</time></div>' + (e.text ? '<p>' + esc(e.text) + '</p>' : '') + '</div>').join('') + '</div></div>' +
+    '</div></aside>';
+  for (const el of root.querySelectorAll('[data-keep]')) if (keep[el.dataset.keep] != null) el.value = keep[el.dataset.keep];
+  if (focusKey) { const f = root.querySelector('[data-keep="' + focusKey + '"]'); if (f) f.focus(); }
+  const body = root.querySelector('.drawer .body'); if (body) body.scrollTop = scrollTop;
+  placeDrawer();
+  renderLive();
+}
+
+function placeDrawer() {
+  const d = $('#drawerRoot .drawer'); if (!d) return;
+  const dl = $('#dialer');
+  const bottom = Math.max($('.top').getBoundingClientRect().bottom, dl.offsetHeight ? dl.getBoundingClientRect().bottom : 0);
+  d.style.top = Math.max(0, bottom) + 'px';
+}
+window.addEventListener('scroll', placeDrawer, { passive: true });
+window.addEventListener('resize', placeDrawer);
+
+/* ───────────────────────── Settings ───────────────────────── */
+function renderSettings() {
+  const s = S.settings;
+  const f = (k, label, v, type, extra) => '<div class="field"><label for="st_' + k + '">' + label + '</label><input id="st_' + k + '" name="' + k + '" type="' + (type || 'text') + '" value="' + esc(v) + '"' + (extra || '') + '></div>';
+  $('#settingsPanel').innerHTML = '<form id="settingsForm"><div class="settings">' +
+    '<div class="panel"><h2>Business</h2>' + f('business', 'Business name', s.business) + f('rep', 'Rep / sender name', s.rep) + f('booking', 'Booking link', s.booking, 'url') +
+      '<div class="field"><label for="st_tz">Time zone (client’s)</label><input id="st_tz" name="tz" list="tzList" value="' + esc(s.tz) + '"><datalist id="tzList">' + ['Asia/Kolkata', 'Europe/London', 'Europe/Dublin', 'Europe/Berlin', 'America/New_York', 'America/Chicago', 'America/Denver', 'America/Los_Angeles', 'America/Toronto', 'Australia/Sydney', 'Asia/Dubai', 'Asia/Singapore', 'UTC'].map(z => '<option value="' + z + '">').join('') + '</datalist></div></div>' +
+    '<div class="panel"><h2>Hours</h2><div class="grid2">' + f('open', 'Business opens', s.open, 'time') + f('close', 'Business closes', s.close, 'time') + f('smsStart', 'SMS allowed from', s.smsStart, 'time') + f('smsEnd', 'SMS allowed until', s.smsEnd, 'time') + '</div>' +
+      '<h3>Business days</h3><div class="days">' + DAY_NAMES.map((d, i) => '<label><input type="checkbox" name="day" value="' + i + '"' + (s.days.includes(i) ? ' checked' : '') + '> ' + d + '</label>').join('') + '</div>' +
+      '<h3>Call slots (rotated in the cadence)</h3><div class="grid2">' + f('slot_morning', 'Morning', s.slots.morning, 'time') + f('slot_afternoon', 'Afternoon', s.slots.afternoon, 'time') + f('slot_evening', 'Evening', s.slots.evening, 'time') + '</div></div>' +
+    '<div class="panel"><h2>Speed &amp; retention</h2><div class="grid2">' + f('callDelaySec', 'First call after (sec)', s.callDelaySec, 'number', ' min="0"') + f('waDelaySec', 'WhatsApp after (sec)', s.waDelaySec, 'number', ' min="0"') + f('ringTimeout', 'Ring timeout (real sec)', s.ringTimeout, 'number', ' min="5"') +
+      f('interval', 'Check-in every (days)', s.interval, 'number', ' min="1"') + f('taperAfter', 'Taper to monthly after (days)', s.taperAfter, 'number', ' min="0"') + f('termMonths', 'Contract term (months)', s.termMonths, 'number', ' min="1"') + f('sentimentWaitDays', 'Escalate if no reply (days)', s.sentimentWaitDays, 'number', ' min="1"') +
+      '<div class="field"><label for="st_rc">Default retention channel</label><select id="st_rc" name="retentionChannel">' + ['whatsapp', 'sms', 'email'].map(c => '<option value="' + c + '"' + (c === s.retentionChannel ? ' selected' : '') + '>' + CH[c] + '</option>').join('') + '</select></div></div>' +
+      '<label style="display:flex;gap:8px;align-items:center;margin-top:12px"><input type="checkbox" name="taper"' + (s.taper ? ' checked' : '') + '> Taper check-ins (off = every ' + s.interval + ' days forever)</label></div>' +
+    '<div class="panel"><h2>Delivery webhook</h2><p class="muted" style="margin-top:0">Each send, call, halt, win and escalation is POSTed here as JSON. Point it at a GoHighLevel inbound webhook, an n8n/Make scenario, or your own Twilio/WhatsApp sender.</p>' +
+      f('webhook', 'Webhook URL', s.webhook, 'url', ' placeholder="https://hooks.example.com/…"') +
+      '<div class="field"><label for="st_wm">Request mode</label><select id="st_wm" name="webhookMode"><option value="simple"' + (s.webhookMode === 'simple' ? ' selected' : '') + '>Simple (works anywhere, response not readable)</option><option value="json"' + (s.webhookMode === 'json' ? ' selected' : '') + '>JSON + status (endpoint must allow CORS)</option></select></div>' +
+      '<div class="acts" style="margin-top:12px"><button type="button" class="btn" data-act="testHook">Send test event</button></div></div>' +
+    '</div>' +
+    '<div class="panel"><h2>Message templates</h2><p class="muted" style="margin-top:0">Variables: <code>{first} {name} {topic} {product} {booking} {rep} {business} {phone} {email}</code></p>' +
+      Object.keys(DEFAULT_TPL).map(k => { const t = s.templates[k] || DEFAULT_TPL[k]; return '<div class="tpl"><b>' + esc(DEFAULT_TPL[k].label) + '</b>' + ('subject' in DEFAULT_TPL[k] ? '<div class="field"><label for="tp_s_' + k + '">Subject</label><input id="tp_s_' + k + '" name="tps_' + k + '" value="' + esc(t.subject || '') + '"></div>' : '') + '<div class="field"><label for="tp_b_' + k + '">Body</label><textarea id="tp_b_' + k + '" name="tpb_' + k + '" rows="3">' + esc(t.body) + '</textarea></div></div>'; }).join('') + '</div>' +
+    '<div class="panel acts" style="justify-content:space-between"><div class="acts"><button type="submit" class="btn primary">Save settings</button><button type="button" class="btn" data-act="resetTpl">Restore default templates</button></div>' +
+      '<div class="acts"><button type="button" class="btn" data-act="export">Export data</button><label class="btn" for="importFile">Import data</label><input type="file" id="importFile" accept="application/json" class="sr"><button type="button" class="btn bad" data-act="wipe">Erase everything</button></div></div>' +
+    '</form>';
+}
+function saveSettings(form) {
+  const fd = new FormData(form), s = S.settings, g = (k) => (fd.get(k) || '').toString().trim();
+  const tz = g('tz');
+  try { new Intl.DateTimeFormat('en', { timeZone: tz }); } catch (e) { toast('Unknown time zone: ' + tz, 'alert'); return; }
+  const num = (k, d) => { const n = Number(g(k)); return Number.isFinite(n) && n >= 0 ? n : d; };
+  const days = fd.getAll('day').map(Number);
+  Object.assign(s, {
+    business: g('business') || s.business, rep: g('rep') || s.rep, booking: g('booking'), tz,
+    open: g('open') || s.open, close: g('close') || s.close, smsStart: g('smsStart') || s.smsStart, smsEnd: g('smsEnd') || s.smsEnd,
+    days: days.length ? days : s.days,
+    slots: { morning: g('slot_morning') || s.slots.morning, afternoon: g('slot_afternoon') || s.slots.afternoon, evening: g('slot_evening') || s.slots.evening },
+    callDelaySec: num('callDelaySec', s.callDelaySec), waDelaySec: num('waDelaySec', s.waDelaySec), ringTimeout: Math.max(5, num('ringTimeout', s.ringTimeout)),
+    interval: Math.max(1, num('interval', s.interval)), taperAfter: num('taperAfter', s.taperAfter), termMonths: Math.max(1, num('termMonths', s.termMonths)), sentimentWaitDays: Math.max(1, num('sentimentWaitDays', s.sentimentWaitDays)),
+    retentionChannel: g('retentionChannel') || 'whatsapp', taper: fd.get('taper') === 'on', webhook: g('webhook'), webhookMode: g('webhookMode') || 'simple',
+  });
+  for (const k of Object.keys(DEFAULT_TPL)) {
+    const t = { label: DEFAULT_TPL[k].label, body: (fd.get('tpb_' + k) || '').toString() };
+    if ('subject' in DEFAULT_TPL[k]) t.subject = (fd.get('tps_' + k) || '').toString();
+    s.templates[k] = t;
+  }
+  for (const k in fmtCache) delete fmtCache[k];
+  touch(); persist();
+  toast('Settings saved. New schedules use them; existing ones keep their times.', 'good');
+}
+
+function renderGuide() {
+  const sample = JSON.stringify({ event: 'message.send', at: '2026-10-08T09:00:12.000Z', business: S.settings.business, lead: { id: 'L1a', name: 'Priya Shah', phone: '+44 7700 900123', email: 'priya@example.com', topic: 'kitchen renovation', source: 'Meta lead ad', stage: 'first_touch', product: null, preferredChannel: null }, data: { channel: 'sms', to: '+44 7700 900123', template: 'ft_sms', subject: '', body: 'Hi Priya, got your enquiry about kitchen renovation — calling you in 2 minutes…' } }, null, 2);
+  $('#guidePanel').innerHTML = '<div class="settings">' +
+    '<div class="panel"><h2>Run it</h2><ol style="padding-left:18px;margin:0;display:flex;flex-direction:column;gap:8px">' +
+      '<li><b>Settings</b> — set the client’s time zone, hours, quiet hours, booking link and templates.</li>' +
+      '<li><b>+ New lead</b> — the first touch fires immediately; out of hours it degrades gracefully.</li>' +
+      '<li><b>Calls</b> ring in the dialer bar. <i>Connected</i> stops all automation; <i>No answer</i> (or ringing out) starts the 7-day cadence.</li>' +
+      '<li><b>Log reply / Booked</b> on any lead stops every scheduled touch and creates a task.</li>' +
+      '<li><b>Mark won</b> starts the retention loop: onboarding day 1/7/30, a check-in every 15 days (monthly after 90), renewal reminder, sentiment-driven review asks and escalations.</li>' +
+      '<li>Use <b>1 hr/s</b>, <b>1 day/s</b> or <b>Skip to next action</b> to watch a week or a quarter play out in minutes. While a call rings, the sim clock drops to real time so you can answer it. <b>Live</b> runs on the real clock.</li></ol></div>' +
+    '<div class="panel"><h2>Make it send for real</h2><p style="margin-top:0">This page is the brain: it decides <i>what</i> goes out <i>when</i>, on which channel, and stops when a human is needed. Delivery happens through the webhook in Settings:</p>' +
+      '<ul style="padding-left:18px;display:flex;flex-direction:column;gap:6px"><li><b>GoHighLevel</b> — inbound-webhook trigger → “Send SMS / Email / WhatsApp” actions keyed on <code>data.channel</code>.</li><li><b>n8n / Make</b> — webhook → switch on <code>data.channel</code> → Twilio SMS, WhatsApp Business API (Twilio / 360dialog), email sender.</li><li><b>Calls</b> — <code>call.start</code> events can trigger a power dialer that bridges the rep when the lead answers.</li></ul>' +
+      '<p>Events: <code>lead.created</code> <code>message.send</code> <code>call.start</code> <code>call.result</code> <code>message.inbound</code> <code>automation.halted</code> <code>lead.booked</code> <code>lead.stage_changed</code> <code>deal.won</code> <code>sentiment.received</code> <code>client.escalation</code></p></div>' +
+    '<div class="panel"><h2>Capture leads from a form</h2><p style="margin-top:0">Open this page with query parameters and the lead is captured on load — use it as a form’s redirect, or a quick capture link:</p><pre>lead-engine.html?name=Priya%20Shah&amp;phone=%2B447700900123&amp;email=priya%40example.com&amp;topic=kitchen%20renovation&amp;source=Web%20form</pre>' +
+      '<p class="muted">The engine runs while this page is open, and stores everything in this browser. For always-on production, keep it open on a dispatch screen or move the same rules into GHL workflows (the Settings mirror them 1:1).</p></div>' +
+    '<div class="panel"><h2>Webhook payload</h2><pre>' + esc(sample) + '</pre></div></div>';
+}
+
+/* ───────────────────────── UI wiring ───────────────────────── */
+function setTab(t) {
+  tab = t;
+  for (const b of document.querySelectorAll('.tabs button')) b.setAttribute('aria-selected', String(b.dataset.tab === t));
+  for (const s of document.querySelectorAll('main > section')) s.hidden = s.id !== 'tab-' + t;
+  if (t === 'settings') renderSettings();
+  if (t === 'guide') renderGuide();
+  dirty = true;
+}
+function toast(text, kind) {
+  const el = document.createElement('div');
+  el.className = 'toast' + (kind ? ' ' + kind : '');
+  el.textContent = text;
+  $('#toasts').appendChild(el);
+  setTimeout(() => el.remove(), kind === 'alert' ? 8000 : 4500);
+}
+const SAMPLES = [
+  ['Priya Shah', '+44 7700 900123', 'priya@example.com', 'kitchen renovation', 'Meta lead ad'],
+  ['Daniel Okafor', '+44 7700 900456', 'daniel@example.com', 'bookkeeping package', 'Web form'],
+  ['Aisha Khan', '+44 7700 900789', 'aisha@example.com', 'teeth whitening', 'Google lead ad'],
+  ['Tom Becker', '+44 7700 900321', 'tom@example.com', 'solar panel quote', 'Landing page'],
+  ['Meera Iyer', '+44 7700 900654', 'meera@example.com', 'personal training', 'Chatbot'],
+];
+let sampleIx = 0;
+
+document.addEventListener('click', (e) => {
+  const el = e.target.closest('[data-act], [data-tab], [data-speed]');
+  if (!el) return;
+  if (el.dataset.tab) return setTab(el.dataset.tab);
+  if (el.dataset.speed) return setSpeed(el.dataset.speed);
+  const act = el.dataset.act, lead = openId && leadById(openId);
+  switch (act) {
+    case 'newLead': $('#leadForm').reset(); $('#leadDialog').showModal(); $('#lfName').focus(); break;
+    case 'closeDialog': $('#leadDialog').close(); break;
+    case 'fillSample': { const s = SAMPLES[sampleIx++ % SAMPLES.length]; $('#lfName').value = s[0]; $('#lfPhone').value = s[1]; $('#lfEmail').value = s[2]; $('#lfTopic').value = s[3]; $('#lfSource').value = s[4]; break; }
+    case 'skip': skipToNext(); break;
+    case 'answer': callOutcome(el.dataset.id, true); break;
+    case 'noanswer': callOutcome(el.dataset.id, false, 'Rep marked no answer'); break;
+    case 'open': openId = el.dataset.id; touch(); break;
+    case 'close': openId = null; touch(); break;
+    case 'reply': if (lead) { const ch = $('#rCh').value, tx = $('#rTx').value.trim(); $('#rTx').value = ''; inbound(lead, ch, tx); } break;
+    case 'booked': if (lead) booked(lead); break;
+    case 'callNow': if (lead) callNow(lead); break;
+    case 'won': if (lead) markWon(lead, ($('#wProd') || {}).value); break;
+    case 'lost': if (lead) markLost(lead); break;
+    case 'reopen': if (lead) reopen(lead); break;
+    case 'checkinNow': if (lead) checkinNow(lead); break;
+    case 'score': if (lead) recordSentiment(lead, +el.dataset.n); break;
+    case 'toggleTask': { const t = S.tasks.find(x => x.id === el.dataset.id); if (t) { t.done = el.checked; touch(); } break; }
+    case 'clearDone': S.tasks = S.tasks.filter(t => !t.done); touch(); break;
+    case 'testHook': {
+      const url = ($('#st_webhook') || {}).value;
+      if (!url) { toast('Add a webhook URL first.', 'alert'); break; }
+      const prev = S.settings.webhook, prevMode = S.settings.webhookMode;
+      S.settings.webhook = url; S.settings.webhookMode = $('#st_wm').value;
+      const m = { wh: '' }; dispatch('test', null, { message: 'Test event from the lead lifecycle engine' }, m);
+      S.settings.webhook = prev; S.settings.webhookMode = prevMode;
+      toast('Test event sent — check your receiver.'); break;
+    }
+    case 'resetTpl': S.settings.templates = JSON.parse(JSON.stringify(DEFAULT_TPL)); touch(); persist(); renderSettings(); toast('Templates restored.'); break;
+    case 'export': {
+      persist();
+      const blob = new Blob([JSON.stringify(S, null, 2)], { type: 'application/json' });
+      const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'lead-engine-' + new Date().toISOString().slice(0, 10) + '.json'; a.click();
+      setTimeout(() => URL.revokeObjectURL(a.href), 2000); break;
+    }
+    case 'wipe': if (confirm('Erase all leads, tasks, messages and settings in this browser?')) { S = fresh(); openId = null; touch(); persist(); renderSettings(); toast('Everything erased.'); } break;
+  }
+});
+document.addEventListener('change', (e) => {
+  if (e.target.id === 'outF') { outFilter = e.target.value; touch(); }
+  if (e.target.id === 'importFile' && e.target.files[0]) {
+    e.target.files[0].text().then(txt => {
+      const s = JSON.parse(txt);
+      if (!s || !Array.isArray(s.leads) || !s.settings) throw new Error('not an engine export');
+      localStorage.setItem(STORE, txt); S = load(); openId = null; touch(); renderSettings(); toast('Data imported.', 'good');
+    }).catch(err => toast('Import failed: ' + err.message, 'alert'));
+  }
+});
+document.addEventListener('submit', (e) => {
+  if (e.target.id === 'leadForm') {
+    e.preventDefault();
+    const fd = new FormData(e.target);
+    const lead = createLead(Object.fromEntries(fd.entries()));
+    $('#leadDialog').close();
+    toast(lead.name + ' captured — first touch firing.');
+    touch(); tick();
+  }
+  if (e.target.id === 'settingsForm') { e.preventDefault(); saveSettings(e.target); }
+});
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape' && openId && !$('#leadDialog').open) { openId = null; touch(); }
+  if (e.key === 'Enter' && e.target.id === 'rTx') { e.preventDefault(); $('[data-act="reply"]').click(); }
+});
+window.addEventListener('beforeunload', persist);
+
+/* Capture a lead from URL parameters (form redirect / capture link) */
+(function captureFromUrl() {
+  const q = new URLSearchParams(location.search);
+  if (!q.get('name')) return;
+  const lead = createLead({ name: q.get('name'), phone: q.get('phone'), email: q.get('email'), topic: q.get('topic'), source: q.get('source') || 'Capture link' });
+  toast(lead.name + ' captured from link.');
+  history.replaceState(null, '', location.pathname);
+})();
+
+setTab('pipeline');
+tick();
+setInterval(tick, 250);
+})();
+</script>
+</body>
+</html>
