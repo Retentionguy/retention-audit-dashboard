@@ -1,0 +1,469 @@
+<!doctype html>
+<html lang="en-AU">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Velarion — Never lose another lead</title>
+<meta name="description" content="Velarion answers every enquiry in seconds, follows up for 7 days across call, SMS, WhatsApp and email, and checks in with your customers after the sale. Call 0412 576 303.">
+<meta property="og:title" content="Velarion — Never lose another lead">
+<meta property="og:description" content="Every enquiry answered in seconds, followed up for 7 days, and looked after once they buy.">
+<meta property="og:type" content="website">
+<meta name="theme-color" content="#0B1430">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%230B1430'/%3E%3Cpath d='M8 9l8 15 8-15' fill='none' stroke='%23F2A93B' stroke-width='3.4' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@112,600;112,800;125,800&family=Public+Sans:ital,wght@0,400;0,600;0,700;1,400&display=swap">
+<style>
+  /* Layout: navy hero with the enquiry form beside a live "first two minutes" timeline; light sections below, one reading column wide. */
+  :root {
+    --navy: #0B1430; --navy-2: #13204A; --ink: #101828; --muted: #4B5568; --paper: #FFFFFF; --ground: #F4F5F8; --line: #DDE2EA;
+    --signal: #F2A93B; --signal-ink: #3D2600; --blue: #2F5BEA; --teal: #0E7A70; --amber: #A4560A; --bad: #B42318;
+    --display: 'Archivo', 'Arial Narrow', system-ui, sans-serif;
+    --body: 'Public Sans', 'Segoe UI', system-ui, sans-serif;
+    color-scheme: light;
+  }
+  *, *::before, *::after { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } *, *::before, *::after { animation: none !important; transition: none !important; } }
+  body { margin: 0; background: var(--ground); color: var(--ink); font-family: var(--body); font-size: 17px; line-height: 1.6; }
+  a { color: var(--blue); }
+  :focus-visible { outline: 3px solid var(--signal); outline-offset: 3px; border-radius: 4px; }
+  h1, h2, h3 { font-family: var(--display); font-stretch: 112%; line-height: 1.08; margin: 0; text-wrap: balance; letter-spacing: -0.01em; }
+  p { margin: 0; }
+  .wrap { width: 100%; max-width: 1180px; margin: 0 auto; padding-inline: 20px; }
+  .eyebrow { font-size: 13px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; }
+  .btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 48px; padding: 12px 22px; border-radius: 10px; font-weight: 700; font-size: 16px; text-decoration: none; border: 2px solid transparent; cursor: pointer; font-family: var(--body); }
+  .btn-signal { background: var(--signal); color: var(--signal-ink); }
+  .btn-signal:hover { background: #F7BA5C; }
+  .btn-ghost { border-color: rgba(255,255,255,.35); color: #fff; }
+  .btn-ghost:hover { border-color: #fff; }
+
+  /* Nav */
+  .nav { background: var(--navy); color: #fff; padding-top: env(safe-area-inset-top, 0px); }
+  .nav .wrap { display: flex; align-items: center; justify-content: space-between; gap: 16px; min-height: 72px; flex-wrap: wrap; padding-block: 10px; }
+  .brand { display: flex; align-items: center; gap: 10px; color: #fff; text-decoration: none; }
+  .brand b { font-family: var(--display); font-stretch: 125%; font-weight: 800; font-size: 21px; letter-spacing: 0.08em; }
+  .nav-actions { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+  .phone-link { color: #fff; text-decoration: none; font-weight: 700; display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 6px; }
+  .phone-link:hover { color: var(--signal); }
+
+  /* Hero */
+  .hero { background: var(--navy); color: #fff; padding-block: 40px 72px; position: relative; overflow: hidden; }
+  .hero::after { content: ''; position: absolute; inset: auto -10% -60% 40%; height: 520px; background: radial-gradient(closest-side, rgba(47,91,234,.35), transparent); pointer-events: none; }
+  .hero .wrap { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr); gap: 48px; align-items: start; position: relative; z-index: 1; }
+  .hero h1 { font-size: clamp(38px, 5.6vw, 66px); font-weight: 800; }
+  .hero h1 em { font-style: normal; color: var(--signal); }
+  .hero .sub { font-size: 20px; color: #C9D2EA; max-width: 54ch; }
+  .hero-copy { display: flex; flex-direction: column; gap: 24px; padding-top: 12px; }
+  .hero .eyebrow { color: var(--signal); }
+
+  /* Timeline demo */
+  .clock { background: var(--navy-2); border: 1px solid rgba(255,255,255,.12); border-radius: 16px; padding: 20px 22px; display: flex; flex-direction: column; gap: 14px; }
+  .clock-head { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; flex-wrap: wrap; }
+  .clock-head span { font-size: 13px; color: #A9B4D3; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; }
+  .clock-head b { font-family: var(--display); font-stretch: 112%; font-size: 30px; font-variant-numeric: tabular-nums; color: var(--signal); }
+  .beats { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+  .beat { display: grid; grid-template-columns: 64px minmax(0, 1fr) auto; gap: 12px; align-items: center; padding: 10px 12px; border-radius: 10px; background: rgba(255,255,255,.04); color: #8E9AC0; transition: background .3s, color .3s; }
+  .beat .t { font-family: var(--display); font-stretch: 112%; font-weight: 800; font-variant-numeric: tabular-nums; font-size: 15px; }
+  .beat .ch { font-size: 12px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; padding: 3px 8px; border-radius: 999px; border: 1px solid currentColor; }
+  .beat.done { background: rgba(242,169,59,.12); color: #fff; }
+  .beat.done .t { color: var(--signal); }
+
+  /* Form card */
+  .form-card { background: var(--paper); color: var(--ink); border-radius: 18px; padding: 28px; box-shadow: 0 24px 60px rgba(3,8,25,.45); display: flex; flex-direction: column; gap: 16px; }
+  .form-card h2 { font-size: 27px; font-weight: 800; }
+  .form-card .muted { color: var(--muted); font-size: 15px; }
+  .grid2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+  .field { display: flex; flex-direction: column; gap: 5px; min-width: 0; }
+  .field label { font-size: 14px; font-weight: 700; }
+  .field input, .field select, .field textarea { font: inherit; font-size: 16px; color: var(--ink); background: #fff; border: 1.5px solid #C9D0DB; border-radius: 9px; padding: 11px 12px; min-height: 48px; width: 100%; }
+  .field textarea { min-height: 84px; resize: vertical; }
+  .field input:focus, .field select:focus, .field textarea:focus { border-color: var(--blue); outline: 3px solid rgba(47,91,234,.2); outline-offset: 0; }
+  .field [aria-invalid="true"] { border-color: var(--bad); }
+  .err { color: var(--bad); font-size: 13px; font-weight: 600; min-height: 0; }
+  .consent { display: grid; grid-template-columns: 22px minmax(0, 1fr); gap: 10px; font-size: 14px; color: var(--muted); align-items: start; }
+  .consent input { width: 20px; height: 20px; margin-top: 2px; accent-color: var(--blue); }
+  .submit { width: 100%; font-size: 17px; min-height: 54px; }
+  .submit[disabled] { opacity: .65; cursor: progress; }
+  .form-status { font-size: 15px; font-weight: 600; border-radius: 9px; padding: 12px 14px; }
+  .form-status.error { background: #FEF0EE; color: var(--bad); }
+  .or-call { text-align: center; font-size: 15px; color: var(--muted); }
+  .or-call a { font-weight: 700; color: var(--ink); }
+  .hp { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
+
+  /* Sections */
+  section.band { padding-block: 80px; }
+  section.band.alt { background: var(--paper); border-block: 1px solid var(--line); }
+  .section-head { display: flex; flex-direction: column; gap: 12px; max-width: 720px; margin-bottom: 40px; }
+  .section-head .eyebrow { color: var(--blue); }
+  .section-head h2 { font-size: clamp(30px, 4vw, 44px); font-weight: 800; }
+  .section-head p { color: var(--muted); font-size: 19px; }
+
+  .problem { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 48px; align-items: center; }
+  .problem .big { font-family: var(--display); font-stretch: 125%; font-weight: 800; font-size: clamp(80px, 13vw, 156px); line-height: .9; color: var(--navy); }
+  .problem .big small { display: block; font-size: 22px; font-stretch: 112%; letter-spacing: 0.02em; color: var(--muted); margin-top: 12px; line-height: 1.3; }
+  .problem ul { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 14px; }
+  .problem li { display: grid; grid-template-columns: 28px minmax(0, 1fr); gap: 10px; }
+  .x { color: var(--bad); font-weight: 800; }
+
+  .stages { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 20px; }
+  .stage { background: var(--paper); border: 1px solid var(--line); border-radius: 16px; overflow: hidden; display: flex; flex-direction: column; }
+  .stage-top { padding: 22px 24px 18px; color: #fff; background: var(--c); display: flex; flex-direction: column; gap: 6px; }
+  .stage-top .eyebrow { opacity: .85; font-size: 12px; }
+  .stage-top h3 { font-size: 24px; font-weight: 800; }
+  .stage ol { margin: 0; padding: 20px 24px 24px; list-style: none; display: flex; flex-direction: column; gap: 12px; }
+  .stage li { display: grid; grid-template-columns: 92px minmax(0, 1fr); gap: 10px; font-size: 16px; }
+  .stage li b { color: var(--c); font-variant-numeric: tabular-nums; }
+
+  .promises { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; }
+  .promise { border-top: 4px solid var(--navy); padding-top: 16px; display: flex; flex-direction: column; gap: 8px; }
+  .promise h3 { font-size: 20px; font-weight: 800; }
+  .promise p { color: var(--muted); font-size: 16px; }
+
+  .split { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 32px; }
+  .list-card { background: var(--paper); border: 1px solid var(--line); border-radius: 16px; padding: 28px; display: flex; flex-direction: column; gap: 16px; }
+  .list-card h3 { font-size: 24px; font-weight: 800; }
+  .ticks { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 12px; }
+  .ticks li { display: grid; grid-template-columns: 24px minmax(0, 1fr); gap: 10px; }
+  .ticks svg { margin-top: 4px; color: var(--teal); }
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; }
+  .chips span { background: var(--ground); border: 1px solid var(--line); border-radius: 999px; padding: 6px 14px; font-size: 15px; font-weight: 600; }
+
+  .faq { max-width: 820px; display: flex; flex-direction: column; gap: 10px; }
+  details { background: var(--paper); border: 1px solid var(--line); border-radius: 12px; padding: 0 22px; }
+  summary { cursor: pointer; padding: 18px 0; font-weight: 700; font-size: 18px; list-style: none; display: flex; justify-content: space-between; gap: 16px; }
+  summary::-webkit-details-marker { display: none; }
+  summary::after { content: '+'; font-family: var(--display); font-size: 24px; line-height: 1; color: var(--blue); }
+  details[open] summary::after { content: '–'; }
+  details p { padding-bottom: 20px; color: var(--muted); }
+
+  .cta { background: var(--navy); color: #fff; padding-block: 72px; }
+  .cta .wrap { display: flex; justify-content: space-between; align-items: center; gap: 28px; flex-wrap: wrap; }
+  .cta h2 { font-size: clamp(30px, 4vw, 46px); font-weight: 800; max-width: 18ch; }
+  .cta p { color: #C9D2EA; margin-top: 10px; }
+  .cta-actions { display: flex; gap: 12px; flex-wrap: wrap; }
+
+  footer { background: #070D20; color: #8E9AC0; font-size: 14px; padding-block: 28px calc(28px + env(safe-area-inset-bottom, 0px)); }
+  footer .wrap { display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+  footer a { color: #C9D2EA; }
+
+  /* Mobile call bar */
+  .callbar { display: none; }
+  @media (max-width: 900px) {
+    .hero .wrap, .problem, .split { grid-template-columns: minmax(0, 1fr); }
+    .stages { grid-template-columns: minmax(0, 1fr); }
+    .promises { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .hero { padding-block: 28px 56px; }
+    section.band { padding-block: 60px; }
+    .nav .btn, .nav .phone-link { display: none; }
+    .hero-copy { display: contents; }
+    .hero .wrap { gap: 24px; }
+    .hero-copy > .eyebrow { order: 1; } .hero h1 { order: 2; } .hero .sub { order: 3; } .form-card { order: 4; } .clock { order: 5; }
+    body { padding-bottom: 76px; }
+    .callbar { display: flex; gap: 10px; position: fixed; left: 0; right: 0; bottom: 0; z-index: 20; padding: 10px 16px calc(10px + env(safe-area-inset-bottom, 0px)); background: rgba(11,20,48,.96); backdrop-filter: blur(8px); }
+    .callbar .btn { flex: 1; }
+  }
+  @media (max-width: 520px) {
+    .grid2, .promises { grid-template-columns: minmax(0, 1fr); }
+    .form-card { padding: 22px 18px; }
+    .stage li { grid-template-columns: 80px minmax(0, 1fr); }
+  }
+</style>
+</head>
+<body>
+
+<header class="nav">
+  <div class="wrap">
+    <a class="brand" href="#top" aria-label="Velarion home">
+      <svg width="30" height="30" viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="7" fill="#13204A"/><path d="M8 9l8 15 8-15" fill="none" stroke="#F2A93B" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <b>VELARION</b>
+    </a>
+    <div class="nav-actions">
+      <a class="phone-link" href="tel:+61412576303">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1.9.4 1.8.7 2.7a2 2 0 0 1-.5 2.1L8 9.8a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.8.6 2.7.7a2 2 0 0 1 1.7 2z"/></svg>
+        0412 576 303
+      </a>
+      <a class="btn btn-signal" href="#get-started">Get a call back</a>
+    </div>
+  </div>
+</header>
+
+<main id="top">
+  <section class="hero">
+    <div class="wrap">
+      <div class="hero-copy">
+        <span class="eyebrow">Lead response &amp; retention system</span>
+        <h1>Every enquiry answered in <em>seconds</em>. Followed up for 7 days. Looked after for life.</h1>
+        <p class="sub">Velarion replies to new leads by SMS, email, WhatsApp and phone within moments, keeps following up until they answer, and checks in with your customers after they buy, so fewer leads go cold and fewer customers drift away.</p>
+
+        <div class="clock" aria-label="What a new lead receives in the first two minutes">
+          <div class="clock-head"><span>A new lead, minute by minute</span><b id="ticker" aria-hidden="true">0:00</b></div>
+          <ol class="beats" id="beats">
+            <li class="beat" data-at="0"><span class="t">0:00</span><span>Text + email with your booking link</span><span class="ch">SMS</span></li>
+            <li class="beat" data-at="1"><span class="t">0:01</span><span>“Calling you in 2 minutes”</span><span class="ch">Email</span></li>
+            <li class="beat" data-at="45"><span class="t">0:45</span><span>Your team is on the phone with them</span><span class="ch">Call</span></li>
+            <li class="beat" data-at="120"><span class="t">2:00</span><span>WhatsApp, where people actually reply</span><span class="ch">WhatsApp</span></li>
+          </ol>
+        </div>
+      </div>
+
+      <div class="form-card" id="get-started">
+        <div>
+          <h2>See it working for your business</h2>
+          <p class="muted" style="margin-top:6px">Leave your details and we'll call you back, fast. That's the whole idea.</p>
+        </div>
+        <!-- Formspree form: xzdozaqo -->
+        <form id="leadForm" action="https://formspree.io/f/xzdozaqo" method="POST" novalidate>
+          <div style="display:flex;flex-direction:column;gap:12px">
+            <div class="grid2">
+              <div class="field"><label for="f-name">Your name</label><input id="f-name" name="name" autocomplete="name" required><span class="err" id="e-name"></span></div>
+              <div class="field"><label for="f-business">Business name</label><input id="f-business" name="business" autocomplete="organization" required><span class="err" id="e-business"></span></div>
+            </div>
+            <div class="grid2">
+              <div class="field"><label for="f-phone">Mobile</label><input id="f-phone" name="phone" type="tel" autocomplete="tel" inputmode="tel" placeholder="04xx xxx xxx" required><span class="err" id="e-phone"></span></div>
+              <div class="field"><label for="f-email">Email</label><input id="f-email" name="email" type="email" autocomplete="email" required><span class="err" id="e-email"></span></div>
+            </div>
+            <div class="grid2">
+              <div class="field"><label for="f-industry">Industry</label>
+                <select id="f-industry" name="industry">
+                  <option value="">Choose one</option>
+                  <option>Health &amp; clinics</option><option>Fitness &amp; wellness</option><option>Trades &amp; home services</option><option>Real estate</option><option>Professional services</option><option>Education &amp; coaching</option><option>Automotive</option><option>Other</option>
+                </select>
+              </div>
+              <div class="field"><label for="f-volume">New enquiries per month</label>
+                <select id="f-volume" name="monthly_leads">
+                  <option value="">Choose one</option>
+                  <option>Under 50</option><option>50–150</option><option>150–500</option><option>500+</option><option>Not sure</option>
+                </select>
+              </div>
+            </div>
+            <div class="field"><label for="f-msg">Biggest lead headache <span style="font-weight:400;color:var(--muted)">(optional)</span></label><textarea id="f-msg" name="message" placeholder="e.g. we can't call everyone back fast enough"></textarea></div>
+            <label class="consent" for="f-consent"><input type="checkbox" id="f-consent" name="consent" value="yes" required><span>I'm happy for Velarion to contact me by phone, SMS and email about this enquiry.</span></label>
+            <span class="err" id="e-consent"></span>
+
+            <input type="hidden" name="_subject" value="New Velarion enquiry">
+            <input type="hidden" name="source_page" id="f-page">
+            <input type="hidden" name="utm_source" id="f-utm_source">
+            <input type="hidden" name="utm_medium" id="f-utm_medium">
+            <input type="hidden" name="utm_campaign" id="f-utm_campaign">
+            <input type="hidden" name="utm_content" id="f-utm_content">
+            <div class="hp" aria-hidden="true"><label for="f-gotcha">Leave this empty</label><input id="f-gotcha" name="_gotcha" tabindex="-1" autocomplete="off"></div>
+
+            <div class="form-status error" id="formStatus" role="alert" hidden></div>
+            <button type="submit" class="btn btn-signal submit" id="submitBtn">Get my call back</button>
+            <p class="or-call">Prefer to talk now? Call <a href="tel:+61412576303">0412 576 303</a></p>
+          </div>
+        </form>
+      </div>
+    </div>
+  </section>
+
+  <section class="band">
+    <div class="wrap problem">
+      <div class="big">5 min<small>The window to reach a new enquiry before your chance of talking to them drops sharply.</small></div>
+      <div style="display:flex;flex-direction:column;gap:20px">
+        <h2 style="font-size:clamp(28px,3.6vw,40px);font-weight:800">Most businesses pay for leads, then reply hours later</h2>
+        <ul>
+          <li><span class="x" aria-hidden="true">✕</span><span>Enquiries land while you're with a customer, on a job, or closed for the night.</span></li>
+          <li><span class="x" aria-hidden="true">✕</span><span>One missed call becomes a forgotten lead, and they book with whoever answered first.</span></li>
+          <li><span class="x" aria-hidden="true">✕</span><span>Customers go quiet after the sale and leave without telling you anything was wrong.</span></li>
+        </ul>
+        <p style="font-weight:600">Velarion fixes all three with one system that runs every day, around the clock.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="band alt" id="how">
+    <div class="wrap">
+      <div class="section-head">
+        <span class="eyebrow">How it works</span>
+        <h2>Three stages, running on their own</h2>
+        <p>Your team only steps in when a real person wants to talk.</p>
+      </div>
+      <div class="stages">
+        <article class="stage" style="--c: var(--blue)">
+          <div class="stage-top"><span class="eyebrow">Stage 1 · The first two minutes</span><h3>Instant first reply</h3></div>
+          <ol>
+            <li><b>0 sec</b><span>SMS and email with a booking link</span></li>
+            <li><b>45 sec</b><span>A call to the lead from your team</span></li>
+            <li><b>2 min</b><span>WhatsApp with the same link</span></li>
+            <li><b>After hours</b><span>Instant email and WhatsApp; texts wait for morning; the call is booked for opening time</span></li>
+          </ol>
+        </article>
+        <article class="stage" style="--c: var(--amber)">
+          <div class="stage-top"><span class="eyebrow">Stage 2 · If they don't answer</span><h3>7 days of follow-up</h3></div>
+          <ol>
+            <li><b>Missed call</b><span>Voicemail and a “just missed you” text</span></li>
+            <li><b>+2 hours</b><span>Second call at a different time</span></li>
+            <li><b>Day 1–4</b><span>Calls, WhatsApp and a helpful email</span></li>
+            <li><b>Day 7</b><span>“Should I close your file?”</span></li>
+            <li><b>Then</b><span>A gentle monthly email. Nobody is deleted.</span></li>
+          </ol>
+        </article>
+        <article class="stage" style="--c: var(--teal)">
+          <div class="stage-top"><span class="eyebrow">Stage 3 · After they buy</span><h3>Customers looked after</h3></div>
+          <ol>
+            <li><b>Welcome</b><span>Messages on day 1, 7 and 30</span></li>
+            <li><b>Every 15 days</b><span>A check-in with a 1–5 rating for the first 90 days, then monthly</span></li>
+            <li><b>Happy</b><span>We ask for a review or referral</span></li>
+            <li><b>Unhappy</b><span>Your account manager is alerted to call them</span></li>
+          </ol>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section class="band">
+    <div class="wrap">
+      <div class="section-head">
+        <span class="eyebrow">Built to feel human</span>
+        <h2>Fast, without being pushy</h2>
+      </div>
+      <div class="promises">
+        <div class="promise"><h3>A person takes over</h3><p>The moment a lead replies, answers or books, every automatic message stops.</p></div>
+        <div class="promise"><h3>No late-night texts</h3><p>SMS only goes out in sensible hours. Anything else waits until morning.</p></div>
+        <div class="promise"><h3>No spam</h3><p>Follow-up ends after 7 days, and check-ins slow down over time.</p></div>
+        <div class="promise"><h3>Your words</h3><p>Every message is written in your voice and approved by you before launch.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="band alt">
+    <div class="wrap split">
+      <div class="list-card">
+        <h3>What you get</h3>
+        <ul class="ticks">
+          <li><svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 9.5l4 4 8-9"/></svg><span>Your own dashboard showing every lead, where it is and what happens next</span></li>
+          <li><svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 9.5l4 4 8-9"/></svg><span>A daily task list: who to call back, who replied, which customer needs attention</span></li>
+          <li><svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 9.5l4 4 8-9"/></svg><span>Alerts when a customer is unhappy or goes quiet</span></li>
+          <li><svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 9.5l4 4 8-9"/></svg><span>Connections to your website forms, Facebook and Google lead ads</span></li>
+          <li><svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 9.5l4 4 8-9"/></svg><span>Setup, message writing and ongoing management done for you</span></li>
+        </ul>
+      </div>
+      <div class="list-card">
+        <h3>Who it's for</h3>
+        <p style="color:var(--muted)">Any business that takes enquiries and loses some of them to slow replies.</p>
+        <div class="chips"><span>Clinics &amp; dental</span><span>Gyms &amp; studios</span><span>Trades &amp; home services</span><span>Real estate</span><span>Accountants &amp; lawyers</span><span>Coaches &amp; courses</span><span>Car dealers &amp; service</span></div>
+        <a class="btn btn-signal" href="#get-started" style="align-self:flex-start;margin-top:8px">Get a call back</a>
+      </div>
+    </div>
+  </section>
+
+  <section class="band" id="faq">
+    <div class="wrap">
+      <div class="section-head"><span class="eyebrow">Questions</span><h2>Common questions</h2></div>
+      <div class="faq">
+        <details><summary>Will it sound like a robot?</summary><p>No. Messages are short, written in your tone and spaced out like an attentive team would send them. Calls are always made by a real person.</p></details>
+        <details><summary>What if a lead replies while follow-ups are still scheduled?</summary><p>Everything stops instantly and your team is told to reply. Nobody gets “we're trying to reach you” texts while they're already talking to you.</p></details>
+        <details><summary>What happens with enquiries that come in after hours?</summary><p>They get an instant email and WhatsApp reply with your booking link, so they can choose a time themselves. Your team calls them as soon as you open.</p></details>
+        <details><summary>Do I need new software or a new phone system?</summary><p>No. We set everything up and connect it to the forms and ads you already use. You get a simple dashboard and a task list.</p></details>
+        <details><summary>Can I change the messages later?</summary><p>Yes. Any message, timing or channel can be changed whenever you like.</p></details>
+        <details><summary>Who answers the calls?</summary><p>Your own team, or a person you nominate. We'll agree together who picks up during opening hours, because that's what makes the speed count.</p></details>
+      </div>
+    </div>
+  </section>
+
+  <section class="cta">
+    <div class="wrap">
+      <div>
+        <h2>Stop losing leads to slow replies</h2>
+        <p>Talk to Velarion today. We'll show you how it would work for your business.</p>
+      </div>
+      <div class="cta-actions">
+        <a class="btn btn-signal" href="#get-started">Get a call back</a>
+        <a class="btn btn-ghost" href="tel:+61412576303">Call 0412 576 303</a>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <span>© <span id="year">2026</span> Velarion. All rights reserved.</span>
+    <span>Phone: <a href="tel:+61412576303">0412 576 303</a></span>
+  </div>
+</footer>
+
+<div class="callbar">
+  <a class="btn btn-ghost" href="tel:+61412576303">Call now</a>
+  <a class="btn btn-signal" href="#get-started">Get a call back</a>
+</div>
+
+<script>
+(function () {
+  'use strict';
+  document.getElementById('year').textContent = new Date().getFullYear();
+
+  // Hero timeline: plays the first two minutes of a lead, compressed.
+  var beats = Array.prototype.slice.call(document.querySelectorAll('.beat'));
+  var ticker = document.getElementById('ticker');
+  var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  function show(sec) {
+    var m = Math.floor(sec / 60), s = sec % 60;
+    ticker.textContent = m + ':' + (s < 10 ? '0' : '') + s;
+    beats.forEach(function (b) { b.classList.toggle('done', sec >= +b.dataset.at); });
+  }
+  if (reduce) { show(120); } else {
+    var sec = 0;
+    show(0);
+    setInterval(function () { sec = sec >= 150 ? 0 : sec + 3; show(Math.min(sec, 120)); }, 100);
+  }
+
+  // Keep ad/campaign source with the enquiry.
+  var q = new URLSearchParams(location.search);
+  ['utm_source', 'utm_medium', 'utm_campaign', 'utm_content'].forEach(function (k) {
+    var el = document.getElementById('f-' + k); if (el) el.value = q.get(k) || '';
+  });
+  document.getElementById('f-page').value = location.href.split('#')[0];
+
+  // Form: validate, send to Formspree, then go to the thank-you page.
+  var form = document.getElementById('leadForm');
+  var btn = document.getElementById('submitBtn');
+  var status = document.getElementById('formStatus');
+  var checks = [
+    ['f-name', 'e-name', function (v) { return v.trim().length > 1 || 'Please add your name.'; }],
+    ['f-business', 'e-business', function (v) { return v.trim().length > 1 || 'Please add your business name.'; }],
+    ['f-phone', 'e-phone', function (v) { return v.replace(/[^\d]/g, '').length >= 8 || 'Please add a phone number we can call.'; }],
+    ['f-email', 'e-email', function (v) { return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v.trim()) || 'Please add a valid email address.'; }],
+  ];
+  function validate() {
+    var first = null;
+    checks.forEach(function (c) {
+      var input = document.getElementById(c[0]), out = c[2](input.value);
+      var msg = out === true ? '' : out;
+      document.getElementById(c[1]).textContent = msg;
+      input.setAttribute('aria-invalid', msg ? 'true' : 'false');
+      if (msg && !first) first = input;
+    });
+    var consent = document.getElementById('f-consent');
+    document.getElementById('e-consent').textContent = consent.checked ? '' : 'Please tick the box so we can contact you.';
+    if (!consent.checked && !first) first = consent;
+    if (first) first.focus();
+    return !first;
+  }
+  form.addEventListener('submit', function (e) {
+    e.preventDefault();
+    status.hidden = true;
+    if (!validate()) return;
+    if (/YOUR_FORM_ID/.test(form.action)) {
+      status.textContent = 'This form isn’t connected yet. Please call 0412 576 303.';
+      status.hidden = false; return;
+    }
+    btn.disabled = true; btn.textContent = 'Sending…';
+    fetch(form.action, { method: 'POST', body: new FormData(form), headers: { Accept: 'application/json' } })
+      .then(function (r) {
+        if (r.ok) { window.location.href = 'thanks.html'; return; }
+        return r.json().then(function (d) {
+          throw new Error(d && d.errors ? d.errors.map(function (x) { return x.message; }).join(' ') : 'Something went wrong.');
+        });
+      })
+      .catch(function (err) {
+        status.textContent = 'We couldn’t send your details (' + err.message + '). Please try again or call 0412 576 303.';
+        status.hidden = false;
+        btn.disabled = false; btn.textContent = 'Get my call back';
+      });
+  });
+})();
+</script>
+</body>
+</html>
